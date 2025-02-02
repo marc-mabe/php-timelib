@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="./tests/bootstrap.php" stopOnFailure="false" processIsolation="false" backupGlobals="false" beStrictAboutTestsThatDoNotTestAnything="true" beStrictAboutOutputDuringTests="true" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd" cacheDirectory=".phpunit.cache" beStrictAboutCoverageMetadata="true">
+  <testsuite name="Test-Suite">
+    <directory>./tests</directory>
+  </testsuite>
+  <php>
+    <ini name="zend.assertions" value="1"/>
+    <ini name="assert.exception" value="1"/>
+  </php>
+  <source>
+    <include>
+      <directory suffix=".phpt">./</directory>
+    </include>
+  </source>
+</phpunit>

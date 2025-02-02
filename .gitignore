@@ -1,0 +1,7 @@
+# hidden files
+.*
+!/.gitignore
+
+# composer
+/vendor
+/composer.lock
