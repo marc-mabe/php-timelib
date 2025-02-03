@@ -5,28 +5,34 @@ namespace dt;
 use DateTimeImmutable;
 
 final class Moment implements Date, Time {
+    private ?\DateTimeImmutable $_legacy = null;
+    private \DateTimeImmutable $legacy {
+        get => $this->_legacy
+            ??= \DateTimeImmutable::createFromTimestamp($this->timestamp)->setMicrosecond($this->microOfSecond);
+    }
+
     public int $year {
-        get => (int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('Y');
+        get => (int)$this->legacy->format('Y');
     }
 
     public Month $month {
-        get => Month::from((int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('m'));
+        get => Month::from((int)$this->legacy->format('m'));
     }
 
     public int $dayOfMonth {
-        get => (int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('d');
+        get => (int)$this->legacy->format('d');
     }
 
     public int $dayOfYear  {
-        get => (int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('z');
+        get => (int)$this->legacy->format('z');
     }
 
     public int $hour {
-        get => $this->timestamp % (60 * 60 * 24);
+        get => \intdiv($this->timestamp % (60 * 60 * 24), 60 * 60);
     }
 
     public int $minute  {
-        get => $this->timestamp % (60 * 60);
+        get => \intdiv($this->timestamp % (60 * 60), 60);
     }
 
     public int $second  {
