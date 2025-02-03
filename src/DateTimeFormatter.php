@@ -20,7 +20,7 @@ class DateTimeFormatter
 
             if (!$token) {
                 if (!$inEscape && preg_match('#^[a-z]$#i', $chr)) {
-                    throw new \ValueError("Invalid format '{$this->format}': '{$chr}' is an unknown token at {$i}");
+                    throw new \ValueError("Invalid format '{$this->format}': Unknown token '{$chr}' at {$i}");
                 }
 
                 $formatted .= $chr;

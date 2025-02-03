@@ -5,18 +5,53 @@ namespace dt;
 use DateTimeImmutable;
 
 final class Moment implements Date, Time {
-    public int $year { get => (int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('Y'); }
-    public Month $month { get => Month::from((int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('m')); }
-    public int $dayOfMonth { get => (int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('d'); }
-    public int $dayOfYear  { get => (int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('z'); }
-    public int $hour { get => $this->timestamp % (60 * 60 * 24); }
-    public int $minute  { get => $this->timestamp % (60 * 60); }
-    public int $second  { get => $this->timestamp % 60; }
-    public int $milliOfSecond { get => \intdiv($this->nanoOfSecond, 1_000_000); }
-    public int $microOfSecond { get => \intdiv($this->nanoOfSecond, 1_000); }
-    public LocalDateTime $local { get => LocalDateTime::fromDateTime($this->date, $this->time); }
-    public LocalDate $date { get => LocalDate::fromYd($this->year, $this->dayOfYear); }
-    public LocalTime $time { get => LocalTime::fromHms($this->hour, $this->minute, $this->second); }
+    public int $year {
+        get => (int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('Y');
+    }
+
+    public Month $month {
+        get => Month::from((int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('m'));
+    }
+
+    public int $dayOfMonth {
+        get => (int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('d');
+    }
+
+    public int $dayOfYear  {
+        get => (int)\DateTimeImmutable::fromTimestamp($this->timestamp)->format('z');
+    }
+
+    public int $hour {
+        get => $this->timestamp % (60 * 60 * 24);
+    }
+
+    public int $minute  {
+        get => $this->timestamp % (60 * 60);
+    }
+
+    public int $second  {
+        get => $this->timestamp % 60;
+    }
+
+    public int $milliOfSecond {
+        get => \intdiv($this->nanoOfSecond, 1_000_000);
+    }
+
+    public int $microOfSecond {
+        get => \intdiv($this->nanoOfSecond, 1_000);
+    }
+
+    public LocalDateTime $local {
+        get => LocalDateTime::fromDateTime($this->date, $this->time);
+    }
+
+    public LocalDate $date {
+        get => LocalDate::fromYd($this->year, $this->dayOfYear);
+    }
+
+    public LocalTime $time {
+        get => LocalTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
+    }
 
     private function __construct(
         public readonly int $timestamp,
@@ -185,7 +220,7 @@ final class Moment implements Date, Time {
 
     public function toZonedDateTime(ZoneOffset $zoneOffset): ZonedDateTime
     {
-        return ZonedDateTime::fromUnixTimestamp($this->timestamp)->moveToZone($zoneOffset);
+        return ZonedDateTime::fromUnixTimestampTuple($this->toUnixTimestampTuple())->moveToZone($zoneOffset);
     }
 
     public static function fromNow(Clock $clock = new Clock()): self
