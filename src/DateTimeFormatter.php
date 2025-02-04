@@ -119,6 +119,9 @@ class DateTimeFormatter
             FormatToken::MicroOfSecond => $dateTimeZone instanceof Time
                 ? str_pad((string)$dateTimeZone->microOfSecond, 6, '0', STR_PAD_LEFT)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a time"),
+            FormatToken::OptionalFractionOfSecondWithLeadingSeparator => $dateTimeZone instanceof Time
+                ? ($dateTimeZone->nanoOfSecond ? ".$dateTimeZone->nanoOfSecond" : '')
+                : throw new \ValueError("Unexpected format: '{$token->value}' requires a time"),
 
             // Time zone and offset
             FormatToken::TimezoneIdentifier => $this->formatTzId($token, $dateTimeZone),

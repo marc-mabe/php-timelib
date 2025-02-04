@@ -48,6 +48,8 @@ enum FormatToken:string
 
     case MilliOfSecond = 'v';
     case MicroOfSecond = 'u';
+    case OptionalFractionOfSecondWithLeadingSeparator = 'f';
+
 
     // Time zone and offset
     case TimezoneIdentifier = 'e';

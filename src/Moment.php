@@ -28,15 +28,18 @@ final class Moment implements Date, Time {
     }
 
     public int $hour {
-        get => \intdiv($this->timestamp % (60 * 60 * 24), 60 * 60);
+        get =>\intdiv($this->timestamp % (60 * 60 * 24), 60 * 60)
+            + ($this->timestamp < 0 ? 23 : 0);
     }
 
     public int $minute  {
-        get => \intdiv($this->timestamp % (60 * 60), 60);
+        get => \intdiv($this->timestamp % (60 * 60), 60)
+            + ($this->timestamp < 0 ? 59 : 0);
     }
 
     public int $second  {
-        get => $this->timestamp % 60;
+        get => $this->timestamp % 60
+            + ($this->timestamp < 0 ? 60 : 0);
     }
 
     public int $milliOfSecond {
