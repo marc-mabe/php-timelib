@@ -24,9 +24,9 @@ class Clock {
         return Moment::fromUnixTimestampTuple($tuple)->add($this->modifier)->toZonedDateTime($zoneOffset);
     }
 
-    public function takeUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $asFloat = false): int|float
+    public function takeUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $fractions = false): int|float
     {
-        return $this->takeMoment()->toUnixTimestamp($unit, $asFloat);
+        return $this->takeMoment()->toUnixTimestamp($unit, $fractions);
     }
 
     /** @return array{int, int<0, 999999999>} */

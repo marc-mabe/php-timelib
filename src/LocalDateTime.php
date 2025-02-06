@@ -33,7 +33,7 @@ final class LocalDateTime implements Date, Time {
         return $formatter->format($this);
     }
 
-    public function toUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $asFloat = false): int|float {
+    public function toUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $fractions = false): int|float {
         $s = $this->dt->getTimestamp();
         $ns = $this->nanoOfSecond;
         $value = match ($unit) {
@@ -44,7 +44,7 @@ final class LocalDateTime implements Date, Time {
             TimeUnit::Microsecond => $s * 1000000,
             TimeUnit::Nanosecond => $s * 1000000000,
         };
-        return $asFloat ? (float)match ($unit) {
+        return $fractions ? (float)match ($unit) {
             TimeUnit::Second => $value + ($ns / 1000000000),
             TimeUnit::Minute => $value + (($ns / 1000000000) * 60),
             TimeUnit::Hour   => $value + (($ns / 1000000000) * 3600),
@@ -55,7 +55,7 @@ final class LocalDateTime implements Date, Time {
     }
 
     public static function fromNow(Clock $clock = new Clock()): self {
-        $ts = $clock->getTimestamp(TimeUnit::Second, asFloat: true);
+        $ts = $clock->takeUnixTimestamp(TimeUnit::Second, fractions: true);
         return new self(\DateTimeImmutable::createFromTimestamp($ts));
     }
 

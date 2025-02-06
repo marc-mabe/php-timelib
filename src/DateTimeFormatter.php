@@ -120,7 +120,10 @@ class DateTimeFormatter
                 ? str_pad((string)$dateTimeZone->microOfSecond, 6, '0', STR_PAD_LEFT)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a time"),
             FormatToken::OptionalFractionOfSecondWithLeadingSeparator => $dateTimeZone instanceof Time
-                ? ($dateTimeZone->nanoOfSecond ? ".$dateTimeZone->nanoOfSecond" : '')
+                ? ($dateTimeZone->nanoOfSecond
+                    ? '.' . rtrim(str_pad((string)$dateTimeZone->nanoOfSecond, 9, '0', STR_PAD_LEFT), '0')
+                    : ''
+                )
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a time"),
 
             // Time zone and offset
@@ -143,7 +146,7 @@ class DateTimeFormatter
             $zoneOffset = $dateTimeZone->zoneOffset;
         }
 
-        $offset = $zoneOffset->offset;
+        $offset = $zoneOffset?->offset;
         if ($offset === null) {
             if ($dateTimeZone instanceof ZonedDateTime) {
                 $offset = $dateTimeZone->offset;

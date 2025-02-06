@@ -8,7 +8,7 @@ final class Moment implements Date, Time {
     private ?\DateTimeImmutable $_legacy = null;
     private \DateTimeImmutable $legacy {
         get => $this->_legacy
-            ??= \DateTimeImmutable::createFromTimestamp($this->timestamp)->setMicrosecond($this->microOfSecond);
+            ??= \DateTimeImmutable::createFromTimestamp($this->tsSec)->setMicrosecond($this->microOfSecond);
     }
 
     public int $year {
@@ -20,7 +20,7 @@ final class Moment implements Date, Time {
     }
 
     public int $dayOfMonth {
-        get => (int)$this->legacy->format('d');
+        get => (int)$this->legacy->format('j');
     }
 
     public int $dayOfYear  {
@@ -28,18 +28,26 @@ final class Moment implements Date, Time {
     }
 
     public int $hour {
-        get =>\intdiv($this->timestamp % (60 * 60 * 24), 60 * 60)
-            + ($this->timestamp < 0 ? 23 : 0);
+        get {
+            $s = $this->tsSec % (60 * 60 * 24);
+            $h = \intdiv($s, 60 * 60);
+            return ($s % 60) < 0 ? $h + 23 : $h;
+        }
     }
 
     public int $minute  {
-        get => \intdiv($this->timestamp % (60 * 60), 60)
-            + ($this->timestamp < 0 ? 59 : 0);
+        get {
+            $s = $this->tsSec % (60 * 60);
+            $m = \intdiv($s, 60);
+            return ($s % 60) < 0 ? $m + 59 : $m;
+        }
     }
 
     public int $second  {
-        get => $this->timestamp % 60
-            + ($this->timestamp < 0 ? 60 : 0);
+        get {
+            $s = $this->tsSec % 60;
+            return $s < 0 ? $s + 60 : $s;
+        }
     }
 
     public int $milliOfSecond {
@@ -63,7 +71,7 @@ final class Moment implements Date, Time {
     }
 
     private function __construct(
-        public readonly int $timestamp,
+        private readonly int $tsSec,
         public readonly int $nanoOfSecond,
     ) {}
 
@@ -74,7 +82,7 @@ final class Moment implements Date, Time {
             ->withMicroseconds(0)
             ->withNanoseconds(0);
 
-        $s = DateTimeImmutable::createFromTimestamp($this->timestamp)
+        $s = DateTimeImmutable::createFromTimestamp($this->tsSec)
             ->add($durationNoFractions->toLegacyInterval())
             ->getTimestamp();
 
@@ -135,17 +143,17 @@ final class Moment implements Date, Time {
 
     public function withMilliOfSecond(int $milliOfSecond): self
     {
-        return new self($this->timestamp, $milliOfSecond * 1_000_000);
+        return new self($this->tsSec, $milliOfSecond * 1_000_000);
     }
 
     public function withMicroOfSecond(int $microOfSecond): self
     {
-        return new self($this->timestamp, $microOfSecond * 1_000);
+        return new self($this->tsSec, $microOfSecond * 1_000);
     }
 
     public function withNanoOfSecond(int $nanoOfSecond): self
     {
-        return new self($this->timestamp, $nanoOfSecond);
+        return new self($this->tsSec, $nanoOfSecond);
     }
 
     public function truncatedTo(DateUnit|TimeUnit $unit): self {
@@ -199,32 +207,32 @@ final class Moment implements Date, Time {
      *
      * @return int|float
      */
-    public function toUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $asFloat = false): int|float {
+    public function toUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $fractions = false): int|float
+    {
+        if ($fractions) {
+            return match ($unit) {
+                TimeUnit::Hour        => ($this->tsSec / 3_600) + ($this->nanoOfSecond / 1_000_000_000 / 3_600),
+                TimeUnit::Minute      => ($this->tsSec / 60) + ($this->nanoOfSecond / 1_000_000_000 / 60),
+                TimeUnit::Second      => ($this->tsSec + ($this->nanoOfSecond / 1_000_000_000)),
+                TimeUnit::Millisecond => ($this->tsSec * 1_000) + ($this->nanoOfSecond / 1_000_000),
+                TimeUnit::Microsecond => ($this->tsSec * 1_000_000) + ($this->nanoOfSecond / 1_000),
+                TimeUnit::Nanosecond  => ($this->tsSec * 1_000_000_000) + $this->nanoOfSecond,
+            };
+        }
+
         return match ($unit) {
-            TimeUnit::Hour        => $asFloat
-                ? ($this->timestamp / 3_600) + ($this->nanoOfSecond / 1_000_000_000 / 3_600)
-                : (int)($this->timestamp / 3_600),
-            TimeUnit::Minute      => $asFloat
-                ? ($this->timestamp / 60) + ($this->nanoOfSecond / 1_000_000_000 / 60)
-                : (int)($this->timestamp / 60),
-            TimeUnit::Second      => $asFloat
-                ? (float)($this->timestamp + ($this->nanoOfSecond / 1_000_000_000))
-                : $this->timestamp,
-            TimeUnit::Millisecond => $asFloat
-                ? (float)(($this->timestamp * 1_000) + ($this->nanoOfSecond / 1_000_000))
-                : (int)(($this->timestamp * 1_000) + ($this->nanoOfSecond / 1_000_000)),
-            TimeUnit::Microsecond => $asFloat
-                ? (float)(($this->timestamp * 1_000_000) + ($this->nanoOfSecond / 1_000))
-                : (int)(($this->timestamp * 1_000_000) + ($this->nanoOfSecond / 1_000)),
-            TimeUnit::Nanosecond  => $asFloat
-                ? (float)(($this->timestamp * 1_000_000_000) + $this->nanoOfSecond)
-                : (int)(($this->timestamp * 1_000_000_000) + $this->nanoOfSecond),
+            TimeUnit::Hour        => ($this->tsSec < 0 && $this->nanoOfSecond ? $this->tsSec + 1 : $this->tsSec) / 3_600,
+            TimeUnit::Minute      => ($this->tsSec < 0 && $this->nanoOfSecond ? $this->tsSec + 1 : $this->tsSec) / 60,
+            TimeUnit::Second      => $this->tsSec < 0 && $this->nanoOfSecond ? $this->tsSec + 1 : $this->tsSec,
+            TimeUnit::Millisecond => ($this->tsSec * 1_000) + ($this->nanoOfSecond / 1_000_000),
+            TimeUnit::Microsecond => ($this->tsSec * 1_000_000) + ($this->nanoOfSecond / 1_000),
+            TimeUnit::Nanosecond  => ($this->tsSec * 1_000_000_000) + $this->nanoOfSecond,
         };
     }
 
     /** @return array{int, int<0, 999999999>} */
     public function toUnixTimestampTuple(): array {
-        return [$this->timestamp, $this->nanoOfSecond];
+        return [$this->tsSec, $this->nanoOfSecond];
     }
 
     public function toZonedDateTime(ZoneOffset $zoneOffset): ZonedDateTime
@@ -251,14 +259,23 @@ final class Moment implements Date, Time {
             $tsFraction = 0.0;
         }
 
-        [$s, $ns] = match ($unit) {
+        [$tsSecInt, $ns] = match ($unit) {
             TimeUnit::Second      => [$tsInt, (int)($tsFraction * 1_000_000_000)],
-            TimeUnit::Millisecond => [\intdiv($tsInt, 1_000), (int)($tsFraction * 1_000_000)],
-            TimeUnit::Microsecond => [\intdiv($tsInt, 1_000_000), (int)($tsFraction * 1_000)],
-            TimeUnit::Nanosecond  => [\intdiv($tsInt, 1_000_000_000), 0],
+            TimeUnit::Millisecond => [
+                \intdiv($tsInt, 1_000),
+                ($tsInt % 1_000 * 1_000_000) - (int)($tsFraction * 1_000_000_000),
+            ],
+            TimeUnit::Microsecond => [
+                \intdiv($tsInt, 1_000_000),
+                ($tsInt % 1_000_000 * 1_000) - (int)($tsFraction * 1_000_000_000),
+            ],
+            TimeUnit::Nanosecond  => [
+                \intdiv($tsInt, 1_000_000_000),
+                $tsInt % 1_000_000_000,
+            ],
         };
 
-        return new self($s, $ns);
+        return new self($tsSecInt, $ns);
     }
 
     /** @param array{int, int<0, 999999999>} $timestampTuple */
@@ -274,7 +291,15 @@ final class Moment implements Date, Time {
         int $second = 0,
         int $nanoOfSecond = 0,
     ): self {
-        $ts = \mktime($hour, $minute, $second, 0, $dayOfYear, $year);
+        $z = $dayOfYear - 1;
+        $h = str_pad($hour, 2, '0', STR_PAD_LEFT);
+        $m = str_pad($minute, 2, '0', STR_PAD_LEFT);
+        $s = str_pad($second, 2, '0', STR_PAD_LEFT);
+        $ts = \DateTime::createFromFormat(
+            'Y-z H:i:s',
+            "{$year}-{$z} {$h}:{$m}:{$s}"
+        )->getTimestamp();
+
         return new self($ts, $nanoOfSecond);
     }
 

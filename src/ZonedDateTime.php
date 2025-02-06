@@ -69,23 +69,17 @@ final class ZonedDateTime implements Date, Time, Zoned {
 
     public function toMoment(): Moment
     {
-        return Moment::fromUnixTimestampTuple([
-            $this->toUnixTimestamp(),
-            $this->nanoOfSecond,
-        ]);
+        return Moment::fromUnixTimestampTuple($this->toUnixTimestampTuple());
     }
 
     /**
      * Convert to current unix timestamp in defined unit
      *
-     * TODO: Detect Integer Overflow
-     * TODO: Support nanoseconds
-     *
      * @return int|float
      */
-    public function toUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $asFloat = false): int|float
+    public function toUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $fractions = false): int|float
     {
-        return $this->toMoment()->toUnixTimestamp($unit, $asFloat);
+        return $this->toMoment()->toUnixTimestamp($unit, $fractions);
     }
 
     /** @return array{int, int<0,999999999>} */

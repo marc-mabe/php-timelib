@@ -50,7 +50,6 @@ enum FormatToken:string
     case MicroOfSecond = 'u';
     case OptionalFractionOfSecondWithLeadingSeparator = 'f';
 
-
     // Time zone and offset
     case TimezoneIdentifier = 'e';
     case IsDaylightSavingTime = 'I';

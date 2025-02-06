@@ -1,5 +1,5 @@
 --TEST--
-Basic Clock
+Clock::takeUnixTimestamp
 --FILE--
 <?php
 
@@ -12,62 +12,62 @@ echo "Resolution: {$clock->getResolution()->toIso()}\n";
 
 echo "### Unix Timestamp (float) ###\n";
 echo "\tmicrotime(): " . ($mt = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(asFloat: true)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(fractions: true)) . "\n";
 echo (($ct - $mt) < 1.0 ? 'OK' : 'FAIL') . "\n";
 
 echo "### Unix Timestamp (int) ###\n";
 echo "\tmicrotime(): " . ($ts = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(asFloat: false)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(fractions: false)) . "\n";
 echo (($ct - $ts) < 1.0 ? 'OK' : 'FAIL') . "\n";
 
 echo "### Unix Timestamp in milliseconds (float) ###\n";
 echo "\tmicrotime(): " . ($ts = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Millisecond, asFloat: true)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Millisecond, fractions: true)) . "\n";
 echo ($ct / 1_000 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 echo "### Unix Timestamp in milliseconds (int) ###\n";
 echo "\tmicrotime(): " . ($ts = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Millisecond, asFloat: false)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Millisecond, fractions: false)) . "\n";
 echo ($ct / 1_000 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 echo "### Unix Timestamp in microseconds (float) ###\n";
 echo "\tmicrotime(): " . ($ts = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Microsecond, asFloat: true)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Microsecond, fractions: true)) . "\n";
 echo ($ct / 1_000_000 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 echo "### Unix Timestamp in microseconds (int) ###\n";
 echo "\tmicrotime(): " . ($ts = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Microsecond, asFloat: false)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Microsecond, fractions: false)) . "\n";
 echo ($ct / 1_000_000 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 echo "### Unix Timestamp in nanoseconds (float) ###\n";
 echo "\tmicrotime(): " . ($ts = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Nanosecond, asFloat: true)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Nanosecond, fractions: true)) . "\n";
 echo ($ct / 1_000_000_000 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 echo "### Unix Timestamp in nanoseconds (int) ###\n";
 echo "\tmicrotime(): " . ($ts = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Nanosecond, asFloat: false)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Nanosecond, fractions: false)) . "\n";
 echo ($ct / 1_000_000_000 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 echo "### Unix Timestamp in minutes (float) ###\n";
 echo "\tmicrotime(): " . ($ts = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Minute, asFloat: true)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Minute, fractions: true)) . "\n";
 echo ($ct * 60 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 echo "### Unix Timestamp in minutes (int) ###\n";
 echo "\tmicrotime(): " . ($ts = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Minute, asFloat: false)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Minute, fractions: false)) . "\n";
 echo ($ct * 60 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 echo "### Unix Timestamp in hours (float) ###\n";
 echo "\tmicrotime(): " . ($ts = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Hour, asFloat: true)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Hour, fractions: true)) . "\n";
 echo ($ct * 60 * 60 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 echo "### Unix Timestamp in hours (int) ###\n";
 echo "\tmicrotime(): " . ($ts = microtime(true)) . "\n";
-echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Hour, asFloat: false)) . "\n";
+echo "\tClock:       " . ($ct = $clock->takeUnixTimestamp(\dt\TimeUnit::Hour, fractions: false)) . "\n";
 echo ($ct * 60 * 60 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 --EXPECTF--
