@@ -283,6 +283,14 @@ final class Moment implements Date, Time {
         return new self($timestampTuple[0], $timestampTuple[1]);
     }
 
+    /**
+     * @param int<1, 366> $dayOfYear
+     * @param int<0, 23> $hour
+     * @param int<0, 59> $minute
+     * @param int<0, 59> $second
+     * @param int<0, 999999999> $nanoOfSecond
+     * @return self
+     */
     public static function fromYd(
         int $year,
         int $dayOfYear,
@@ -303,6 +311,15 @@ final class Moment implements Date, Time {
         return new self($ts, $nanoOfSecond);
     }
 
+    /**
+     * @param Month|int<1, 12> $month
+     * @param int<1, 31> $dayOfMonth
+     * @param int<0, 23> $hour
+     * @param int<0, 59> $minute
+     * @param int<0, 59> $second
+     * @param int<0, 999999999> $nanoOfSecond
+     * @return self
+     */
     public static function fromYmd(
         int $year,
         Month|int $month,
