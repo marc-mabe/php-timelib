@@ -4,6 +4,7 @@ namespace dt;
 
 final class LocalDateTime implements Date, Time {
     public int $year { get => (int)$this->dt->format('Y'); }
+    public bool $isLeapYear { get => (bool)$this->dt->format('L'); }
     public Month $month { get => Month::from((int)$this->dt->format('m')); }
     public int $dayOfMonth { get => (int)$this->dt->format('d'); }
     public int $dayOfYear  { get => (int)$this->dt->format('z'); }

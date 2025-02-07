@@ -4,6 +4,7 @@ namespace dt;
 
 final class ZonedDateTime implements Date, Time, Zoned {
     public int $year { get => (int)$this->legacySec->format('Y'); }
+    public bool $isLeapYear { get => (bool)$this->legacySec->format('L'); }
     public Month $month { get => Month::from((int)$this->legacySec->format('m')); }
     public int $dayOfMonth { get => (int)$this->legacySec->format('j'); }
     public int $dayOfYear  { get => (int)$this->legacySec->format('z'); }

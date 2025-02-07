@@ -18,8 +18,8 @@ enum FormatToken:string
     case IsLeapYear = 'L';
     case Year = 'Y';
     case Year2Digit = 'y';
-    case YearExtended = 'X';
-    case YearExtendedPlus = 'x';
+    case YearExtended = 'x';
+    case YearExtendedSign = 'X';
     case YearOfWeekIso = 'o';
 
     // Week

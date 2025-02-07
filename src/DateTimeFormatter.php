@@ -48,15 +48,14 @@ class DateTimeFormatter
     {
         return match ($token) {
             // Year
-            FormatToken::IsLeapYear => "TODO[{$token->name}]",
-            FormatToken::Year => $dateTimeZone instanceof Date
-                ? str_pad((string)$dateTimeZone->year, 0, '0', STR_PAD_LEFT)
-                : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
-
-            FormatToken::Year2Digit => "TODO[{$token->name}]",
-            FormatToken::YearExtended => "TODO[{$token->name}]",
-            FormatToken::YearExtendedPlus => "TODO[{$token->name}]",
+            FormatToken::Year,
+            FormatToken::Year2Digit,
+            FormatToken::YearExtended,
+            FormatToken::YearExtendedSign => $this->formatYear($token, $dateTimeZone),
             FormatToken::YearOfWeekIso => "TODO[{$token->name}]",
+            FormatToken::IsLeapYear => $dateTimeZone instanceof Date
+                ? (string)$dateTimeZone->isLeapYear
+                : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
 
             // Month
             FormatToken::MonthName => "TODO[{$token->name}]",
@@ -134,6 +133,25 @@ class DateTimeFormatter
             FormatToken::OffsetWithColon => $this->formatTzOffset($token, $dateTimeZone),
             FormatToken::OffsetWithColonOrZ => $this->formatTzOffset($token, $dateTimeZone),
             FormatToken::OffsetInSeconds => $this->formatTzOffset($token, $dateTimeZone),
+        };
+    }
+
+    private function formatYear(FormatToken $token, Date|Time|ZoneOffset|Zoned $dateTimeZone): string
+    {
+        if (!$dateTimeZone instanceof Date) {
+            throw new \ValueError("Unexpected format: '{$token->value}' requires a date");
+        }
+
+        $yearAbs = (string)abs($dateTimeZone->year);
+        $sign    = $dateTimeZone->year < 0 ? '-' : '+';
+
+        return match ($token) {
+            FormatToken::Year2Digit => ($dateTimeZone->year < 0 ? $sign : '') . substr($yearAbs, -2),
+            FormatToken::Year => ($dateTimeZone->year < 0 ? $sign : '') . $yearAbs,
+            FormatToken::YearExtended
+                => ($dateTimeZone->year < 0 || $dateTimeZone->year >= 10000 ? $sign : '')
+                . str_pad($yearAbs, 4, '0', STR_PAD_LEFT),
+            FormatToken::YearExtendedSign => $sign . str_pad($yearAbs, 4, '0', STR_PAD_LEFT),
         };
     }
 
