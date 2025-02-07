@@ -27,9 +27,9 @@ enum FormatToken:string
 
     // Month
     case MonthName = 'F';
-    case MonthName3Letter = 'M';
-    case MonthNumber = 'n';
-    case MonthNumberWithLeadingZeros = 'm';
+    case MonthAbbreviation = 'M';
+    case Month = 'n';
+    case MonthWithLeadingZeros = 'm';
     case DaysInMonth = 't';
 
     // Time

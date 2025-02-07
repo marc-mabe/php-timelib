@@ -52,20 +52,25 @@ class DateTimeFormatter
             FormatToken::Year2Digit,
             FormatToken::YearExtended,
             FormatToken::YearExtendedSign => $this->formatYear($token, $dateTimeZone),
-            FormatToken::YearOfWeekIso => "TODO[{$token->name}]",
             FormatToken::IsLeapYear => $dateTimeZone instanceof Date
                 ? (string)$dateTimeZone->isLeapYear
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
+            FormatToken::YearOfWeekIso => "TODO[{$token->name}]",
 
             // Month
-            FormatToken::MonthName => "TODO[{$token->name}]",
-            FormatToken::MonthName3Letter => "TODO[{$token->name}]",
-            FormatToken::MonthNumber => $dateTimeZone instanceof Date
+            FormatToken::Month => $dateTimeZone instanceof Date
                 ? (string)$dateTimeZone->month->value
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
-            FormatToken::MonthNumberWithLeadingZeros => $dateTimeZone instanceof Date
+            FormatToken::MonthWithLeadingZeros => $dateTimeZone instanceof Date
                 ? str_pad((string)$dateTimeZone->month->value, 2, '0', STR_PAD_LEFT)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
+            FormatToken::MonthName => $dateTimeZone instanceof Date
+                ? $dateTimeZone->month->name
+                : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
+            FormatToken::MonthAbbreviation => $dateTimeZone instanceof Date
+                ? $dateTimeZone->month->getAbbreviation()
+                : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
+
             FormatToken::DaysInMonth => "TODO[{$token->name}]",
 
             // Week
@@ -126,12 +131,12 @@ class DateTimeFormatter
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a time"),
 
             // Time zone and offset
-            FormatToken::TimezoneIdentifier => $this->formatTzId($token, $dateTimeZone),
+            FormatToken::TimezoneIdentifier,
             FormatToken::TimezoneAbbrOrOffset => $this->formatTzId($token, $dateTimeZone),
             FormatToken::IsDaylightSavingTime => "TODO[{$token->name}]",
-            FormatToken::OffsetWithoutColon => $this->formatTzOffset($token, $dateTimeZone),
-            FormatToken::OffsetWithColon => $this->formatTzOffset($token, $dateTimeZone),
-            FormatToken::OffsetWithColonOrZ => $this->formatTzOffset($token, $dateTimeZone),
+            FormatToken::OffsetWithoutColon,
+            FormatToken::OffsetWithColon,
+            FormatToken::OffsetWithColonOrZ,
             FormatToken::OffsetInSeconds => $this->formatTzOffset($token, $dateTimeZone),
         };
     }
@@ -146,8 +151,8 @@ class DateTimeFormatter
         $sign    = $dateTimeZone->year < 0 ? '-' : '+';
 
         return match ($token) {
-            FormatToken::Year2Digit => ($dateTimeZone->year < 0 ? $sign : '') . substr($yearAbs, -2),
             FormatToken::Year => ($dateTimeZone->year < 0 ? $sign : '') . $yearAbs,
+            FormatToken::Year2Digit => ($dateTimeZone->year < 0 ? $sign : '') . substr($yearAbs, -2),
             FormatToken::YearExtended
                 => ($dateTimeZone->year < 0 || $dateTimeZone->year >= 10000 ? $sign : '')
                 . str_pad($yearAbs, 4, '0', STR_PAD_LEFT),

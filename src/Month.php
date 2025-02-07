@@ -15,4 +15,8 @@ enum Month:int {
     case October = 10;
     case November = 11;
     case December = 12;
+
+    public function getAbbreviation():string {
+        return \substr($this->name, 3);
+    }
 }
