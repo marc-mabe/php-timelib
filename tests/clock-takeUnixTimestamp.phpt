@@ -3,7 +3,7 @@ Clock::takeUnixTimestamp
 --FILE--
 <?php
 
-include __DIR__ . '/../vendor/autoload.php';
+include __DIR__ . '/include.php';
 
 $clock = new dt\Clock();
 var_dump($clock);

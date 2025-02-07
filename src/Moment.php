@@ -5,26 +5,26 @@ namespace dt;
 use DateTimeImmutable;
 
 final class Moment implements Date, Time {
-    private ?\DateTimeImmutable $_legacy = null;
-    private \DateTimeImmutable $legacy {
-        get => $this->_legacy
-            ??= \DateTimeImmutable::createFromTimestamp($this->tsSec)->setMicrosecond($this->microOfSecond);
+    private ?\DateTimeImmutable $_legacySec = null;
+    private \DateTimeImmutable $legacySec {
+        get => $this->_legacySec
+            ??= \DateTimeImmutable::createFromTimestamp($this->tsSec);
     }
 
     public int $year {
-        get => (int)$this->legacy->format('Y');
+        get => (int)$this->legacySec->format('Y');
     }
 
     public Month $month {
-        get => Month::from((int)$this->legacy->format('m'));
+        get => Month::from((int)$this->legacySec->format('m'));
     }
 
     public int $dayOfMonth {
-        get => (int)$this->legacy->format('j');
+        get => (int)$this->legacySec->format('j');
     }
 
     public int $dayOfYear  {
-        get => (int)$this->legacy->format('z');
+        get => (int)$this->legacySec->format('z');
     }
 
     public int $hour {
@@ -252,8 +252,21 @@ final class Moment implements Date, Time {
                 throw new \ValueError('Timestamp must be a finite number.');
             }
 
-            $tsInt      = (int)$timestamp;
             $tsFraction = \fmod($timestamp, 1);
+            $tsInt      = $timestamp - $tsFraction;
+
+            if ($tsInt > PHP_INT_MAX || $timestamp < PHP_INT_MIN) {
+                throw new \ValueError(
+                    'Timestamp must be within ' . PHP_INT_MIN . ' and ' . PHP_INT_MAX . '.999999999.'
+                );
+            }
+
+            $tsInt = (int)$tsInt;
+            if ($tsFraction < 0.0) {
+                $tsInt -= 1;
+                $tsFraction = 1.0 + $tsFraction;
+            }
+
         } else {
             $tsInt      = $timestamp;
             $tsFraction = 0.0;

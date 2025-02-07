@@ -3,7 +3,7 @@ DateTime.fromDateTime
 --FILE--
 <?php
 
-include __DIR__ . '/../vendor/autoload.php';
+include __DIR__ . '/include.php';
 
 $date = dt\LocalDate::fromYmd(2000, dt\Month::January, 1);
 $time = dt\LocalTime::fromHms(1, 2, 3, 123456);

@@ -3,13 +3,13 @@
 namespace dt;
 
 final class ZonedDateTime implements Date, Time, Zoned {
-    public int $year { get => (int)$this->legacy->format('Y'); }
-    public Month $month { get => Month::from((int)$this->legacy->format('m')); }
-    public int $dayOfMonth { get => (int)$this->legacy->format('d'); }
-    public int $dayOfYear  { get => (int)$this->legacy->format('z'); }
-    public int $hour { get => (int)$this->legacy->format('H'); }
-    public int $minute  { get => (int)$this->legacy->format('i'); }
-    public int $second  { get => (int)$this->legacy->format('s'); }
+    public int $year { get => (int)$this->legacySec->format('Y'); }
+    public Month $month { get => Month::from((int)$this->legacySec->format('m')); }
+    public int $dayOfMonth { get => (int)$this->legacySec->format('j'); }
+    public int $dayOfYear  { get => (int)$this->legacySec->format('z'); }
+    public int $hour { get => (int)$this->legacySec->format('H'); }
+    public int $minute  { get => (int)$this->legacySec->format('i'); }
+    public int $second  { get => (int)$this->legacySec->format('s'); }
     public int $milliOfSecond { get => (int)($this->nanoOfSecond / 1_000_000); }
     public int $microOfSecond { get => (int)($this->nanoOfSecond / 1_000); }
     public LocalDateTime $local { get => LocalDateTime::fromDateTime($this->date, $this->time); }
@@ -17,23 +17,25 @@ final class ZonedDateTime implements Date, Time, Zoned {
     public LocalTime $time { get => LocalTime::fromHms($this->hour, $this->minute, $this->second); }
     public Duration $offset {
         get {
-            $seconds = $this->legacy->getOffset();
+            $seconds = $this->legacySec->getOffset();
             return $seconds < 0 ? new Duration(isNegative: true, seconds: $seconds) : new Duration(seconds: $seconds);
         }
     }
 
-    private \DateTimeImmutable $legacy { get => \DateTimeImmutable::createFromTimestamp($this->timestamp); }
+    private \DateTimeImmutable $legacySec {
+        get => \DateTimeImmutable::createFromTimestamp($this->tsSecInt);
+    }
 
     private function __construct(
         public readonly ZoneOffset $zoneOffset,
-        public readonly int $timestamp,
+        private readonly int $tsSecInt,
         public readonly int $nanoOfSecond,
     ) {}
 
     public function add(Duration $duration): self
     {
         // TODO: Fix fraction of a second
-        $legacy = $this->legacy->add($duration->toLegacyInterval());
+        $legacy = $this->legacySec->add($duration->toLegacyInterval());
         return new self($this->zoneOffset, $legacy->getTimestamp(), $this->nanoOfSecond);
     }
 
@@ -54,7 +56,7 @@ final class ZonedDateTime implements Date, Time, Zoned {
 
     public function moveToZone(ZoneOffset $zone): self
     {
-        return new self($zone, $this->timestamp, $this->nanoOfSecond);
+        return new self($zone, $this->tsSecInt, $this->nanoOfSecond);
     }
 
     public function withZone(ZoneOffset $zone): self
@@ -85,7 +87,7 @@ final class ZonedDateTime implements Date, Time, Zoned {
     /** @return array{int, int<0,999999999>} */
     public function toUnixTimestampTuple(): array
     {
-        return [$this->legacy->getTimestamp(), $this->nanoOfSecond];
+        return [$this->legacySec->getTimestamp(), $this->nanoOfSecond];
     }
 
     public static function fromNow(ZoneOffset $zoneOffset, Clock $clock = new Clock()): self
