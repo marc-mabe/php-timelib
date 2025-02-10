@@ -16,7 +16,10 @@ final class Moment implements Date, Time {
     }
 
     public bool $isLeapYear {
-        get => (bool)$this->legacySec->format('L');
+        get {
+            $year = $this->year;
+            return $year % 4 === 0 && ($year % 100 !== 0 || $year % 400 === 0);
+        }
     }
 
     public Month $month {
