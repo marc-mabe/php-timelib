@@ -7,7 +7,7 @@ final class LocalDate implements Date {
     public bool $isLeapYear { get => (bool)$this->dt->format('L'); }
     public Month $month { get => Month::from((int)$this->dt->format('m')); }
     public int $dayOfMonth { get => (int)$this->dt->format('d'); }
-    public int $dayOfYear  { get => (int)$this->dt->format('z'); }
+    public int $dayOfYear  { get => ((int)$this->dt->format('z') + 1); }
 
     private function __construct(
         private readonly \DateTimeImmutable $dt,
@@ -24,6 +24,7 @@ final class LocalDate implements Date {
     }
 
     public static function fromYd(int $year, int $dayOfYear): self {
-        return new self(\DateTimeImmutable::createFromFormat('Y-z', "{$year}-{$dayOfYear}", new \DateTimeZone('+00:00')));
+        $z = $dayOfYear - 1;
+        return new self(\DateTimeImmutable::createFromFormat('Y-z', "{$year}-{$z}", new \DateTimeZone('+00:00')));
     }
 }

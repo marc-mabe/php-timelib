@@ -7,7 +7,7 @@ final class LocalDateTime implements Date, Time {
     public bool $isLeapYear { get => (bool)$this->dt->format('L'); }
     public Month $month { get => Month::from((int)$this->dt->format('m')); }
     public int $dayOfMonth { get => (int)$this->dt->format('d'); }
-    public int $dayOfYear  { get => (int)$this->dt->format('z'); }
+    public int $dayOfYear  { get => ((int)$this->dt->format('z') + 1); }
     public int $hour { get => (int)$this->dt->format('H'); }
     public int $minute  { get => (int)$this->dt->format('i'); }
     public int $second  { get => (int)$this->dt->format('s'); }

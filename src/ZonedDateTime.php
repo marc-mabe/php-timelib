@@ -119,13 +119,14 @@ final class ZonedDateTime implements Date, Time, Zoned {
         int $second = 0,
         int $nanoOfSecond = 0,
     ): self {
-        $M = $month instanceof Month ? $month->value : $month;
-        $m = str_pad($minute, 2, '0', STR_PAD_LEFT);
+        $n = $month instanceof Month ? $month->value : $month;
+        $H = str_pad($hour, 2, '0', STR_PAD_LEFT);
+        $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
         $s = str_pad($second, 2, '0', STR_PAD_LEFT);
 
         $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-n-j G:i:s',
-            "{$year}-{$M}-{$dayOfMonth} {$hour}:{$m}:{$s}",
+            'Y-n-j H:i:s',
+            "{$year}-{$n}-{$dayOfMonth} {$H}:{$i}:{$s}",
             $zoneOffset->toLegacyTz(),
         );
 
@@ -141,12 +142,14 @@ final class ZonedDateTime implements Date, Time, Zoned {
         int $second = 0,
         int $nanoOfSecond = 0,
     ): self {
-        $m = str_pad($minute, 2, '0', STR_PAD_LEFT);
+        $z = $dayOfYear -1;
+        $H = str_pad($hour, 2, '0', STR_PAD_LEFT);
+        $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
         $s = str_pad($second, 2, '0', STR_PAD_LEFT);
 
         $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-z G:i:s',
-            "{$year}-{$dayOfYear} {$hour}:{$m}:{$s}",
+            'Y-z H:i:s',
+            "{$year}-{$z} {$H}:{$i}:{$s}",
             $zoneOffset->toLegacyTz(),
         );
 
@@ -173,12 +176,15 @@ final class ZonedDateTime implements Date, Time, Zoned {
     public static function fromDateTime(ZoneOffset $zoneOffset, Date $date, ?Time $time = null): self
     {
         $time ??= LocalTime::fromHms(0, 0, 0);
-        $m = str_pad($time->minute, 2, '0', STR_PAD_LEFT);
+
+        $z = $date->dayOfYear - 1;
+        $H = str_pad($time->hour, 2, '0', STR_PAD_LEFT);
+        $i = str_pad($time->minute, 2, '0', STR_PAD_LEFT);
         $s = str_pad($time->second, 2, '0', STR_PAD_LEFT);
 
         $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-z G:i:s',
-            "{$date->year}-{$date->dayOfYear} {$time->hour}:{$m}:{$s}",
+            'Y-z H:i:s',
+            "{$date->year}-{$z} {$H}:{$i}:{$s}",
             $zoneOffset->toLegacyTz(),
         );
 

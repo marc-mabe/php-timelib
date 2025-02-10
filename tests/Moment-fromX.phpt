@@ -5,6 +5,9 @@ Moment::fromXXX
 
 include __DIR__ . '/include.php';
 
+$dateEpoch = \dt\LocalDate::fromYmd(1970, 1, 1);
+$timeZero  = \dt\LocalTime::fromHms(0, 0, 0);
+
 echo "Moment::fromUnixTimestamp\n";
 
 echo "  fromUnixTimestamp(1738599906)\n";
@@ -79,6 +82,11 @@ echo '    ' . stringifyMoment(\dt\Moment::fromYmd(1970, 1, 1)) . "\n";
 echo "  fromYmd(0, 1, 1)\n";
 echo '    ' . stringifyMoment(\dt\Moment::fromYmd(0, 1, 1)) . "\n";
 
+echo "Moment::fromDateTime\n";
+
+echo "  fromDateTime(" . stringifyLocalDate($dateEpoch) . ", " . stringifyLocalTime($timeZero) . ")\n";
+echo '    ' . stringifyMoment(\dt\Moment::fromDateTime($dateEpoch, $timeZero)) . "\n";
+
 --EXPECT--
 Moment::fromUnixTimestamp
   fromUnixTimestamp(1738599906)
@@ -128,3 +136,6 @@ Moment::fromYmd
     Moment('1970-01-01 00:00:00', 0, 0)
   fromYmd(0, 1, 1)
     Moment('0-01-01 00:00:00', -62167219200, 0)
+Moment::fromDateTime
+  fromDateTime(LocalDate('1970-01-01'), LocalTime('00:00:00'))
+    Moment('1970-01-01 00:00:00', 0, 0)
