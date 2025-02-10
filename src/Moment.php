@@ -2,13 +2,10 @@
 
 namespace dt;
 
-use DateTimeImmutable;
-
 final class Moment implements Date, Time {
     private ?\DateTimeImmutable $_legacySec = null;
     private \DateTimeImmutable $legacySec {
-        get => $this->_legacySec
-            ??= \DateTimeImmutable::createFromTimestamp($this->tsSec);
+        get => $this->_legacySec ??= \DateTimeImmutable::createFromTimestamp($this->tsSec);
     }
 
     public int $year {
@@ -89,7 +86,7 @@ final class Moment implements Date, Time {
             ->withMicroseconds(0)
             ->withNanoseconds(0);
 
-        $s = DateTimeImmutable::createFromTimestamp($this->tsSec)
+        $s = $this->legacySec
             ->add($durationNoFractions->toLegacyInterval())
             ->getTimestamp();
 
@@ -131,6 +128,11 @@ final class Moment implements Date, Time {
     public function withDayOfMonth(int $dayOfMonth): self
     {
         return self::fromYmd($this->year, $this->month, $dayOfMonth, $this->hour, $this->minute, $this->second, $this->nanoOfSecond);
+    }
+
+    public function withDayOfYear(int $dayOfYear): self
+    {
+        return self::fromYd($this->year, $dayOfYear, $this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
     public function withHour(int $hour): self
@@ -209,8 +211,6 @@ final class Moment implements Date, Time {
 
     /**
      * Convert to current unix timestamp in defined unit
-     *
-     * TODO: Detect Integer Overflow
      *
      * @return int|float
      */
