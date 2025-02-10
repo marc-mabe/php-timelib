@@ -59,7 +59,7 @@ echo '    ' . stringifyMoment(\dt\Moment::fromUnixTimestampTuple([-1738599906, 9
 
 echo "Moment::fromYd\n";
 
-echo "  fromYd(2025, 34)\n";
+echo "  fromYd(2025, 34, 16, 25, 6, 987654321)\n";
 echo '    ' . stringifyMoment(\dt\Moment::fromYd(2025, 34, 16, 25, 6, 987654321)) . "\n";
 
 echo "  fromYd(1970, 1)\n";
@@ -67,6 +67,17 @@ echo '    ' . stringifyMoment(\dt\Moment::fromYd(1970, 1)) . "\n";
 
 echo "  fromYd(0, 1)\n";
 echo '    ' . stringifyMoment(\dt\Moment::fromYd(0, 1)) . "\n";
+
+echo "Moment::fromYmd\n";
+
+echo "  fromYmd(2025, 2, 3, 16, 25, 6, 987654321)\n";
+echo '    ' . stringifyMoment(\dt\Moment::fromYmd(2025, 2, 3, 16, 25, 6, 987654321)) . "\n";
+
+echo "  fromYmd(1970, 1, 1)\n";
+echo '    ' . stringifyMoment(\dt\Moment::fromYmd(1970, 1, 1)) . "\n";
+
+echo "  fromYmd(0, 1, 1)\n";
+echo '    ' . stringifyMoment(\dt\Moment::fromYmd(0, 1, 1)) . "\n";
 
 --EXPECT--
 Moment::fromUnixTimestamp
@@ -104,9 +115,16 @@ Moment::fromUnixTimestampTuple
   fromUnixTimestampTuple([-1738599906, 987654])
     Moment('1914-11-28 07:34:54.000987654', -1738599906, 987654)
 Moment::fromYd
-  fromYd(2025, 34)
+  fromYd(2025, 34, 16, 25, 6, 987654321)
     Moment('2025-02-03 16:25:06.987654321', 1738599906, 987654321)
   fromYd(1970, 1)
     Moment('1970-01-01 00:00:00', 0, 0)
   fromYd(0, 1)
+    Moment('0-01-01 00:00:00', -62167219200, 0)
+Moment::fromYmd
+  fromYmd(2025, 2, 3, 16, 25, 6, 987654321)
+    Moment('2025-02-03 16:25:06.987654321', 1738599906, 987654321)
+  fromYmd(1970, 1, 1)
+    Moment('1970-01-01 00:00:00', 0, 0)
+  fromYmd(0, 1, 1)
     Moment('0-01-01 00:00:00', -62167219200, 0)
