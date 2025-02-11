@@ -1,6 +1,6 @@
 <?php
 
-namespace dt;
+namespace time;
 
 enum Month:int {
     case January = 1;

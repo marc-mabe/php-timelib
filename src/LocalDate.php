@@ -1,6 +1,6 @@
 <?php
 
-namespace dt;
+namespace time;
 
 final class LocalDate implements Date {
     public int $year { get => (int)$this->dt->format('Y'); }

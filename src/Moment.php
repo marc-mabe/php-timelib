@@ -1,6 +1,6 @@
 <?php
 
-namespace dt;
+namespace time;
 
 final class Moment implements Date, Time {
     private ?\DateTimeImmutable $_legacySec = null;

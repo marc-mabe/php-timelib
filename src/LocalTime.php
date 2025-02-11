@@ -1,6 +1,6 @@
 <?php
 
-namespace dt;
+namespace time;
 
 final class LocalTime implements Time {
     public int $hour {

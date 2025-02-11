@@ -5,152 +5,152 @@ Moment::fromXXX
 
 include __DIR__ . '/include.php';
 
-$zoneUtc    = \dt\ZoneOffset::fromIdentifier('UTC');
-$zoneZero   = \dt\ZoneOffset::fromIdentifier('+00:00');
-$zoneBerlin = \dt\ZoneOffset::fromIdentifier('Europe/Berlin');
-$dateZero   = \dt\LocalDate::fromYmd(0, 1, 1);
-$dateEpoch  = \dt\LocalDate::fromYmd(1970, 1, 1);
-$dateUsual  = \dt\LocalDate::fromYmd(2025, 2, 3);
-$timeZero   = \dt\LocalTime::fromHms(0, 0, 0);
-$timeUsual  = \dt\LocalTime::fromHms(16, 25, 6, 987654321);
-$dtZero     = \dt\LocalDateTime::fromDateTime($dateZero, $timeZero);
-$dtEpoch    = \dt\LocalDateTime::fromDateTime($dateEpoch, $timeZero);
-$dtUsual    = \dt\LocalDateTime::fromDateTime($dateUsual, $timeUsual);
-$zdtZero    = \dt\ZonedDateTime::fromDateTime($zoneZero, $dateZero, $timeZero);
-$zdtEpoch   = \dt\ZonedDateTime::fromDateTime($zoneUtc, $dateEpoch, $timeZero);
-$zdtUsual   = \dt\ZonedDateTime::fromDateTime($zoneBerlin, $dateUsual, $timeUsual);
+$zoneUtc    = \time\ZoneOffset::fromIdentifier('UTC');
+$zoneZero   = \time\ZoneOffset::fromIdentifier('+00:00');
+$zoneBerlin = \time\ZoneOffset::fromIdentifier('Europe/Berlin');
+$dateZero   = \time\LocalDate::fromYmd(0, 1, 1);
+$dateEpoch  = \time\LocalDate::fromYmd(1970, 1, 1);
+$dateUsual  = \time\LocalDate::fromYmd(2025, 2, 3);
+$timeZero   = \time\LocalTime::fromHms(0, 0, 0);
+$timeUsual  = \time\LocalTime::fromHms(16, 25, 6, 987654321);
+$dtZero     = \time\LocalDateTime::fromDateTime($dateZero, $timeZero);
+$dtEpoch    = \time\LocalDateTime::fromDateTime($dateEpoch, $timeZero);
+$dtUsual    = \time\LocalDateTime::fromDateTime($dateUsual, $timeUsual);
+$zdtZero    = \time\ZonedDateTime::fromDateTime($zoneZero, $dateZero, $timeZero);
+$zdtEpoch   = \time\ZonedDateTime::fromDateTime($zoneUtc, $dateEpoch, $timeZero);
+$zdtUsual   = \time\ZonedDateTime::fromDateTime($zoneBerlin, $dateUsual, $timeUsual);
 
 echo "Moment::fromUnixTimestamp\n";
 
 echo "  fromUnixTimestamp(1738599906)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(1738599906)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(1738599906)) . "\n";
 
 echo "  fromUnixTimestamp(1738599906.987654321)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(1738599906.987654321)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(1738599906.987654321)) . "\n";
 
 echo "  fromUnixTimestamp(0)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(0)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(0)) . "\n";
 
 echo "  fromUnixTimestamp(0.987654321)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(0.987654321)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(0.987654321)) . "\n";
 
 echo "  fromUnixTimestamp(-1)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(-1)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(-1)) . "\n";
 
 echo "  fromUnixTimestamp(-1.987654321)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(-1.987654321)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(-1.987654321)) . "\n";
 
 echo "  fromUnixTimestamp(-1738599906)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(-1738599906)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(-1738599906)) . "\n";
 
 echo "  fromUnixTimestamp(-1738599906.987654321)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(-1738599906.987654321)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(-1738599906.987654321)) . "\n";
 
 echo "  fromUnixTimestamp(1738599906, TimeUnit::Second)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(1738599906, \dt\TimeUnit::Second)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(1738599906, \time\TimeUnit::Second)) . "\n";
 
 echo "  fromUnixTimestamp(1738599906987, TimeUnit::Millisecond)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(1738599906987, \dt\TimeUnit::Millisecond)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(1738599906987, \time\TimeUnit::Millisecond)) . "\n";
 
 echo "  fromUnixTimestamp(1738599906987654, TimeUnit::Microsecond)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(1738599906987654, \dt\TimeUnit::Microsecond)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(1738599906987654, \time\TimeUnit::Microsecond)) . "\n";
 
 echo "  fromUnixTimestamp(1738599906987654321, TimeUnit::Nanosecond)\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestamp(1738599906987654321, \dt\TimeUnit::Nanosecond)) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestamp(1738599906987654321, \time\TimeUnit::Nanosecond)) . "\n";
 
 echo "Moment::fromUnixTimestampTuple\n";
 
 echo "  fromUnixTimestampTuple([1738599906, 123456789])\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestampTuple([1738599906, 123456789])) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestampTuple([1738599906, 123456789])) . "\n";
 
 echo "  fromUnixTimestampTuple([0, 0])\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestampTuple([0, 0])) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestampTuple([0, 0])) . "\n";
 
 echo "  fromUnixTimestampTuple([-1, 1])\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestampTuple([-1, 1])) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestampTuple([-1, 1])) . "\n";
 
 echo "  fromUnixTimestampTuple([-1738599906, 987654])\n";
-echo '    ' . stringify(\dt\Moment::fromUnixTimestampTuple([-1738599906, 987654])) . "\n";
+echo '    ' . stringify(\time\Moment::fromUnixTimestampTuple([-1738599906, 987654])) . "\n";
 
 echo "Moment::fromYd\n";
 
 echo "  fromYd(2025, 34, 16, 25, 6, 987654321)\n";
-echo '    ' . stringify(\dt\Moment::fromYd(2025, 34, 16, 25, 6, 987654321)) . "\n";
+echo '    ' . stringify(\time\Moment::fromYd(2025, 34, 16, 25, 6, 987654321)) . "\n";
 
 echo "  fromYd(1970, 1)\n";
-echo '    ' . stringify(\dt\Moment::fromYd(1970, 1)) . "\n";
+echo '    ' . stringify(\time\Moment::fromYd(1970, 1)) . "\n";
 
 echo "  fromYd(0, 1)\n";
-echo '    ' . stringify(\dt\Moment::fromYd(0, 1)) . "\n";
+echo '    ' . stringify(\time\Moment::fromYd(0, 1)) . "\n";
 
 echo "Moment::fromYmd\n";
 
 echo "  fromYmd(2025, 2, 3, 16, 25, 6, 987654321)\n";
-echo '    ' . stringify(\dt\Moment::fromYmd(2025, 2, 3, 16, 25, 6, 987654321)) . "\n";
+echo '    ' . stringify(\time\Moment::fromYmd(2025, 2, 3, 16, 25, 6, 987654321)) . "\n";
 
 echo "  fromYmd(1970, 1, 1)\n";
-echo '    ' . stringify(\dt\Moment::fromYmd(1970, 1, 1)) . "\n";
+echo '    ' . stringify(\time\Moment::fromYmd(1970, 1, 1)) . "\n";
 
 echo "  fromYmd(0, 1, 1)\n";
-echo '    ' . stringify(\dt\Moment::fromYmd(0, 1, 1)) . "\n";
+echo '    ' . stringify(\time\Moment::fromYmd(0, 1, 1)) . "\n";
 
 echo "Moment::fromDateTime\n";
 
 echo "  fromDateTime(" . stringify($dateUsual) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dateUsual)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dateUsual)) . "\n";
 
 echo "  fromDateTime(" . stringifyLocalDate($dateEpoch) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dateEpoch)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dateEpoch)) . "\n";
 
 echo "  fromDateTime(" . stringify($dateZero) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dateZero)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dateZero)) . "\n";
 
 echo "  fromDateTime(" . stringify($dateUsual) . ", " . stringify($timeUsual) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dateUsual, $timeUsual)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dateUsual, $timeUsual)) . "\n";
 
 echo "  fromDateTime(" . stringify($dateEpoch) . ", " . stringify($timeZero) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dateEpoch, $timeZero)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dateEpoch, $timeZero)) . "\n";
 
 echo "  fromDateTime(" . stringify($dateZero) . ", " . stringify($timeZero) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dateZero, $timeZero)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dateZero, $timeZero)) . "\n";
 
 echo "  fromDateTime(" . stringify($dtUsual) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dtUsual)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dtUsual)) . "\n";
 
 echo "  fromDateTime(" . stringify($dtUsual) . ", " . stringify($dtUsual) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dtUsual, $dtUsual)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dtUsual, $dtUsual)) . "\n";
 
 echo "  fromDateTime(" . stringify($dtEpoch) . ", " . stringify($dtEpoch) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dtEpoch, $dtEpoch)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dtEpoch, $dtEpoch)) . "\n";
 
 echo "  fromDateTime(" . stringify($dtZero) . ", " . stringify($dtZero) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dtZero, $dtZero)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dtZero, $dtZero)) . "\n";
 
 echo "  fromDateTime(" . stringify($dtUsual) . ", " . stringify($dtZero) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dtUsual, $dtZero)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dtUsual, $dtZero)) . "\n";
 
 echo "  fromDateTime(" . stringify($dtZero) . ", " . stringify($dtUsual) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dtZero, $dtUsual)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dtZero, $dtUsual)) . "\n";
 
 echo "  fromDateTime(" . stringify($dateUsual) . ", " . stringify($timeUsual) . ", " . stringify($zoneBerlin) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dateUsual, $timeUsual, $zoneBerlin)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dateUsual, $timeUsual, $zoneBerlin)) . "\n";
 
 echo "  fromDateTime(" . stringify($dateUsual) . ", " . stringify($timeUsual) . ", " . stringify($zoneUtc) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dateUsual, $timeUsual, $zoneUtc)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dateUsual, $timeUsual, $zoneUtc)) . "\n";
 
 echo "  fromDateTime(" . stringify($dateZero) . ", " . stringify($timeZero) . ", " . stringify($zoneZero) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromDateTime($dateZero, $timeZero, $zoneZero)) . "\n";
+echo '    ' . stringify(\time\Moment::fromDateTime($dateZero, $timeZero, $zoneZero)) . "\n";
 
 echo "Moment::fromZonedDateTime\n";
 
 echo "  fromZonedDateTime(" . stringify($zdtUsual) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromZonedDateTime($zdtUsual)) . "\n";
+echo '    ' . stringify(\time\Moment::fromZonedDateTime($zdtUsual)) . "\n";
 
 echo "  fromZonedDateTime(" . stringify($zdtEpoch) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromZonedDateTime($zdtEpoch)) . "\n";
+echo '    ' . stringify(\time\Moment::fromZonedDateTime($zdtEpoch)) . "\n";
 
 echo "  fromZonedDateTime(" . stringify($zdtZero) . ")\n";
-echo '    ' . stringify(\dt\Moment::fromZonedDateTime($zdtZero)) . "\n";
+echo '    ' . stringify(\time\Moment::fromZonedDateTime($zdtZero)) . "\n";
 
 --EXPECT--
 Moment::fromUnixTimestamp

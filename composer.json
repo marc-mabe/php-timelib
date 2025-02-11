@@ -21,12 +21,12 @@
   },
   "autoload": {
     "psr-4": {
-      "dt\\": "src/"
+      "time\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "dt\\Tests\\": "tests/"
+      "time\\Tests\\": "tests/"
     }
   }
 }

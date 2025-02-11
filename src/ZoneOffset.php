@@ -1,6 +1,6 @@
 <?php
 
-namespace dt;
+namespace time;
 
 final class ZoneOffset {
     private static self $default;

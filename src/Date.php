@@ -1,6 +1,6 @@
 <?php
 
-namespace dt;
+namespace time;
 
 interface Date {
     public int $year { get; }

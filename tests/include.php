@@ -2,38 +2,38 @@
 
 include __DIR__ . '/../vendor/autoload.php';
 
-function stringifyMoment(\dt\Moment $moment) {
+function stringifyMoment(\time\Moment $moment) {
     $tuple = $moment->toUnixTimestampTuple();
     return "Moment('{$moment->format('Y-m-d H:i:sf')}', {$tuple[0]}, {$tuple[1]})";
 }
 
-function stringifyLocalDate(\dt\LocalDate $date) {
+function stringifyLocalDate(\time\LocalDate $date) {
     return "LocalDate('{$date->format('Y-m-d')}')";
 }
 
-function stringifyLocalTime(\dt\LocalTime $time) {
+function stringifyLocalTime(\time\LocalTime $time) {
     return "LocalTime('{$time->format('H:i:sf')}')";
 }
 
-function stringifyLocalDateTime(\dt\LocalDateTime $dt) {
+function stringifyLocalDateTime(\time\LocalDateTime $dt) {
     return "LocalDateTime('{$dt->format('Y-m-d H:i:sf')}')";
 }
 
-function stringifyZonedDateTime(\dt\ZonedDateTime $dt) {
+function stringifyZonedDateTime(\time\ZonedDateTime $dt) {
     return "ZonedDateTime('{$dt->format('Y-m-d H:i:sf P [e]')}')";
 }
 
-function stringifyZoneOffset(\dt\ZoneOffset $zoneOffset) {
+function stringifyZoneOffset(\time\ZoneOffset $zoneOffset) {
     return "ZoneOffset('{$zoneOffset->format('e')}')";
 }
 
-function stringify(\dt\Moment|\dt\LocalDate|\dt\LocalTime|\dt\LocalDateTime|\dt\ZonedDateTime|\dt\ZoneOffset $t) {
+function stringify(\time\Moment|\time\LocalDate|\time\LocalTime|\time\LocalDateTime|\time\ZonedDateTime|\time\ZoneOffset $t) {
     return match (true) {
-        $t instanceof \dt\Moment => stringifyMoment($t),
-        $t instanceof \dt\LocalDate => stringifyLocalDate($t),
-        $t instanceof \dt\LocalTime => stringifyLocalTime($t),
-        $t instanceof \dt\LocalDateTime => stringifyLocalDateTime($t),
-        $t instanceof \dt\ZonedDateTime => stringifyZonedDateTime($t),
-        $t instanceof \dt\ZoneOffset => stringifyZoneOffset($t),
+        $t instanceof \time\Moment => stringifyMoment($t),
+        $t instanceof \time\LocalDate => stringifyLocalDate($t),
+        $t instanceof \time\LocalTime => stringifyLocalTime($t),
+        $t instanceof \time\LocalDateTime => stringifyLocalDateTime($t),
+        $t instanceof \time\ZonedDateTime => stringifyZonedDateTime($t),
+        $t instanceof \time\ZoneOffset => stringifyZoneOffset($t),
     };
 }

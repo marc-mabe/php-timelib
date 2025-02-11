@@ -1,6 +1,6 @@
 <?php
 
-namespace dt;
+namespace time;
 
 final class LocalDateTime implements Date, Time {
     public int $year {

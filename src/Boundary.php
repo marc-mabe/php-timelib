@@ -1,6 +1,6 @@
 <?php
 
-namespace dt;
+namespace time;
 
 enum Boundary
 {

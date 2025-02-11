@@ -5,21 +5,21 @@ DateTime.fromDateTime
 
 include __DIR__ . '/include.php';
 
-$date = dt\LocalDate::fromYmd(2000, dt\Month::January, 1);
-$time = dt\LocalTime::fromHms(1, 2, 3, 123456);
-$ldt  = dt\LocalDateTime::fromDateTime($date, $time);
-$zone = dt\ZoneOffset::fromIdentifier('UTC');
+$date = time\LocalDate::fromYmd(2000, time\Month::January, 1);
+$time = time\LocalTime::fromHms(1, 2, 3, 123456);
+$ldt  = time\LocalDateTime::fromDateTime($date, $time);
+$zone = time\ZoneOffset::fromIdentifier('UTC');
 
 echo "ZonedDateTime::fromDateTime(ZoneOffset({$zone->format('e')}), LocalDate({$date->format('Y-m-d')}), LocalTime({$time->format('H:i:s.u')}))\n";
-$dt   = dt\ZonedDateTime::fromDateTime($zone, $date, $time);
+$dt   = time\ZonedDateTime::fromDateTime($zone, $date, $time);
 var_dump($dt->format('Y-m-d H:i:s.uP[e]'));
 
 echo "ZonedDateTime::fromDateTime(ZoneOffset({$zone->format('e')}), LocalDateTime({$ldt->format('Y-m-d H:i:s.u')}), LocalDateTime({$ldt->format('Y-m-d H:i:s.u')}))\n";
-$dt   = dt\ZonedDateTime::fromDateTime($zone, $ldt, $ldt);
+$dt   = time\ZonedDateTime::fromDateTime($zone, $ldt, $ldt);
 var_dump($dt->format('Y-m-d H:i:s.uP[e]'));
 
 echo "ZonedDateTime::fromDateTime(ZoneOffset({$zone->format('e')}), LocalDateTime({$ldt->format('Y-m-d H:i:s.u')}))\n";
-$dt   = dt\ZonedDateTime::fromDateTime($zone, $ldt);
+$dt   = time\ZonedDateTime::fromDateTime($zone, $ldt);
 var_dump($dt->format('Y-m-d H:i:s.uP[e]'));
 
 --EXPECT--

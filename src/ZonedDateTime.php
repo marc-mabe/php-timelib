@@ -1,6 +1,6 @@
 <?php
 
-namespace dt;
+namespace time;
 
 final class ZonedDateTime implements Date, Time, Zoned
 {
