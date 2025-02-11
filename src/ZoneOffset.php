@@ -13,14 +13,6 @@ final class ZoneOffset {
     /** The time-offset if this is a fixed time-zone like UTC, GMT, CET etc. */
     public ?Duration $offset { get => null; } // TODO
 
-    /** The linked canonical time-zone if this is an alias */
-    public ?ZoneOffset $link { get => null; } // TODO
-
-    // The zone was canonical in a previous version of the database.
-    // Historical data for such zones is still preserved in the source code,
-    // but it is not included when compiling the database with standard options.
-    public bool $isDead  { get => false; } // TODO
-
     private function __construct(
         private readonly \DateTimeZone $legacy,
     ) {}
@@ -49,7 +41,8 @@ final class ZoneOffset {
 
         $identifier = $duration->isNegative ? '-' : '+'
             . str_pad((string)$duration->hours, '0', STR_PAD_LEFT)
-            . ':' . str_pad((string)$duration->minutes, '0', STR_PAD_LEFT);
+            . ':' . str_pad((string)$duration->minutes, '0', STR_PAD_LEFT)
+            . ($duration->seconds ? ':' . str_pad((string)$duration->minutes, '0', STR_PAD_LEFT) : '');
         return new self(new \DateTimeZone($identifier));
     }
 
