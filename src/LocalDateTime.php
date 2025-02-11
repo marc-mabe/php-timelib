@@ -3,30 +3,67 @@
 namespace dt;
 
 final class LocalDateTime implements Date, Time {
-    public int $year { get => (int)$this->dt->format('Y'); }
-    public bool $isLeapYear { get => (bool)$this->dt->format('L'); }
-    public Month $month { get => Month::from((int)$this->dt->format('m')); }
-    public int $dayOfMonth { get => (int)$this->dt->format('d'); }
-    public int $dayOfYear  { get => ((int)$this->dt->format('z') + 1); }
-    public int $hour { get => (int)$this->dt->format('H'); }
-    public int $minute  { get => (int)$this->dt->format('i'); }
-    public int $second  { get => (int)$this->dt->format('s'); }
-    public int $milliOfSecond  { get => (int)($this->dt->getMicrosecond() / 1000); }
-    public int $microOfSecond  { get => $this->dt->getMicrosecond(); }
-    public int $nanoOfSecond  { get => $this->dt->getMicrosecond() * 1000; }
-    public LocalDate $date { get => LocalDate::fromYd($this->year, $this->dayOfYear); }
-    public LocalTime $time { get => LocalTime::fromHms($this->hour, $this->minute, $this->second); }
+    public int $year {
+        get => (int)$this->legacySec->format('Y');
+    }
+
+    public bool $isLeapYear {
+        get => (bool)$this->legacySec->format('L');
+    }
+
+    public Month $month {
+        get => Month::from((int)$this->legacySec->format('m'));
+    }
+
+    public int $dayOfMonth {
+        get => (int)$this->legacySec->format('d');
+    }
+
+    public int $dayOfYear  {
+        get => ((int)$this->legacySec->format('z') + 1);
+    }
+
+    public int $hour {
+        get => (int)$this->legacySec->format('H');
+    }
+
+    public int $minute  {
+        get => (int)$this->legacySec->format('i');
+    }
+
+    public int $second  {
+        get => (int)$this->legacySec->format('s');
+    }
+
+    public int $milliOfSecond {
+        get => \intdiv($this->nanoOfSecond, 1_000_000);
+    }
+
+    public int $microOfSecond {
+        get => \intdiv($this->nanoOfSecond, 1_000);
+    }
+
+    public LocalDate $date {
+        get => LocalDate::fromYd($this->year, $this->dayOfYear);
+    }
+
+    public LocalTime $time {
+        get => LocalTime::fromHms($this->hour, $this->minute, $this->second);
+    }
 
     private function __construct(
-        private readonly \DateTimeImmutable $dt,
+        private readonly \DateTimeImmutable $legacySec,
+        public readonly int $nanoOfSecond,
     ) {}
 
     public function add(Duration $duration): self {
-        return new self($this->dt->add($duration->toLegacyInterval()));
+        // FIXME: handle fraction of second
+        return new self($this->legacySec->add($duration->toLegacyInterval()), 0);
     }
 
     public function sub(Duration $duration): self {
-        return new self($this->dt->sub($duration->toLegacyInterval()));
+        // FIXME: handle fraction of second
+        return new self($this->legacySec->sub($duration->toLegacyInterval()), 0);
     }
 
     public function format(DateTimeFormatter|string $format): string {
@@ -35,7 +72,7 @@ final class LocalDateTime implements Date, Time {
     }
 
     public function toUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $fractions = false): int|float {
-        $s = $this->dt->getTimestamp();
+        $s = $this->legacySec->getTimestamp();
         $ns = $this->nanoOfSecond;
         $value = match ($unit) {
             TimeUnit::Second => $s,
@@ -56,23 +93,19 @@ final class LocalDateTime implements Date, Time {
     }
 
     public static function fromNow(Clock $clock = new Clock()): self {
-        $ts = $clock->takeUnixTimestamp(TimeUnit::Second, fractions: true);
-        return new self(\DateTimeImmutable::createFromTimestamp($ts));
-    }
-
-    public static function fromUnixTimestamp(int|float $timestamp, TimeUnit $unit = TimeUnit::Second): self {
-        return new self(\DateTimeImmutable::createFromTimestamp($timestamp));
+        [$ts, $ns] = $clock->takeUnixTimestampTuple();
+        return new self(\DateTimeImmutable::createFromTimestamp($ts), $ns);
     }
 
     public static function fromDateTime(Date $date, Time $time): self {
-        $m = str_pad($time->minute, 2, '0', STR_PAD_LEFT);
+        $z = $date->dayOfYear - 1;
+        $n = str_pad($time->minute, 2, '0', STR_PAD_LEFT);
         $s = str_pad($time->second, 2, '0', STR_PAD_LEFT);
-        $u = str_pad($time->microOfSecond, 6, '0', STR_PAD_LEFT);
         return new self(\DateTimeImmutable::createFromFormat(
-            'Y-n-j G:i:s.u',
-            "{$date->year}-{$date->month->value}-{$date->dayOfMonth} {$time->hour}:{$m}:{$s}.{$u}",
+            'Y-z G:i:s',
+            "{$date->year}-{$z} {$time->hour}:{$n}:{$s}",
             new \DateTimeZone('+00:00'),
-        ));
+        ), $time->nanoOfSecond);
     }
 
     public static function parse(DateTimeParser $parser): self {}

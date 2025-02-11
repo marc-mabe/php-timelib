@@ -3,15 +3,29 @@
 namespace dt;
 
 final class LocalTime implements Time {
-    public int $hour { get => (int)$this->dt->format('H'); }
-    public int $minute  { get => (int)$this->dt->format('i'); }
-    public int $second  { get => (int)$this->dt->format('s'); }
-    public int $milliOfSecond { get => (int)($this->dt->getMicrosecond() / 1000); }
-    public int $microOfSecond { get => $this->dt->getMicrosecond(); }
-    public int $nanoOfSecond  { get => $this->dt->getMicrosecond() * 1000; }
+    public int $hour {
+        get => (int)$this->legacySec->format('G');
+    }
+
+    public int $minute  {
+        get => (int)$this->legacySec->format('i');
+    }
+
+    public int $second  {
+        get => (int)$this->legacySec->format('s');
+    }
+
+    public int $milliOfSecond {
+        get => \intdiv($this->nanoOfSecond, 1_000_000);
+    }
+
+    public int $microOfSecond {
+        get => \intdiv($this->nanoOfSecond, 1_000);
+    }
 
     private function __construct(
-        private \DateTimeImmutable $dt,
+        private \DateTimeImmutable $legacySec,
+        public readonly int $nanoOfSecond,
     ) {}
 
     public function format(DateTimeFormatter|string $format): string {
@@ -20,19 +34,18 @@ final class LocalTime implements Time {
     }
 
     public static function fromHms(
-        int|float $hour,
-        null|int|float $minute = null,
-        null|int|float $second = null,
-        null|int|float $nanoOfSecond = null
+        int $hour,
+        int $minute,
+        int $second,
+        int $nanoOfSecond = 0
     ): self {
-        $m = str_pad($minute, 2, '0', STR_PAD_LEFT);
+        $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
         $s = str_pad($second, 2, '0', STR_PAD_LEFT);
-        $u = str_pad((int)($nanoOfSecond / 1000), 6, '0', STR_PAD_LEFT);
         return new self(\DateTimeImmutable::createFromFormat(
-            'Y-n-j G:i:s.u',
-            "1970-1-1 $hour:$m:$s.$u",
+            'Y-z G:i:s',
+            "1970-0 $hour:$i:$s",
             new \DateTimeZone('UTC'),
-        ));
+        ), $nanoOfSecond);
     }
 
     public static function fromTimeUnit(int|float $value, TimeUnit $unit): self {}

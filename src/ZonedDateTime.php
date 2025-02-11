@@ -120,13 +120,12 @@ final class ZonedDateTime implements Date, Time, Zoned {
         int $nanoOfSecond = 0,
     ): self {
         $n = $month instanceof Month ? $month->value : $month;
-        $H = str_pad($hour, 2, '0', STR_PAD_LEFT);
         $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
         $s = str_pad($second, 2, '0', STR_PAD_LEFT);
 
         $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-n-j H:i:s',
-            "{$year}-{$n}-{$dayOfMonth} {$H}:{$i}:{$s}",
+            'Y-n-j G:i:s',
+            "{$year}-{$n}-{$dayOfMonth} {$hour}:{$i}:{$s}",
             $zoneOffset->toLegacyTz(),
         );
 
@@ -143,13 +142,12 @@ final class ZonedDateTime implements Date, Time, Zoned {
         int $nanoOfSecond = 0,
     ): self {
         $z = $dayOfYear -1;
-        $H = str_pad($hour, 2, '0', STR_PAD_LEFT);
         $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
         $s = str_pad($second, 2, '0', STR_PAD_LEFT);
 
         $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-z H:i:s',
-            "{$year}-{$z} {$H}:{$i}:{$s}",
+            'Y-z G:i:s',
+            "{$year}-{$z} {$hour}:{$i}:{$s}",
             $zoneOffset->toLegacyTz(),
         );
 
@@ -178,13 +176,12 @@ final class ZonedDateTime implements Date, Time, Zoned {
         $time ??= LocalTime::fromHms(0, 0, 0);
 
         $z = $date->dayOfYear - 1;
-        $H = str_pad($time->hour, 2, '0', STR_PAD_LEFT);
         $i = str_pad($time->minute, 2, '0', STR_PAD_LEFT);
         $s = str_pad($time->second, 2, '0', STR_PAD_LEFT);
 
         $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-z H:i:s',
-            "{$date->year}-{$z} {$H}:{$i}:{$s}",
+            'Y-z G:i:s',
+            "{$date->year}-{$z} {$time->hour}:{$i}:{$s}",
             $zoneOffset->toLegacyTz(),
         );
 

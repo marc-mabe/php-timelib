@@ -19,12 +19,20 @@ final class LocalDate implements Date {
     }
 
     public static function fromYmd(int $year, Month|int $month, int $dayOfMonth): self {
-        $m = $month instanceof Month ? $month->value : $month;
-        return new self(new \DateTimeImmutable("{$year}-{$m}-{$dayOfMonth}", new \DateTimeZone('+00:00')));
+        $n = $month instanceof Month ? $month->value : $month;
+        return new self(\DateTimeImmutable::createFromFormat(
+            'Y-n-j',
+            "{$year}-{$n}-{$dayOfMonth}",
+            new \DateTimeZone('+00:00'),
+        ));
     }
 
     public static function fromYd(int $year, int $dayOfYear): self {
         $z = $dayOfYear - 1;
-        return new self(\DateTimeImmutable::createFromFormat('Y-z', "{$year}-{$z}", new \DateTimeZone('+00:00')));
+        return new self(\DateTimeImmutable::createFromFormat(
+            'Y-z',
+            "{$year}-{$z}",
+            new \DateTimeZone('+00:00'),
+        ));
     }
 }

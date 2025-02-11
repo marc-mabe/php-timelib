@@ -320,12 +320,11 @@ final class Moment implements Date, Time {
         int $nanoOfSecond = 0,
     ): self {
         $z = $dayOfYear - 1;
-        $H = str_pad($hour, 2, '0', STR_PAD_LEFT);
         $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
         $s = str_pad($second, 2, '0', STR_PAD_LEFT);
         $ts = \DateTime::createFromFormat(
-            'Y-z H:i:s',
-            "{$year}-{$z} {$H}:{$i}:{$s}"
+            'Y-z G:i:s',
+            "{$year}-{$z} {$hour}:{$i}:{$s}"
         )->getTimestamp();
 
         return new self($ts, $nanoOfSecond);
@@ -350,12 +349,11 @@ final class Moment implements Date, Time {
         int $nanoOfSecond = 0,
     ): self {
         $n = $month instanceof Month ? $month->value : $month;
-        $H = str_pad($hour, 2, '0', STR_PAD_LEFT);
         $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
         $s = str_pad($second, 2, '0', STR_PAD_LEFT);
         $ts = \DateTime::createFromFormat(
-            'Y-n-j H:i:s',
-            "{$year}-{$n}-{$dayOfMonth} {$H}:{$i}:{$s}"
+            'Y-n-j G:i:s',
+            "{$year}-{$n}-{$dayOfMonth} {$hour}:{$i}:{$s}"
         )->getTimestamp();
 
         return new self($ts, $nanoOfSecond);
