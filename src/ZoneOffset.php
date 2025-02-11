@@ -39,10 +39,15 @@ final class ZoneOffset {
             throw new \ValueError("A zone offset duration can contain time units only");
         }
 
-        $identifier = $duration->isNegative ? '-' : '+'
-            . str_pad((string)$duration->hours, '0', STR_PAD_LEFT)
-            . ':' . str_pad((string)$duration->minutes, '0', STR_PAD_LEFT)
-            . ($duration->seconds ? ':' . str_pad((string)$duration->minutes, '0', STR_PAD_LEFT) : '');
+        if ($duration->milliseconds || $duration->microseconds || $duration->nanoseconds) {
+            throw new \ValueError("A zone offset duration can not contain fractions of a second");
+        }
+
+        $standardized = $duration->standardizedTo(TimeUnit::Minute);
+        $identifier   = $standardized->isNegative ? '-' : '+'
+            . str_pad((string)$standardized->hours, '0', STR_PAD_LEFT)
+            . ':' . str_pad((string)$standardized->minutes, '0', STR_PAD_LEFT)
+            . ($standardized->seconds ? ':' . str_pad((string)$standardized->minutes, '0', STR_PAD_LEFT) : '');
         return new self(new \DateTimeZone($identifier));
     }
 

@@ -116,6 +116,160 @@ final class Duration {
         );
     }
 
+    /**
+     * Tests if this duration is standardized to the given time unit where
+     *  - each microsecond as 1000 nanoseconds
+     *  - each millisecond as 1000 microseconds
+     *  - each second has 1000 milliseconds
+     *  - each minute has 60 seconds
+     *  - each hour has 60 minutes
+     *  - each day has 24 hours
+     */
+    public function isStandardized(TimeUnit $unit): bool
+    {
+        $standardized = $this->nanoseconds < 1_000;
+        if (!$standardized || $unit === TimeUnit::Nanosecond) {
+            return $standardized;
+        }
+
+        $standardized = $this->microseconds < 1_000;
+        if (!$standardized || $unit === TimeUnit::Microsecond) {
+            return $standardized;
+        }
+
+        $standardized = $this->milliseconds < 1_000;
+        if (!$standardized || $unit === TimeUnit::Millisecond) {
+            return $standardized;
+        }
+
+        $standardized = $this->seconds < 60;
+        if (!$standardized || $unit === TimeUnit::Second) {
+            return $standardized;
+        }
+
+        $standardized = $this->minutes < 60;
+        if (!$standardized || $unit === TimeUnit::Minute) {
+            return $standardized;
+        }
+
+        $standardized = $this->hours < 24;
+        if (!$standardized || $unit === TimeUnit::Hour) {
+            return $standardized;
+        }
+
+        return true;
+    }
+
+    /**
+     * Creates a new duration standardized to the given time unit where
+     * - each microsecond as 1000 nanoseconds
+     * - each millisecond as 1000 microseconds
+     * - each second has 1000 milliseconds
+     * - each minute has 60 seconds
+     * - each hour has 60 minutes
+     * - each day has 24 hours
+     * - other parts of this duration are not touched
+     *
+     * Already standardized durations will return the same instance.
+     *
+     * @return self
+     */
+    public function standardizedTo(TimeUnit $unit): self
+    {
+        if ($this->isStandardized($unit)) {
+            return $this;
+        }
+
+        $ns = $this->nanoseconds;
+        $us = $this->microseconds;
+        if ($ns >= 1_000) {
+            $us += \floor($ns / 1_000);
+            $ns = $ns % 1_000;
+
+            if ($unit === TimeUnit::Nanosecond) {
+                return new Duration(
+                    isNegative: $this->isNegative,
+                    years: $this->years, months: $this->months, days: $this->days,
+                    hours: $this->hours, minutes: $this->minutes, seconds: $this->seconds,
+                    milliseconds: $this->milliseconds, microseconds: $us, nanoseconds: $ns,
+                );
+            }
+        }
+
+        $ms = $this->milliseconds;
+        if ($us >= 1_000) {
+            $ms += \floor($us / 1_000);
+            $us = $us % 1_000;
+
+            if ($unit === TimeUnit::Microsecond) {
+                return new Duration(
+                    isNegative: $this->isNegative,
+                    years: $this->years, months: $this->months, days: $this->days,
+                    hours: $this->hours, minutes: $this->minutes, seconds: $this->seconds,
+                    milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
+                );
+            }
+        }
+
+        $s = $this->seconds;
+        if ($ms >= 1_000) {
+            $s += \floor($ms / 1_000);
+            $ms = $ms % 1_000;
+
+            if ($unit === TimeUnit::Millisecond) {
+                return new Duration(
+                    isNegative: $this->isNegative,
+                    years: $this->years, months: $this->months, days: $this->days,
+                    hours: $this->hours, minutes: $this->minutes, seconds: $s,
+                    milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
+                );
+            }
+        }
+
+        $m = $this->minutes;
+        if ($s >= 60) {
+            $m += \floor($s / 60);
+            $s = $s % 60;
+
+            if ($unit === TimeUnit::Second) {
+                return new Duration(
+                    isNegative: $this->isNegative,
+                    years: $this->years, months: $this->months, days: $this->days,
+                    hours: $this->hours, minutes: $m, seconds: $s,
+                    milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
+                );
+            }
+        }
+
+        $h = $this->hours;
+        if ($m >= 60) {
+            $h += \floor($m / 60);
+            $m = $m % 60;
+
+            if ($unit === TimeUnit::Minute) {
+                return new Duration(
+                    isNegative: $this->isNegative,
+                    years: $this->years, months: $this->months, days: $this->days,
+                    hours: $h, minutes: $m, seconds: $s,
+                    milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
+                );
+            }
+        }
+
+        $d = $this->days;
+        if ($h >= 60) {
+            $d += \floor($h / 60);
+            $h = $h % 60;
+        }
+
+        return new Duration(
+            isNegative: $this->isNegative,
+            years: $this->years, months: $this->months, days: $d,
+            hours: $h, minutes: $m, seconds: $s,
+            milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
+        );
+    }
+
     public function withYears(int $years): self
     {
         return new self(
