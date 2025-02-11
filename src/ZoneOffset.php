@@ -5,10 +5,10 @@ namespace dt;
 final class ZoneOffset {
     private static self $default;
 
-    public string $identifier { get => $this->tz->getName(); }
+    public string $identifier { get => $this->legacy->getName(); }
     public bool $hasDst { get => false; } // TODO
-    public string $name  { get => $this->tz->getName(); } // TODO
-    public string $abbr  { get => $this->tz->getName(); } // TODO
+    public string $name  { get => $this->legacy->getName(); } // TODO
+    public string $abbr  { get => $this->legacy->getName(); } // TODO
 
     /** The time-offset if this is a fixed time-zone like UTC, GMT, CET etc. */
     public ?Duration $offset { get => null; } // TODO
@@ -22,11 +22,11 @@ final class ZoneOffset {
     public bool $isDead  { get => false; } // TODO
 
     private function __construct(
-        private \DateTimeZone $tz,
+        private readonly \DateTimeZone $legacy,
     ) {}
 
     public function toLegacyTz(): \DateTimeZone {
-        return $this->tz;
+        return $this->legacy;
     }
 
     public function format(DateTimeFormatter|string $format): string {

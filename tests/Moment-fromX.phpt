@@ -16,6 +16,9 @@ $timeUsual  = \dt\LocalTime::fromHms(16, 25, 6, 987654321);
 $dtZero     = \dt\LocalDateTime::fromDateTime($dateZero, $timeZero);
 $dtEpoch    = \dt\LocalDateTime::fromDateTime($dateEpoch, $timeZero);
 $dtUsual    = \dt\LocalDateTime::fromDateTime($dateUsual, $timeUsual);
+$zdtZero    = \dt\ZonedDateTime::fromDateTime($zoneZero, $dateZero, $timeZero);
+$zdtEpoch   = \dt\ZonedDateTime::fromDateTime($zoneUtc, $dateEpoch, $timeZero);
+$zdtUsual   = \dt\ZonedDateTime::fromDateTime($zoneBerlin, $dateUsual, $timeUsual);
 
 echo "Moment::fromUnixTimestamp\n";
 
@@ -138,6 +141,17 @@ echo '    ' . stringify(\dt\Moment::fromDateTime($dateUsual, $timeUsual, $zoneUt
 echo "  fromDateTime(" . stringify($dateZero) . ", " . stringify($timeZero) . ", " . stringify($zoneZero) . ")\n";
 echo '    ' . stringify(\dt\Moment::fromDateTime($dateZero, $timeZero, $zoneZero)) . "\n";
 
+echo "Moment::fromZonedDateTime\n";
+
+echo "  fromZonedDateTime(" . stringify($zdtUsual) . ")\n";
+echo '    ' . stringify(\dt\Moment::fromZonedDateTime($zdtUsual)) . "\n";
+
+echo "  fromZonedDateTime(" . stringify($zdtEpoch) . ")\n";
+echo '    ' . stringify(\dt\Moment::fromZonedDateTime($zdtEpoch)) . "\n";
+
+echo "  fromZonedDateTime(" . stringify($zdtZero) . ")\n";
+echo '    ' . stringify(\dt\Moment::fromZonedDateTime($zdtZero)) . "\n";
+
 --EXPECT--
 Moment::fromUnixTimestamp
   fromUnixTimestamp(1738599906)
@@ -217,4 +231,11 @@ Moment::fromDateTime
   fromDateTime(LocalDate('2025-02-03'), LocalTime('16:25:06.987654321'), ZoneOffset('UTC'))
     Moment('2025-02-03 16:25:06.987654321', 1738599906, 987654321)
   fromDateTime(LocalDate('0-01-01'), LocalTime('00:00:00'), ZoneOffset('+00:00'))
+    Moment('0-01-01 00:00:00', -62167219200, 0)
+Moment::fromZonedDateTime
+  fromZonedDateTime(ZonedDateTime('2025-02-03 16:25:06.987654321 +01:00 [Europe/Berlin]'))
+    Moment('2025-02-03 15:25:06.987654321', 1738596306, 987654321)
+  fromZonedDateTime(ZonedDateTime('1970-01-01 00:00:00 +00:00 [UTC]'))
+    Moment('1970-01-01 00:00:00', 0, 0)
+  fromZonedDateTime(ZonedDateTime('0-01-01 00:00:00 +00:00 [+00:00]'))
     Moment('0-01-01 00:00:00', -62167219200, 0)

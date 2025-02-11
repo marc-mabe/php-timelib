@@ -5,10 +5,10 @@ namespace dt;
 final class ZonedDateTime implements Date, Time, Zoned {
     public int $year { get => (int)$this->legacySec->format('Y'); }
     public bool $isLeapYear { get => (bool)$this->legacySec->format('L'); }
-    public Month $month { get => Month::from((int)$this->legacySec->format('m')); }
+    public Month $month { get => Month::from((int)$this->legacySec->format('n')); }
     public int $dayOfMonth { get => (int)$this->legacySec->format('j'); }
     public int $dayOfYear  { get => (int)$this->legacySec->format('z'); }
-    public int $hour { get => (int)$this->legacySec->format('H'); }
+    public int $hour { get => (int)$this->legacySec->format('G'); }
     public int $minute  { get => (int)$this->legacySec->format('i'); }
     public int $second  { get => (int)$this->legacySec->format('s'); }
     public int $milliOfSecond { get => (int)($this->nanoOfSecond / 1_000_000); }
@@ -18,13 +18,18 @@ final class ZonedDateTime implements Date, Time, Zoned {
     public LocalTime $time { get => LocalTime::fromHms($this->hour, $this->minute, $this->second); }
     public Duration $offset {
         get {
-            $seconds = $this->legacySec->getOffset();
-            return $seconds < 0 ? new Duration(isNegative: true, seconds: $seconds) : new Duration(seconds: $seconds);
+            $seconds    = $this->legacySec->getOffset();
+            $isNegative = $seconds < 0;
+            $secondsAbs = \abs($seconds);
+            $hour       = \intdiv($secondsAbs, 3600);
+            $minute     = \intdiv($secondsAbs, 60) % 60;
+            $second     = $secondsAbs % 60;
+            return new Duration(isNegative: $isNegative, hours: $hour, minutes: $minute, seconds: $second);
         }
     }
 
     private \DateTimeImmutable $legacySec {
-        get => \DateTimeImmutable::createFromTimestamp($this->tsSecInt);
+        get => \DateTimeImmutable::createFromTimestamp($this->tsSecInt)->setTimezone($this->zoneOffset->toLegacyTz());
     }
 
     private function __construct(
