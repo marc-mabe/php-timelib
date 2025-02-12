@@ -75,6 +75,10 @@ class DateTimeFormatter
 
             // Week
             FormatToken::WeekOfYearIso => "TODO[{$token->name}]",
+            FormatToken::DayOfWeekName,
+            FormatToken::DayOfWeekName3Letter,
+            FormatToken::DayOfWeekNumber,
+            FormatToken::DayOfWeekNumberIso => $this->formatDayOfWeek($token, $dateTimeZone),
 
             // Day
             FormatToken::DayOfMonth => $dateTimeZone instanceof Date
@@ -87,10 +91,6 @@ class DateTimeFormatter
             FormatToken::DayOfYear => $dateTimeZone instanceof Date
                 ? (string)$dateTimeZone->dayOfYear
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
-            FormatToken::DayOfWeekName3Letter => "TODO[{$token->name}]",
-            FormatToken::DayOfWeekName => "TODO[{$token->name}]",
-            FormatToken::DayOfWeekNumber => "TODO[{$token->name}]",
-            FormatToken::DayOfWeekNumberIso => "TODO[{$token->name}]",
 
             // Time
             FormatToken::MeridiemAbbrLower => "TODO[{$token->name}]",
@@ -157,6 +157,21 @@ class DateTimeFormatter
                 => ($dateTimeZone->year < 0 || $dateTimeZone->year >= 10000 ? $sign : '')
                 . str_pad($yearAbs, 4, '0', STR_PAD_LEFT),
             FormatToken::YearExtendedSign => $sign . str_pad($yearAbs, 4, '0', STR_PAD_LEFT),
+        };
+    }
+
+    private function formatDayOfWeek(FormatToken $token, Date|Time|ZoneOffset|Zoned $dateTimeZone): string
+    {
+        if (!$dateTimeZone instanceof Date) {
+            throw new \ValueError("Unexpected format: '{$token->value}' requires a date");
+        }
+
+        $dayOfWeek = $dateTimeZone->dayOfWeek;
+        return (string)match ($token) {
+            FormatToken::DayOfWeekName => $dayOfWeek->name,
+            FormatToken::DayOfWeekName3Letter => \substr($dayOfWeek->name, 0, 3),
+            FormatToken::DayOfWeekNumber => $dayOfWeek->value === 7 ? 0 : $dayOfWeek->value,
+            FormatToken::DayOfWeekNumberIso => $dayOfWeek->value,
         };
     }
 

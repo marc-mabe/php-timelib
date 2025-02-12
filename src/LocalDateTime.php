@@ -23,6 +23,10 @@ final class LocalDateTime implements Date, Time {
         get => ((int)$this->legacySec->format('z') + 1);
     }
 
+    public DayOfWeek $dayOfWeek {
+        get => DayOfWeek::from((int)$this->legacySec->format('N'));
+    }
+
     public int $hour {
         get => (int)$this->legacySec->format('H');
     }

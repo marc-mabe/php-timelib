@@ -12,4 +12,6 @@ interface Date {
 
     /** @var int<1,366> $dayOfYear */
     public int $dayOfYear { get; }
+
+    public DayOfWeek $dayOfWeek { get; }
 }

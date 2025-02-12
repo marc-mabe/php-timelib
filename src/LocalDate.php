@@ -3,14 +3,18 @@
 namespace time;
 
 final class LocalDate implements Date {
-    public int $year { get => (int)$this->dt->format('Y'); }
-    public bool $isLeapYear { get => (bool)$this->dt->format('L'); }
-    public Month $month { get => Month::from((int)$this->dt->format('m')); }
-    public int $dayOfMonth { get => (int)$this->dt->format('d'); }
-    public int $dayOfYear  { get => ((int)$this->dt->format('z') + 1); }
+    public int $year { get => (int)$this->legacy->format('Y'); }
+    public bool $isLeapYear { get => (bool)$this->legacy->format('L'); }
+    public Month $month { get => Month::from((int)$this->legacy->format('m')); }
+    public int $dayOfMonth { get => (int)$this->legacy->format('d'); }
+    public int $dayOfYear  { get => ((int)$this->legacy->format('z') + 1); }
+
+    public DayOfWeek $dayOfWeek {
+        get => DayOfWeek::from((int)$this->legacy->format('N'));
+    }
 
     private function __construct(
-        private readonly \DateTimeImmutable $dt,
+        private readonly \DateTimeImmutable $legacy,
     ) {}
 
     public function format(DateTimeFormatter|string $format): string {

@@ -4,26 +4,21 @@ namespace time;
 
 enum FormatToken:string
 {
-    // Day
-    case DayOfMonth = 'j';
-    case DayOfMonthWithLeadingZeros = 'd';
-    case DayOfMonthOrdinalSuffix = 'S';
-    case DayOfYear = 'z';
-    case DayOfWeekName3Letter = 'D';
-    case DayOfWeekName = 'l';
-    case DayOfWeekNumber = 'w';
-    case DayOfWeekNumberIso = 'N';
-
     // Year
     case IsLeapYear = 'L';
     case Year = 'Y';
     case Year2Digit = 'y';
     case YearExtended = 'x';
     case YearExtendedSign = 'X';
-    case YearOfWeekIso = 'o';
+    case DayOfYear = 'z';
 
     // Week
     case WeekOfYearIso = 'W';
+    case YearOfWeekIso = 'o';
+    case DayOfWeekName = 'l';
+    case DayOfWeekName3Letter = 'D';
+    case DayOfWeekNumber = 'w';
+    case DayOfWeekNumberIso = 'N';
 
     // Month
     case MonthName = 'F';
@@ -31,6 +26,9 @@ enum FormatToken:string
     case Month = 'n';
     case MonthWithLeadingZeros = 'm';
     case DaysInMonth = 't';
+    case DayOfMonth = 'j';
+    case DayOfMonthWithLeadingZeros = 'd';
+    case DayOfMonthOrdinalSuffix = 'S';
 
     // Time
     case MeridiemAbbrLower = 'a';

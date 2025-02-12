@@ -33,6 +33,10 @@ final class ZonedDateTime implements Date, Time, Zoned
         get => (int)$this->legacySec->format('z');
     }
 
+    public DayOfWeek $dayOfWeek {
+        get => DayOfWeek::from((int)$this->legacySec->format('N'));
+    }
+
     public int $hour {
         get => (int)$this->legacySec->format('G');
     }
