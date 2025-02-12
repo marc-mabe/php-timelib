@@ -185,75 +185,75 @@ final class Duration {
         if ($ns >= 1_000) {
             $us += \floor($ns / 1_000);
             $ns = $ns % 1_000;
+        }
 
-            if ($unit === TimeUnit::Nanosecond) {
-                return new Duration(
-                    isNegative: $this->isNegative,
-                    years: $this->years, months: $this->months, days: $this->days,
-                    hours: $this->hours, minutes: $this->minutes, seconds: $this->seconds,
-                    milliseconds: $this->milliseconds, microseconds: $us, nanoseconds: $ns,
-                );
-            }
+        if ($unit === TimeUnit::Nanosecond) {
+            return new Duration(
+                isNegative: $this->isNegative,
+                years: $this->years, months: $this->months, days: $this->days,
+                hours: $this->hours, minutes: $this->minutes, seconds: $this->seconds,
+                milliseconds: $this->milliseconds, microseconds: $us, nanoseconds: $ns,
+            );
         }
 
         $ms = $this->milliseconds;
         if ($us >= 1_000) {
             $ms += \floor($us / 1_000);
             $us = $us % 1_000;
+        }
 
-            if ($unit === TimeUnit::Microsecond) {
-                return new Duration(
-                    isNegative: $this->isNegative,
-                    years: $this->years, months: $this->months, days: $this->days,
-                    hours: $this->hours, minutes: $this->minutes, seconds: $this->seconds,
-                    milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
-                );
-            }
+        if ($unit === TimeUnit::Microsecond) {
+            return new Duration(
+                isNegative: $this->isNegative,
+                years: $this->years, months: $this->months, days: $this->days,
+                hours: $this->hours, minutes: $this->minutes, seconds: $this->seconds,
+                milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
+            );
         }
 
         $s = $this->seconds;
         if ($ms >= 1_000) {
             $s += \floor($ms / 1_000);
             $ms = $ms % 1_000;
+        }
 
-            if ($unit === TimeUnit::Millisecond) {
-                return new Duration(
-                    isNegative: $this->isNegative,
-                    years: $this->years, months: $this->months, days: $this->days,
-                    hours: $this->hours, minutes: $this->minutes, seconds: $s,
-                    milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
-                );
-            }
+        if ($unit === TimeUnit::Millisecond) {
+            return new Duration(
+                isNegative: $this->isNegative,
+                years: $this->years, months: $this->months, days: $this->days,
+                hours: $this->hours, minutes: $this->minutes, seconds: $s,
+                milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
+            );
         }
 
         $m = $this->minutes;
         if ($s >= 60) {
             $m += \floor($s / 60);
             $s = $s % 60;
+        }
 
-            if ($unit === TimeUnit::Second) {
-                return new Duration(
-                    isNegative: $this->isNegative,
-                    years: $this->years, months: $this->months, days: $this->days,
-                    hours: $this->hours, minutes: $m, seconds: $s,
-                    milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
-                );
-            }
+        if ($unit === TimeUnit::Second) {
+            return new Duration(
+                isNegative: $this->isNegative,
+                years: $this->years, months: $this->months, days: $this->days,
+                hours: $this->hours, minutes: $m, seconds: $s,
+                milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
+            );
         }
 
         $h = $this->hours;
         if ($m >= 60) {
             $h += \floor($m / 60);
             $m = $m % 60;
+        }
 
-            if ($unit === TimeUnit::Minute) {
-                return new Duration(
-                    isNegative: $this->isNegative,
-                    years: $this->years, months: $this->months, days: $this->days,
-                    hours: $h, minutes: $m, seconds: $s,
-                    milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
-                );
-            }
+        if ($unit === TimeUnit::Minute) {
+            return new Duration(
+                isNegative: $this->isNegative,
+                years: $this->years, months: $this->months, days: $this->days,
+                hours: $h, minutes: $m, seconds: $s,
+                milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
+            );
         }
 
         $d = $this->days;
