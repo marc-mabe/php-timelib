@@ -4,7 +4,6 @@ namespace time;
 
 final class LocalDate implements Date {
     public int $year { get => (int)$this->legacy->format('Y'); }
-    public bool $isLeapYear { get => (bool)$this->legacy->format('L'); }
     public Month $month { get => Month::from((int)$this->legacy->format('m')); }
     public int $dayOfMonth { get => (int)$this->legacy->format('d'); }
     public int $dayOfYear  { get => ((int)$this->legacy->format('z') + 1); }

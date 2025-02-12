@@ -14,13 +14,6 @@ final class ZonedDateTime implements Date, Time, Zoned
         get => (int)$this->legacySec->format('Y');
     }
 
-    public bool $isLeapYear {
-        get {
-            $year = $this->year;
-            return $year % 4 === 0 && ($year % 100 !== 0 || $year % 400 === 0);
-        }
-    }
-
     public Month $month {
         get => Month::from((int)$this->legacySec->format('n'));
     }

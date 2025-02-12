@@ -7,10 +7,6 @@ final class LocalDateTime implements Date, Time {
         get => (int)$this->legacySec->format('Y');
     }
 
-    public bool $isLeapYear {
-        get => (bool)$this->legacySec->format('L');
-    }
-
     public Month $month {
         get => Month::from((int)$this->legacySec->format('m'));
     }

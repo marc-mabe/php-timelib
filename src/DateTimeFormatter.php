@@ -53,7 +53,7 @@ class DateTimeFormatter
             FormatToken::YearExtended,
             FormatToken::YearExtendedSign => $this->formatYear($token, $dateTimeZone),
             FormatToken::IsLeapYear => $dateTimeZone instanceof Date
-                ? (string)$dateTimeZone->isLeapYear
+                ? (GregorianCalendar::isLeapYear($dateTimeZone->year) ? '1' : '0')
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::YearOfWeekIso => "TODO[{$token->name}]",
 
@@ -70,8 +70,9 @@ class DateTimeFormatter
             FormatToken::MonthAbbreviation => $dateTimeZone instanceof Date
                 ? $dateTimeZone->month->getAbbreviation()
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
-
-            FormatToken::DaysInMonth => "TODO[{$token->name}]",
+            FormatToken::DaysInMonth => $dateTimeZone instanceof Date
+                ? (string)GregorianCalendar::getDaysInMonth($dateTimeZone->year, $dateTimeZone->month)
+                : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
 
             // Week
             FormatToken::WeekOfYearIso => "TODO[{$token->name}]",
