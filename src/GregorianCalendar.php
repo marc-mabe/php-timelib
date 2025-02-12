@@ -14,6 +14,11 @@ final class GregorianCalendar
         return $year % 4 === 0 && ($year % 100 !== 0 || $year % 400 === 0);
     }
 
+    public static function getDaysInYear(int $year): int
+    {
+        return self::isLeapYear($year) ? 366 : 365;
+    }
+
     public static function getDaysInMonth(int $year, Month|int $month): int
     {
         $monthIdx = $month instanceof Month ? $month->value - 1 : $month - 1;
