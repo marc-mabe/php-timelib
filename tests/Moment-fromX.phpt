@@ -5,9 +5,9 @@ Moment::fromXXX
 
 include __DIR__ . '/include.php';
 
-$zoneUtc    = \time\ZoneOffset::fromIdentifier('UTC');
-$zoneZero   = \time\ZoneOffset::fromIdentifier('+00:00');
-$zoneBerlin = \time\ZoneOffset::fromIdentifier('Europe/Berlin');
+$zoneUtc    = \time\Zone::fromIdentifier('UTC');
+$zoneZero   = \time\Zone::fromIdentifier('+00:00');
+$zoneBerlin = \time\Zone::fromIdentifier('Europe/Berlin');
 $dateZero   = \time\LocalDate::fromYmd(0, 1, 1);
 $dateEpoch  = \time\LocalDate::fromYmd(1970, 1, 1);
 $dateUsual  = \time\LocalDate::fromYmd(2025, 2, 3);
@@ -226,11 +226,11 @@ Moment::fromDateTime
     Moment('Mon 2025-02-03 00:00:00', 1738540800, 0)
   fromDateTime(LocalDateTime('Sat 0-01-01 00:00:00'), LocalDateTime('Mon 2025-02-03 16:25:06.987654321'))
     Moment('Sat 0-01-01 16:25:06.987654321', -62167160094, 987654321)
-  fromDateTime(LocalDate('Mon 2025-02-03'), LocalTime('16:25:06.987654321'), ZoneOffset('Europe/Berlin'))
+  fromDateTime(LocalDate('Mon 2025-02-03'), LocalTime('16:25:06.987654321'), Zone('Europe/Berlin'))
     Moment('Mon 2025-02-03 15:25:06.987654321', 1738596306, 987654321)
-  fromDateTime(LocalDate('Mon 2025-02-03'), LocalTime('16:25:06.987654321'), ZoneOffset('UTC'))
+  fromDateTime(LocalDate('Mon 2025-02-03'), LocalTime('16:25:06.987654321'), Zone('UTC'))
     Moment('Mon 2025-02-03 16:25:06.987654321', 1738599906, 987654321)
-  fromDateTime(LocalDate('Sat 0-01-01'), LocalTime('00:00:00'), ZoneOffset('+00:00'))
+  fromDateTime(LocalDate('Sat 0-01-01'), LocalTime('00:00:00'), Zone('+00:00'))
     Moment('Sat 0-01-01 00:00:00', -62167219200, 0)
 Moment::fromZonedDateTime
   fromZonedDateTime(ZonedDateTime('Mon 2025-02-03 16:25:06.987654321 +01:00 [Europe/Berlin]'))

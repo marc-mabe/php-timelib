@@ -239,9 +239,9 @@ final class Moment implements Date, Time {
         return [$this->tsSec, $this->nanoOfSecond];
     }
 
-    public function toZonedDateTime(ZoneOffset $zoneOffset): ZonedDateTime
+    public function toZonedDateTime(Zone $zone): ZonedDateTime
     {
-        return ZonedDateTime::fromUnixTimestampTuple($this->toUnixTimestampTuple())->moveToZone($zoneOffset);
+        return ZonedDateTime::fromUnixTimestampTuple($this->toUnixTimestampTuple())->moveToZone($zone);
     }
 
     public static function fromNow(Clock $clock = new Clock()): self
@@ -362,9 +362,9 @@ final class Moment implements Date, Time {
         return new self($s, $ns);
     }
 
-    public static function fromDateTime(Date $date, ?Time $time = null, ?ZoneOffset $zoneOffset = null): self
+    public static function fromDateTime(Date $date, ?Time $time = null, ?Zone $zone = null): self
     {
-        if ($zoneOffset === null) {
+        if ($zone === null) {
             return self::fromYd(
                 $date->year,
                 $date->dayOfYear,
@@ -375,7 +375,7 @@ final class Moment implements Date, Time {
             );
         }
 
-        $zonedDateTime = ZonedDateTime::fromDateTime($zoneOffset, $date, $time);
+        $zonedDateTime = ZonedDateTime::fromDateTime($zone, $date, $time);
         return self::fromZonedDateTime($zonedDateTime);
     }
 }

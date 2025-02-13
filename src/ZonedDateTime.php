@@ -7,7 +7,7 @@ final class ZonedDateTime implements Date, Time, Zoned
     private ?\DateTimeImmutable $_legacySec = null;
     private \DateTimeImmutable $legacySec {
         get => $this->_legacySec ?? \DateTimeImmutable::createFromTimestamp($this->toUnixTimestampTuple()[0])
-            ->setTimezone($this->zoneOffset->toLegacyTz());
+            ->setTimezone($this->zone->toLegacy());
     }
 
     public int $year {
@@ -80,14 +80,14 @@ final class ZonedDateTime implements Date, Time, Zoned
 
     private function __construct(
         private readonly Moment $moment,
-        public readonly ZoneOffset $zoneOffset,
+        public readonly Zone $zone,
     ) {}
 
     public function add(Duration $duration): self
     {
         $s  = $this->legacySec->add($duration->toLegacyInterval())->getTimestamp();
         $ns = $this->nanoOfSecond; // TODO: handle fraction of a second
-        return new self(Moment::fromUnixTimestampTuple([$s, $ns]), $this->zoneOffset);
+        return new self(Moment::fromUnixTimestampTuple([$s, $ns]), $this->zone);
     }
 
     public function sub(Duration $duration): self {
@@ -105,14 +105,14 @@ final class ZonedDateTime implements Date, Time, Zoned
         // TODO
     }
 
-    public function moveToZone(ZoneOffset $zoneOffset): self
+    public function moveToZone(Zone $zone): self
     {
-        return new self($this->moment, $zoneOffset);
+        return new self($this->moment, $zone);
     }
 
-    public function withZone(ZoneOffset $zoneOffset): self
+    public function withZone(Zone $zone): self
     {
-        return self::fromDateTime($zoneOffset, $this->date, $this->time);
+        return self::fromDateTime($zone, $this->date, $this->time);
     }
 
     public function format(DateTimeFormatter|string $format): string {
@@ -141,31 +141,31 @@ final class ZonedDateTime implements Date, Time, Zoned
         return $this->moment->toUnixTimestampTuple();
     }
 
-    public static function fromNow(ZoneOffset $zoneOffset, Clock $clock = new Clock()): self
+    public static function fromNow(Zone $zone, Clock $clock = new Clock()): self
     {
-        return $clock->takeZonedDateTime($zoneOffset);
+        return $clock->takeZonedDateTime($zone);
     }
 
     public static function fromUnixTimestamp(int|float $timestamp, TimeUnit $unit = TimeUnit::Second): self
     {
-        return new self(Moment::fromUnixTimestamp($timestamp, $unit), ZoneOffset::fromIdentifier('+00:00'));
+        return new self(Moment::fromUnixTimestamp($timestamp, $unit), Zone::fromIdentifier('+00:00'));
     }
 
     /** @param array{int, int<0,999999999>} $timestampTuple */
     public static function fromUnixTimestampTuple(array $timestampTuple): self
     {
-        return new self(Moment::fromUnixTimestampTuple($timestampTuple), ZoneOffset::fromIdentifier('+00:00'));
+        return new self(Moment::fromUnixTimestampTuple($timestampTuple), Zone::fromIdentifier('+00:00'));
     }
 
     public static function fromYmd(
-        ZoneOffset $zoneOffset,
-        int $year,
+        Zone      $zone,
+        int       $year,
         Month|int $month,
-        int $dayOfMonth,
-        int $hour = 0,
-        int $minute = 0,
-        int $second = 0,
-        int $nanoOfSecond = 0,
+        int       $dayOfMonth,
+        int       $hour = 0,
+        int       $minute = 0,
+        int       $second = 0,
+        int       $nanoOfSecond = 0,
     ): self {
         $n = $month instanceof Month ? $month->value : $month;
         $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
@@ -174,20 +174,20 @@ final class ZonedDateTime implements Date, Time, Zoned
         $legacy = \DateTimeImmutable::createFromFormat(
             'Y-n-j G:i:s',
             "{$year}-{$n}-{$dayOfMonth} {$hour}:{$i}:{$s}",
-            $zoneOffset->toLegacyTz(),
+            $zone->toLegacy(),
         );
 
-        return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $nanoOfSecond]), $zoneOffset);
+        return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $nanoOfSecond]), $zone);
     }
 
     public static function fromYd(
-        ZoneOffset $zoneOffset,
-        int $year,
-        int $dayOfYear,
-        int $hour = 0,
-        int $minute = 0,
-        int $second = 0,
-        int $nanoOfSecond = 0,
+        Zone $zone,
+        int  $year,
+        int  $dayOfYear,
+        int  $hour = 0,
+        int  $minute = 0,
+        int  $second = 0,
+        int  $nanoOfSecond = 0,
     ): self {
         $z = $dayOfYear -1;
         $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
@@ -196,10 +196,10 @@ final class ZonedDateTime implements Date, Time, Zoned
         $legacy = \DateTimeImmutable::createFromFormat(
             'Y-z G:i:s',
             "{$year}-{$z} {$hour}:{$i}:{$s}",
-            $zoneOffset->toLegacyTz(),
+            $zone->toLegacy(),
         );
 
-        return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $nanoOfSecond]), $zoneOffset);
+        return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $nanoOfSecond]), $zone);
     }
 
     public static function fromZonedDateTime(Date&Time&Zoned $zonedDateTime): self
@@ -209,7 +209,7 @@ final class ZonedDateTime implements Date, Time, Zoned
         }
 
         return self::fromYd(
-            $zonedDateTime->zoneOffset,
+            $zonedDateTime->zone,
             $zonedDateTime->year,
             $zonedDateTime->dayOfYear,
             $zonedDateTime->hour,
@@ -219,7 +219,7 @@ final class ZonedDateTime implements Date, Time, Zoned
         );
     }
 
-    public static function fromDateTime(ZoneOffset $zoneOffset, Date $date, ?Time $time = null): self
+    public static function fromDateTime(Zone $zone, Date $date, ?Time $time = null): self
     {
         $time ??= LocalTime::fromHms(0, 0, 0);
 
@@ -230,9 +230,9 @@ final class ZonedDateTime implements Date, Time, Zoned
         $legacy = \DateTimeImmutable::createFromFormat(
             'Y-z G:i:s',
             "{$date->year}-{$z} {$time->hour}:{$i}:{$s}",
-            $zoneOffset->toLegacyTz(),
+            $zone->toLegacy(),
         );
 
-        return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $time->nanoOfSecond]), $zoneOffset);
+        return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $time->nanoOfSecond]), $zone);
     }
 }
