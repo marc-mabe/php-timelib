@@ -2,9 +2,7 @@
 
 namespace time;
 
-use DateInterval;
-
-final class Duration {
+final class Period {
     public function __construct(
         public readonly bool $isNegative = false,
         public readonly int $years = 0,
@@ -35,7 +33,7 @@ final class Duration {
             || $this->nanoseconds;
     }
 
-    public function diff(Duration $other): self
+    public function diff(Period $other): self
     {
         // TODO: Handle isNegative
         return new self(
@@ -131,7 +129,7 @@ final class Duration {
     }
 
     /**
-     * Tests if this duration is standardized to the given time unit where
+     * Tests if this period is standardized to the given time unit where
      *  - each microsecond as 1000 nanoseconds
      *  - each millisecond as 1000 microseconds
      *  - each second has 1000 milliseconds
@@ -175,16 +173,16 @@ final class Duration {
     }
 
     /**
-     * Creates a new duration standardized to the given time unit where
+     * Creates a new period standardized to the given time unit where
      * - each microsecond as 1000 nanoseconds
      * - each millisecond as 1000 microseconds
      * - each second has 1000 milliseconds
      * - each minute has 60 seconds
      * - each hour has 60 minutes
      * - each day has 24 hours
-     * - other parts of this duration are not touched
+     * - other parts of this period are not touched
      *
-     * Already standardized durations will return the same instance.
+     * Already standardized periods will return the same instance.
      *
      * @return self
      */
@@ -202,7 +200,7 @@ final class Duration {
         }
 
         if ($unit === TimeUnit::Nanosecond) {
-            return new Duration(
+            return new Period(
                 isNegative: $this->isNegative,
                 years: $this->years, months: $this->months, days: $this->days,
                 hours: $this->hours, minutes: $this->minutes, seconds: $this->seconds,
@@ -217,7 +215,7 @@ final class Duration {
         }
 
         if ($unit === TimeUnit::Microsecond) {
-            return new Duration(
+            return new Period(
                 isNegative: $this->isNegative,
                 years: $this->years, months: $this->months, days: $this->days,
                 hours: $this->hours, minutes: $this->minutes, seconds: $this->seconds,
@@ -232,7 +230,7 @@ final class Duration {
         }
 
         if ($unit === TimeUnit::Millisecond) {
-            return new Duration(
+            return new Period(
                 isNegative: $this->isNegative,
                 years: $this->years, months: $this->months, days: $this->days,
                 hours: $this->hours, minutes: $this->minutes, seconds: $s,
@@ -247,7 +245,7 @@ final class Duration {
         }
 
         if ($unit === TimeUnit::Second) {
-            return new Duration(
+            return new Period(
                 isNegative: $this->isNegative,
                 years: $this->years, months: $this->months, days: $this->days,
                 hours: $this->hours, minutes: $m, seconds: $s,
@@ -262,7 +260,7 @@ final class Duration {
         }
 
         if ($unit === TimeUnit::Minute) {
-            return new Duration(
+            return new Period(
                 isNegative: $this->isNegative,
                 years: $this->years, months: $this->months, days: $this->days,
                 hours: $h, minutes: $m, seconds: $s,
@@ -276,7 +274,7 @@ final class Duration {
             $h = $h % 60;
         }
 
-        return new Duration(
+        return new Period(
             isNegative: $this->isNegative,
             years: $this->years, months: $this->months, days: $d,
             hours: $h, minutes: $m, seconds: $s,
@@ -428,7 +426,7 @@ final class Duration {
         );
     }
 
-    public function toLegacyInterval(): DateInterval
+    public function toLegacyInterval(): \DateInterval
     {
         return new \DateInterval($this->toIso());
     }
@@ -471,7 +469,7 @@ final class Duration {
 
     public static function fromIso(string $isoFormat): self {}
 
-    public static function fromLegacyInterval(DateInterval $interval): self {
+    public static function fromLegacyInterval(\DateInterval $interval): self {
         return new self(
             isNegative: $interval->invert,
             years: $interval->y,

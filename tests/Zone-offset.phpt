@@ -18,15 +18,15 @@ foreach ($identifiers as $identifier) {
 }
 
 --EXPECTF--
-Zone('GMT'): Duration('P0D')
-Zone('UTC'): Duration('P0D')
-Zone('Etc/GMT'): Duration('P0D')
-Zone('Etc/GMT+1'): Duration('-PT1H')
-Zone('CET'): Duration('PT1H')
-Zone('CEST'): Duration('PT2H')
-Zone('+00:00'): Duration('P0D')
-Zone('+12:34'): Duration('PT12H34M')
-Zone('-12:34'): Duration('-PT12H34M')
-Zone('+12:34:56'): Duration('PT12H34M56S')
-Zone('-12:34:56'): Duration('-PT12H34M56S')
+Zone('GMT'): Period('P0D')
+Zone('UTC'): Period('P0D')
+Zone('Etc/GMT'): Period('P0D')
+Zone('Etc/GMT+1'): Period('-PT1H')
+Zone('CET'): Period('PT1H')
+Zone('CEST'): Period('PT2H')
+Zone('+00:00'): Period('P0D')
+Zone('+12:34'): Period('PT12H34M')
+Zone('-12:34'): Period('-PT12H34M')
+Zone('+12:34:56'): Period('PT12H34M56S')
+Zone('-12:34:56'): Period('-PT12H34M56S')
 Zone('Europe/Berlin'): null

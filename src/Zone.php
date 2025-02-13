@@ -20,11 +20,11 @@ final class Zone
     /**
      * The time offset if the zone is based on a fixed offset or abbreviation.
      */
-    public ?Duration $offset {
+    public ?Period $offset {
         get {
             if ($this->isAbbreviation) {
                 // timezonedb lookup
-                return Duration::fromUnit(
+                return Period::fromUnit(
                     TimeUnit::Second,
                     \DateTime::createFromTimestamp(0)->setTimezone($this->legacy)->getOffset()
                 )->standardizedTo(TimeUnit::Minute);
@@ -37,7 +37,7 @@ final class Zone
             );
             \assert($match !== false);
             if ($match) {
-                return new Duration(
+                return new Period(
                     isNegative: $matches['sign'] === '-',
                     hours: (int)$matches['h'],
                     minutes: (int)($matches['m'] ?? 0),
@@ -48,7 +48,7 @@ final class Zone
             // lookup transitions -> if only one starting at PHP_INT_MIN -> take it
             $transitions = $this->legacy->getTransitions();
             if (\count($transitions) === 1 && $transitions[0]['ts'] === PHP_INT_MIN) {
-                return Duration::fromUnit(TimeUnit::Second, $transitions[0]['offset'])
+                return Period::fromUnit(TimeUnit::Second, $transitions[0]['offset'])
                     ->standardizedTo(TimeUnit::Minute);
             }
 
@@ -77,7 +77,7 @@ final class Zone
         return self::fromIdentifier(date_default_timezone_get());
     }
 
-    public static function fromOffset(Duration $offset): self {
+    public static function fromOffset(Period $offset): self {
         if ($offset->hasDate()) {
             throw new \ValueError("A time offset can contain time units only");
         }
@@ -95,7 +95,7 @@ final class Zone
     }
 
     public static function fromUnit(TimeUnit $unit, int $value): self {
-        return self::fromOffset(Duration::fromUnit($unit, $value));
+        return self::fromOffset(Period::fromUnit($unit, $value));
     }
 
     /**

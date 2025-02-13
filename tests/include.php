@@ -1,7 +1,7 @@
 <?php
 
 use time\Clock;
-use time\Duration;
+use time\Period;
 use time\LocalDate;
 use time\LocalDateTime;
 use time\LocalTime;
@@ -38,19 +38,19 @@ function stringifyZone(Zone $zone) {
     return "Zone('{$zone->format('e')}')";
 }
 
-function stringifyDuration(Duration $duration) {
-    return "Duration('{$duration->toIso()}')";
+function stringifyPeriod(Period $period) {
+    return "Period('{$period->toIso()}')";
 }
 
 function stringifyWallClock(WallClock $clock) {
-    return "WallClock(resolution: " . stringifyDuration($clock->resolution) . ", modifier: " . stringifyDuration($clock->modifier) . ")";
+    return "WallClock(resolution: " . stringifyPeriod($clock->resolution) . ", modifier: " . stringifyPeriod($clock->modifier) . ")";
 }
 
 function stringifyMonotonicClock(MonotonicClock $clock) {
-    return "MonotonicClock(resolution: " . stringifyDuration($clock->resolution) . ", modifier: " . stringifyDuration($clock->modifier) . ")";
+    return "MonotonicClock(resolution: " . stringifyPeriod($clock->resolution) . ", modifier: " . stringifyPeriod($clock->modifier) . ")";
 }
 
-function stringify(null|Moment|LocalDate|LocalTime|LocalDateTime|ZonedDateTime|Zone|Duration|Clock $v) {
+function stringify(null|Moment|LocalDate|LocalTime|LocalDateTime|ZonedDateTime|Zone|Period|Clock $v) {
     return match (true) {
         $v === null => 'null',
         $v instanceof Moment => stringifyMoment($v),
@@ -59,7 +59,7 @@ function stringify(null|Moment|LocalDate|LocalTime|LocalDateTime|ZonedDateTime|Z
         $v instanceof LocalDateTime => stringifyLocalDateTime($v),
         $v instanceof ZonedDateTime => stringifyZonedDateTime($v),
         $v instanceof Zone => stringifyZone($v),
-        $v instanceof Duration => stringifyDuration($v),
+        $v instanceof Period => stringifyPeriod($v),
         $v instanceof WallClock => stringifyWallClock($v),
         $v instanceof MonotonicClock => stringifyMonotonicClock($v),
     };

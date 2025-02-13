@@ -66,7 +66,7 @@ final class ZonedDateTime implements Date, Time, Zoned
         get => LocalTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
-    public Duration $offset {
+    public Period $offset {
         get {
             $seconds    = $this->legacySec->getOffset();
             $isNegative = $seconds < 0;
@@ -74,7 +74,7 @@ final class ZonedDateTime implements Date, Time, Zoned
             $hour       = \intdiv($secondsAbs, 3600);
             $minute     = \intdiv($secondsAbs, 60) % 60;
             $second     = $secondsAbs % 60;
-            return new Duration(isNegative: $isNegative, hours: $hour, minutes: $minute, seconds: $second);
+            return new Period(isNegative: $isNegative, hours: $hour, minutes: $minute, seconds: $second);
         }
     }
 
@@ -83,17 +83,17 @@ final class ZonedDateTime implements Date, Time, Zoned
         public readonly Zone $zone,
     ) {}
 
-    public function add(Duration $duration): self
+    public function add(Period $period): self
     {
-        $s  = $this->legacySec->add($duration->toLegacyInterval())->getTimestamp();
+        $s  = $this->legacySec->add($period->toLegacyInterval())->getTimestamp();
         $ns = $this->nanoOfSecond; // TODO: handle fraction of a second
         return new self(Moment::fromUnixTimestampTuple([$s, $ns]), $this->zone);
     }
 
-    public function sub(Duration $duration): self {
-        return $duration->isNegative
-            ? $this->add($duration->abs())
-            : $this->add($duration->negated());
+    public function sub(Period $period): self {
+        return $period->isNegative
+            ? $this->add($period->abs())
+            : $this->add($period->negated());
     }
 
     public function truncatedTo(DateUnit|TimeUnit $unit): self {

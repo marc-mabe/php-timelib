@@ -56,14 +56,14 @@ final class LocalDateTime implements Date, Time {
         public readonly int $nanoOfSecond,
     ) {}
 
-    public function add(Duration $duration): self {
+    public function add(Period $period): self {
         // FIXME: handle fraction of second
-        return new self($this->legacySec->add($duration->toLegacyInterval()), 0);
+        return new self($this->legacySec->add($period->toLegacyInterval()), 0);
     }
 
-    public function sub(Duration $duration): self {
+    public function sub(Period $period): self {
         // FIXME: handle fraction of second
-        return new self($this->legacySec->sub($duration->toLegacyInterval()), 0);
+        return new self($this->legacySec->sub($period->toLegacyInterval()), 0);
     }
 
     public function format(DateTimeFormatter|string $format): string {

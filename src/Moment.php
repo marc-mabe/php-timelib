@@ -76,26 +76,26 @@ final class Moment implements Date, Time {
         public readonly int $nanoOfSecond,
     ) {}
 
-    public function add(Duration $duration): self
+    public function add(Period $period): self
     {
-        $durationNoFractions = $duration
+        $periodNoFractions = $period
             ->withMilliseconds(0)
             ->withMicroseconds(0)
             ->withNanoseconds(0);
 
         $s = $this->legacySec
-            ->add($durationNoFractions->toLegacyInterval())
+            ->add($periodNoFractions->toLegacyInterval())
             ->getTimestamp();
 
-        $ns = $duration->isNegative
+        $ns = $period->isNegative
             ? $this->nanoOfSecond
-                + $duration->nanoseconds
-                + ($duration->microseconds * 1_000)
-                + ($duration->milliseconds * 1_000_000)
+                + $period->nanoseconds
+                + ($period->microseconds * 1_000)
+                + ($period->milliseconds * 1_000_000)
             : $this->nanoOfSecond
-                - $duration->nanoseconds
-                - ($duration->microseconds * 1_000)
-                - ($duration->milliseconds * 1_000_000);
+                - $period->nanoseconds
+                - ($period->microseconds * 1_000)
+                - ($period->milliseconds * 1_000_000);
 
         if ($ns >= 1_000_000_000) {
             $s += \intdiv($ns, 1_000_000_000);
@@ -107,9 +107,9 @@ final class Moment implements Date, Time {
         return new self($s, $ns);
     }
 
-    public function sub(Duration $duration): self
+    public function sub(Period $period): self
     {
-        return $this->add($duration->isNegative ? $duration->abs() : $duration->negated());
+        return $this->add($period->isNegative ? $period->abs() : $period->negated());
     }
 
     public function withYear(int $year): self

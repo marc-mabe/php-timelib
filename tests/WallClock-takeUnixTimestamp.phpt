@@ -69,7 +69,7 @@ echo "\tWallClock:   " . ($ct = $clock->takeUnixTimestamp(\time\TimeUnit::Hour, 
 echo ($ct * 60 * 60 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 --EXPECTF--
-WallClock(resolution: Duration('PT0.000001S'), modifier: Duration('P0D'))
+WallClock(resolution: Period('PT0.000001S'), modifier: Period('P0D'))
 
 ### Unix Timestamp (float) ###
 	microtime(): %f
