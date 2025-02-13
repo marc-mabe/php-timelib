@@ -244,7 +244,7 @@ final class Moment implements Date, Time {
         return ZonedDateTime::fromUnixTimestampTuple($this->toUnixTimestampTuple())->moveToZone($zone);
     }
 
-    public static function fromNow(Clock $clock = new Clock()): self
+    public static function fromNow(Clock $clock = new WallClock()): self
     {
         return $clock->takeMoment();
     }

@@ -141,7 +141,7 @@ final class ZonedDateTime implements Date, Time, Zoned
         return $this->moment->toUnixTimestampTuple();
     }
 
-    public static function fromNow(Zone $zone, Clock $clock = new Clock()): self
+    public static function fromNow(Zone $zone, Clock $clock = new WallClock()): self
     {
         return $clock->takeZonedDateTime($zone);
     }

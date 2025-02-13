@@ -92,7 +92,7 @@ final class LocalDateTime implements Date, Time {
         } : (int)$value;
     }
 
-    public static function fromNow(Clock $clock = new Clock()): self {
+    public static function fromNow(Clock $clock = new WallClock()): self {
         [$ts, $ns] = $clock->takeUnixTimestampTuple();
         return new self(\DateTimeImmutable::createFromTimestamp($ts), $ns);
     }
