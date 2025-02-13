@@ -2,14 +2,28 @@
 
 namespace time;
 
-class Clock {
-    public function __construct(
-        public readonly Duration $modifier = new Duration(),
-    ) {}
+class MonotonicClock {
+    public readonly Duration $modifier;
+
+    public function __construct(?Duration $modifier = null) {
+        $hr = \hrtime();
+        if (false === $hr) {
+            throw new \RuntimeException('No monotonic timer available');
+        }
+
+        if ($modifier === null) {
+            [$us, $s] = \explode(' ', \microtime(), 2);
+            $modifier = new Duration(
+                seconds:     (int)$s - $hr[0],
+                nanoseconds: (int)\substr($us, 2, -2) * 1_000 - $hr[1],
+            );
+        }
+        $this->modifier = $modifier;
+    }
 
     public function getResolution(): Duration
     {
-        return new Duration(microseconds: 1);
+        return new Duration(nanoseconds: 1);
     }
 
     public function takeMoment(): Moment
@@ -40,7 +54,8 @@ class Clock {
     /** @return array{int, int<0, 999999999>} */
     private function takeUnixTimestampTupleWithoutModifier(): array
     {
-        [$us, $s] = \explode(' ', \microtime());
-        return [(int)$s, (int)\substr($us, 2, -2) * 1_000];
+        $hr = \hrtime();
+        assert($hr !== false);
+        return $hr;
     }
 }
