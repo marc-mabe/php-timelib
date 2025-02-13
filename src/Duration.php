@@ -56,23 +56,23 @@ final class Duration {
         $timeIso = '';
 
         if ($this->years) {
-            $dateIso .= 'Y' . $this->years;
+            $dateIso .= $this->years . 'Y';
         }
         if ($this->months) {
-            $dateIso .= 'M' . $this->months;
+            $dateIso .= $this->months . 'M';
         }
         if ($this->days) {
-            $dateIso .= 'D' . $this->days;
+            $dateIso .= $this->days . 'D';
         }
 
         if ($this->hours) {
-            $timeIso .= 'H' . $this->hours;
+            $timeIso .= $this->hours . 'H';
         }
         if ($this->minutes) {
-            $timeIso .= 'M' . $this->minutes;
+            $timeIso .= $this->minutes . 'M';
         }
         if ($this->seconds) {
-            $timeIso .= 'S' . $this->seconds;
+            $timeIso .= $this->seconds . 'S';
         }
 
         // TODO: handle time fractions
