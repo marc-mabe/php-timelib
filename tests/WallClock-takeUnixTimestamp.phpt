@@ -6,9 +6,7 @@ WallClock->takeUnixTimestamp
 include __DIR__ . '/include.php';
 
 $clock = new time\WallClock();
-var_dump($clock);
-
-echo "Resolution: {$clock->getResolution()->toIso()}\n";
+echo stringify($clock) . "\n\n";
 
 echo "### Unix Timestamp (float) ###\n";
 echo "\tmicrotime(): " . ($mt = microtime(true)) . "\n";
@@ -71,32 +69,8 @@ echo "\tWallClock:   " . ($ct = $clock->takeUnixTimestamp(\time\TimeUnit::Hour, 
 echo ($ct * 60 * 60 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 --EXPECTF--
-object(time\WallClock)#%d (1) {
-  ["modifier"]=>
-  object(time\Duration)#%d (10) {
-    ["isNegative"]=>
-    bool(false)
-    ["years"]=>
-    int(0)
-    ["months"]=>
-    int(0)
-    ["days"]=>
-    int(0)
-    ["hours"]=>
-    int(0)
-    ["minutes"]=>
-    int(0)
-    ["seconds"]=>
-    int(0)
-    ["milliseconds"]=>
-    int(0)
-    ["microseconds"]=>
-    int(0)
-    ["nanoseconds"]=>
-    int(0)
-  }
-}
-Resolution: PT0.000001S
+WallClock(resolution: Duration('PT0.000001S'), modifier: Duration('P0D'))
+
 ### Unix Timestamp (float) ###
 	microtime(): %f
 	WallClock:   %f

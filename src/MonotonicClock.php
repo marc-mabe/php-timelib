@@ -2,7 +2,10 @@
 
 namespace time;
 
-class MonotonicClock implements Clock {
+final class MonotonicClock implements Clock
+{
+    public readonly Duration $resolution;
+
     public readonly Duration $modifier;
 
     public function __construct(?Duration $modifier = null) {
@@ -19,11 +22,8 @@ class MonotonicClock implements Clock {
             );
         }
         $this->modifier = $modifier;
-    }
 
-    public function getResolution(): Duration
-    {
-        return new Duration(nanoseconds: 1);
+        $this->resolution = new Duration(nanoseconds: 1);
     }
 
     public function takeMoment(): Moment

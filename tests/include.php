@@ -1,10 +1,13 @@
 <?php
 
+use time\Clock;
 use time\Duration;
 use time\LocalDate;
 use time\LocalDateTime;
 use time\LocalTime;
 use time\Moment;
+use time\MonotonicClock;
+use time\WallClock;
 use time\Zone;
 use time\ZonedDateTime;
 
@@ -39,7 +42,15 @@ function stringifyDuration(Duration $duration) {
     return "Duration('{$duration->toIso()}')";
 }
 
-function stringify(null|Moment|LocalDate|LocalTime|LocalDateTime|ZonedDateTime|Zone|Duration $v) {
+function stringifyWallClock(WallClock $clock) {
+    return "WallClock(resolution: " . stringifyDuration($clock->resolution) . ", modifier: " . stringifyDuration($clock->modifier) . ")";
+}
+
+function stringifyMonotonicClock(MonotonicClock $clock) {
+    return "MonotonicClock(resolution: " . stringifyDuration($clock->resolution) . ", modifier: " . stringifyDuration($clock->modifier) . ")";
+}
+
+function stringify(null|Moment|LocalDate|LocalTime|LocalDateTime|ZonedDateTime|Zone|Duration|Clock $v) {
     return match (true) {
         $v === null => 'null',
         $v instanceof Moment => stringifyMoment($v),
@@ -49,5 +60,7 @@ function stringify(null|Moment|LocalDate|LocalTime|LocalDateTime|ZonedDateTime|Z
         $v instanceof ZonedDateTime => stringifyZonedDateTime($v),
         $v instanceof Zone => stringifyZone($v),
         $v instanceof Duration => stringifyDuration($v),
+        $v instanceof WallClock => stringifyWallClock($v),
+        $v instanceof MonotonicClock => stringifyMonotonicClock($v),
     };
 }

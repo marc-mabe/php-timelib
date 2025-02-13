@@ -76,6 +76,11 @@ final class Duration {
         $s  = $this->seconds + \intdiv($ns, 1_000_000_000);
         $ns = $ns % 1_000_000_000;
         if ($s || $ns) {
+            if ($ns < 0) {
+                $s -= 1;
+                $ns = 1_000_000_000 - $ns;
+            }
+
             $timeIso .= $s;
 
             if ($ns) {

@@ -2,14 +2,14 @@
 
 namespace time;
 
-final class WallClock implements Clock {
+final class WallClock implements Clock
+{
+    public readonly Duration $resolution;
+
     public function __construct(
         public readonly Duration $modifier = new Duration(),
-    ) {}
-
-    public function getResolution(): Duration
-    {
-        return new Duration(microseconds: 1);
+    ) {
+        $this->resolution = new Duration(microseconds: 1);
     }
 
     public function takeMoment(): Moment

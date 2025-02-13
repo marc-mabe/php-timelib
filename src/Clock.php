@@ -2,8 +2,9 @@
 
 namespace time;
 
-interface Clock {
-    public function getResolution(): Duration;
+interface Clock
+{
+    public Duration $resolution { get; }
 
     public function takeMoment(): Moment;
 

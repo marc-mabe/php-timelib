@@ -6,9 +6,7 @@ MonotonicClock->takeUnixTimestamp
 include __DIR__ . '/include.php';
 
 $clock = new time\MonotonicClock();
-var_dump($clock);
-
-echo "Resolution: {$clock->getResolution()->toIso()}\n";
+echo stringify($clock) . "\n\n";
 
 echo "### Unix Timestamp (float) ###\n";
 echo "\tmicrotime():     " . ($mt = microtime(true)) . "\n";
@@ -71,32 +69,8 @@ echo "\tMonotonicClock:  " . ($ct = $clock->takeUnixTimestamp(\time\TimeUnit::Ho
 echo ($ct * 60 * 60 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 --EXPECTF--
-object(time\MonotonicClock)#%d (1) {
-  ["modifier"]=>
-  object(time\Duration)#%d (10) {
-    ["isNegative"]=>
-    bool(false)
-    ["years"]=>
-    int(0)
-    ["months"]=>
-    int(0)
-    ["days"]=>
-    int(0)
-    ["hours"]=>
-    int(0)
-    ["minutes"]=>
-    int(0)
-    ["seconds"]=>
-    int(%f)
-    ["milliseconds"]=>
-    int(0)
-    ["microseconds"]=>
-    int(0)
-    ["nanoseconds"]=>
-    int(%f)
-  }
-}
-Resolution: PT0.000000001S
+MonotonicClock(resolution: Duration('PT0.000000001S'), modifier: Duration('PT%fS'))
+
 ### Unix Timestamp (float) ###
 	microtime():     %f
 	MonotonicClock:  %f
