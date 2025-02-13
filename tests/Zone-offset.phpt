@@ -5,7 +5,12 @@ Zone->offset
 
 include __DIR__ . '/include.php';
 
-$identifiers = ['GMT', 'UTC', 'CET', 'CEST', '+00:00', '+12:34', '-12:34', '+12:34:56', '-12:34:56', 'Europe/Berlin'];
+$identifiers = [
+    'GMT', 'UTC', 'Etc/GMT', 'Etc/GMT+1',
+    'CET', 'CEST',
+    '+00:00', '+12:34', '-12:34', '+12:34:56', '-12:34:56',
+    'Europe/Berlin'
+];
 
 foreach ($identifiers as $identifier) {
     $zone = time\Zone::fromIdentifier($identifier);
@@ -15,6 +20,8 @@ foreach ($identifiers as $identifier) {
 --EXPECTF--
 Zone('GMT'): Duration('P0D')
 Zone('UTC'): Duration('P0D')
+Zone('Etc/GMT'): Duration('P0D')
+Zone('Etc/GMT+1'): Duration('-PTH1')
 Zone('CET'): Duration('PTH1')
 Zone('CEST'): Duration('PTH2')
 Zone('+00:00'): Duration('P0D')

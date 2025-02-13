@@ -30,12 +30,12 @@ final class Zone
                 )->standardizedTo(TimeUnit::Minute);
             }
 
-            $match = preg_match(
+            $match = \preg_match(
                 '/^(?:GMT|UTC)?(?<sign>[+-])(?<h>\d\d)(:?(?<m>\d\d)(:?(?<s>\d\d))?)?/',
                 $this->identifier,
                 $matches
             );
-            assert($match !== false);
+            \assert($match !== false);
             if ($match) {
                 return new Duration(
                     isNegative: $matches['sign'] === '-',
@@ -43,6 +43,13 @@ final class Zone
                     minutes: (int)($matches['m'] ?? 0),
                     seconds: (int)($matches['s'] ?? 0),
                 );
+            }
+
+            // lookup transitions -> if only one starting at PHP_INT_MIN -> take it
+            $transitions = $this->legacy->getTransitions();
+            if (\count($transitions) === 1 && $transitions[0]['ts'] === PHP_INT_MIN) {
+                return Duration::fromUnit(TimeUnit::Second, $transitions[0]['offset'])
+                    ->standardizedTo(TimeUnit::Minute);
             }
 
             return null;
