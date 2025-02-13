@@ -87,9 +87,9 @@ final class Duration {
 
         $dateTimeIso = $dateIso . ($timeIso !== '' ? 'T' . $timeIso : '');
 
-        // Just "P" is not allowed as empty duration in ISO
+        // An ISO period must have defined at least one value
         if ($dateTimeIso === '') {
-            return 'P0D';
+            $dateTimeIso = '0D';
         }
 
         return $this->isNegative ? '-P' . $dateTimeIso : 'P' . $dateTimeIso;
