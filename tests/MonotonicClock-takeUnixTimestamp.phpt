@@ -96,7 +96,7 @@ object(time\MonotonicClock)#%d (1) {
     int(%f)
   }
 }
-Resolution: P0D
+Resolution: PT0.000000001S
 ### Unix Timestamp (float) ###
 	microtime():     %f
 	MonotonicClock:  %f

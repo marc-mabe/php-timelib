@@ -96,7 +96,7 @@ object(time\WallClock)#%d (1) {
     int(0)
   }
 }
-Resolution: P0D
+Resolution: PT0.000001S
 ### Unix Timestamp (float) ###
 	microtime(): %f
 	WallClock:   %f

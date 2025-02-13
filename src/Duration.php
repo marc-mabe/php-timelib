@@ -71,11 +71,20 @@ final class Duration {
         if ($this->minutes) {
             $timeIso .= $this->minutes . 'M';
         }
-        if ($this->seconds) {
-            $timeIso .= $this->seconds . 'S';
+
+        $ns = $this->milliseconds * 1_000_000 + $this->microseconds * 1_000 + $this->nanoseconds;
+        $s  = $this->seconds + \intdiv($ns, 1_000_000_000);
+        $ns = $ns % 1_000_000_000;
+        if ($s || $ns) {
+            $timeIso .= $s;
+
+            if ($ns) {
+                $timeIso .= '.' . \rtrim(\str_pad($ns, 9, '0', STR_PAD_LEFT), '0');
+            }
+
+            $timeIso .= 'S';
         }
 
-        // TODO: handle time fractions
         $dateTimeIso = $dateIso . ($timeIso !== '' ? 'T' . $timeIso : '');
 
         // Just "P" is not allowed as empty duration in ISO
