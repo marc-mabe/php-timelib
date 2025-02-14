@@ -87,7 +87,7 @@ final class Moment implements Date, Time {
             ->add($periodNoFractions->toLegacyInterval())
             ->getTimestamp();
 
-        $ns = $period->isNegative
+        $ns = $period->isInverted
             ? $this->nanoOfSecond
                 + $period->nanoseconds
                 + ($period->microseconds * 1_000)
@@ -109,7 +109,7 @@ final class Moment implements Date, Time {
 
     public function sub(Period $period): self
     {
-        return $this->add($period->isNegative ? $period->abs() : $period->negated());
+        return $this->add($period->isInverted ? $period->abs() : $period->negated());
     }
 
     public function withYear(int $year): self

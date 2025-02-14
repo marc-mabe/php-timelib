@@ -4,7 +4,7 @@ namespace time;
 
 final class Period {
     public function __construct(
-        public readonly bool $isNegative = false,
+        public readonly bool $isInverted = false,
         public readonly int $years = 0,
         public readonly int $months = 0,
         public readonly int $days = 0,
@@ -35,7 +35,7 @@ final class Period {
 
     public function diff(Period $other): self
     {
-        // TODO: Handle isNegative
+        // TODO: Handle isInverted
         return new self(
             years: abs($this->years - $other->years),
             months: abs($this->months - $other->months),
@@ -73,9 +73,11 @@ final class Period {
         $ns = $this->milliseconds * 1_000_000 + $this->microseconds * 1_000 + $this->nanoseconds;
         $s  = $this->seconds + \intdiv($ns, 1_000_000_000);
         $ns = $ns % 1_000_000_000;
-        if ($s || $ns) {
+        if (!$s && $ns < 0) {
+            $timeIso .= '-0.' . \rtrim(\str_pad($ns * -1, 9, '0', STR_PAD_LEFT), '0') . 'S';
+        } elseif ($s || $ns) {
             if ($ns < 0) {
-                $s -= 1;
+                $s = $s < 0 ? $s + 1 : $s - 1;
                 $ns = 1_000_000_000 - $ns;
             }
 
@@ -95,12 +97,12 @@ final class Period {
             $dateTimeIso = '0D';
         }
 
-        return $this->isNegative ? '-P' . $dateTimeIso : 'P' . $dateTimeIso;
+        return $this->isInverted ? '-P' . $dateTimeIso : 'P' . $dateTimeIso;
     }
 
     public function abs(): self {
         return new self(
-            isNegative: false,
+            isInverted: false,
             years: $this->years,
             months: $this->months,
             days: $this->days,
@@ -115,7 +117,7 @@ final class Period {
 
     public function negated(): self {
         return new self(
-            isNegative: true,
+            isInverted: true,
             years: $this->years,
             months: $this->months,
             days: $this->days,
@@ -128,164 +130,10 @@ final class Period {
         );
     }
 
-    /**
-     * Tests if this period is standardized to the given time unit where
-     *  - each microsecond as 1000 nanoseconds
-     *  - each millisecond as 1000 microseconds
-     *  - each second has 1000 milliseconds
-     *  - each minute has 60 seconds
-     *  - each hour has 60 minutes
-     *  - each day has 24 hours
-     */
-    public function isStandardized(TimeUnit $unit): bool
-    {
-        $standardized = $this->nanoseconds < 1_000;
-        if (!$standardized || $unit === TimeUnit::Nanosecond) {
-            return $standardized;
-        }
-
-        $standardized = $this->microseconds < 1_000;
-        if (!$standardized || $unit === TimeUnit::Microsecond) {
-            return $standardized;
-        }
-
-        $standardized = $this->milliseconds < 1_000;
-        if (!$standardized || $unit === TimeUnit::Millisecond) {
-            return $standardized;
-        }
-
-        $standardized = $this->seconds < 60;
-        if (!$standardized || $unit === TimeUnit::Second) {
-            return $standardized;
-        }
-
-        $standardized = $this->minutes < 60;
-        if (!$standardized || $unit === TimeUnit::Minute) {
-            return $standardized;
-        }
-
-        $standardized = $this->hours < 24;
-        if (!$standardized || $unit === TimeUnit::Hour) {
-            return $standardized;
-        }
-
-        return true;
-    }
-
-    /**
-     * Creates a new period standardized to the given time unit where
-     * - each microsecond as 1000 nanoseconds
-     * - each millisecond as 1000 microseconds
-     * - each second has 1000 milliseconds
-     * - each minute has 60 seconds
-     * - each hour has 60 minutes
-     * - each day has 24 hours
-     * - other parts of this period are not touched
-     *
-     * Already standardized periods will return the same instance.
-     *
-     * @return self
-     */
-    public function standardizedTo(TimeUnit $unit): self
-    {
-        if ($this->isStandardized($unit)) {
-            return $this;
-        }
-
-        $ns = $this->nanoseconds;
-        $us = $this->microseconds;
-        if ($ns >= 1_000) {
-            $us += \floor($ns / 1_000);
-            $ns = $ns % 1_000;
-        }
-
-        if ($unit === TimeUnit::Nanosecond) {
-            return new Period(
-                isNegative: $this->isNegative,
-                years: $this->years, months: $this->months, days: $this->days,
-                hours: $this->hours, minutes: $this->minutes, seconds: $this->seconds,
-                milliseconds: $this->milliseconds, microseconds: $us, nanoseconds: $ns,
-            );
-        }
-
-        $ms = $this->milliseconds;
-        if ($us >= 1_000) {
-            $ms += \floor($us / 1_000);
-            $us = $us % 1_000;
-        }
-
-        if ($unit === TimeUnit::Microsecond) {
-            return new Period(
-                isNegative: $this->isNegative,
-                years: $this->years, months: $this->months, days: $this->days,
-                hours: $this->hours, minutes: $this->minutes, seconds: $this->seconds,
-                milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
-            );
-        }
-
-        $s = $this->seconds;
-        if ($ms >= 1_000) {
-            $s += \floor($ms / 1_000);
-            $ms = $ms % 1_000;
-        }
-
-        if ($unit === TimeUnit::Millisecond) {
-            return new Period(
-                isNegative: $this->isNegative,
-                years: $this->years, months: $this->months, days: $this->days,
-                hours: $this->hours, minutes: $this->minutes, seconds: $s,
-                milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
-            );
-        }
-
-        $m = $this->minutes;
-        if ($s >= 60) {
-            $m += \floor($s / 60);
-            $s = $s % 60;
-        }
-
-        if ($unit === TimeUnit::Second) {
-            return new Period(
-                isNegative: $this->isNegative,
-                years: $this->years, months: $this->months, days: $this->days,
-                hours: $this->hours, minutes: $m, seconds: $s,
-                milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
-            );
-        }
-
-        $h = $this->hours;
-        if ($m >= 60) {
-            $h += \floor($m / 60);
-            $m = $m % 60;
-        }
-
-        if ($unit === TimeUnit::Minute) {
-            return new Period(
-                isNegative: $this->isNegative,
-                years: $this->years, months: $this->months, days: $this->days,
-                hours: $h, minutes: $m, seconds: $s,
-                milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
-            );
-        }
-
-        $d = $this->days;
-        if ($h >= 60) {
-            $d += \floor($h / 60);
-            $h = $h % 60;
-        }
-
-        return new Period(
-            isNegative: $this->isNegative,
-            years: $this->years, months: $this->months, days: $d,
-            hours: $h, minutes: $m, seconds: $s,
-            milliseconds: $ms, microseconds: $us, nanoseconds: $ns,
-        );
-    }
-
     public function withYears(int $years): self
     {
         return new self(
-            isNegative: $this->isNegative,
+            isInverted: $this->isInverted,
             years: $years,
             months: $this->months,
             days: $this->days,
@@ -301,7 +149,7 @@ final class Period {
     public function withMonths(int $months): self
     {
         return new self(
-            isNegative: $this->isNegative,
+            isInverted: $this->isInverted,
             years: $this->years,
             months: $months,
             days: $this->days,
@@ -317,7 +165,7 @@ final class Period {
     public function withDays(int $days): self
     {
         return new self(
-            isNegative: $this->isNegative,
+            isInverted: $this->isInverted,
             years: $this->years,
             months: $this->months,
             days: $days,
@@ -333,7 +181,7 @@ final class Period {
     public function withHours(int $hours): self
     {
         return new self(
-            isNegative: $this->isNegative,
+            isInverted: $this->isInverted,
             years: $this->years,
             months: $this->months,
             days: $this->days,
@@ -349,7 +197,7 @@ final class Period {
     public function withMinutes(int $minutes): self
     {
         return new self(
-            isNegative: $this->isNegative,
+            isInverted: $this->isInverted,
             years: $this->years,
             months: $this->months,
             days: $this->days,
@@ -365,7 +213,7 @@ final class Period {
     public function withSeconds(int $seconds): self
     {
         return new self(
-            isNegative: $this->isNegative,
+            isInverted: $this->isInverted,
             years: $this->years,
             months: $this->months,
             days: $this->days,
@@ -381,7 +229,7 @@ final class Period {
     public function withMilliseconds(int $milliseconds): self
     {
         return new self(
-            isNegative: $this->isNegative,
+            isInverted: $this->isInverted,
             years: $this->years,
             months: $this->months,
             days: $this->days,
@@ -397,7 +245,7 @@ final class Period {
     public function withMicroseconds(int $microseconds): self
     {
         return new self(
-            isNegative: $this->isNegative,
+            isInverted: $this->isInverted,
             years: $this->years,
             months: $this->months,
             days: $this->days,
@@ -413,7 +261,7 @@ final class Period {
     public function withNanoseconds(int $nanoseconds): self
     {
         return new self(
-            isNegative: $this->isNegative,
+            isInverted: $this->isInverted,
             years: $this->years,
             months: $this->months,
             days: $this->days,
@@ -429,23 +277,6 @@ final class Period {
     public function toLegacyInterval(): \DateInterval
     {
         return new \DateInterval($this->toIso());
-    }
-
-    public static function fromUnit(DateUnit|TimeUnit $unit, int $value): self {
-        $isNegative = $value < 0;
-        $abs        = abs($value);
-
-        return match ($unit) {
-            DateUnit::Year => new self($isNegative, years: $abs),
-            DateUnit::Month => new self($isNegative, months: $abs),
-            DateUnit::Day => new self($isNegative, days: $abs),
-            TimeUnit::Hour => new self($isNegative, hours: $abs),
-            TimeUnit::Minute => new self($isNegative, minutes: $abs),
-            TimeUnit::Second => new self($isNegative, seconds: $abs),
-            TimeUnit::Millisecond => new self($isNegative, milliseconds: $abs),
-            TimeUnit::Microsecond => new self($isNegative, microseconds: $abs),
-            TimeUnit::Nanosecond => new self($isNegative, nanoseconds: $abs),
-        };
     }
 
     public static function fromTime(Time $time): self
@@ -471,7 +302,7 @@ final class Period {
 
     public static function fromLegacyInterval(\DateInterval $interval): self {
         return new self(
-            isNegative: $interval->invert,
+            isInverted: $interval->invert,
             years: $interval->y,
             months: $interval->m,
             days: $interval->d,

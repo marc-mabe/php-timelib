@@ -66,16 +66,8 @@ final class ZonedDateTime implements Date, Time, Zoned
         get => LocalTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
-    public Period $offset {
-        get {
-            $seconds    = $this->legacySec->getOffset();
-            $isNegative = $seconds < 0;
-            $secondsAbs = \abs($seconds);
-            $hour       = \intdiv($secondsAbs, 3600);
-            $minute     = \intdiv($secondsAbs, 60) % 60;
-            $second     = $secondsAbs % 60;
-            return new Period(isNegative: $isNegative, hours: $hour, minutes: $minute, seconds: $second);
-        }
+    public Duration $offset {
+        get => new Duration(seconds: $this->legacySec->getOffset())->normalized();
     }
 
     private function __construct(
@@ -91,7 +83,7 @@ final class ZonedDateTime implements Date, Time, Zoned
     }
 
     public function sub(Period $period): self {
-        return $period->isNegative
+        return $period->isInverted
             ? $this->add($period->abs())
             : $this->add($period->negated());
     }

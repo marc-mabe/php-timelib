@@ -1,6 +1,6 @@
 <?php
 
-use time\Clock;
+use time\Duration;
 use time\Period;
 use time\LocalDate;
 use time\LocalDateTime;
@@ -12,6 +12,10 @@ use time\Zone;
 use time\ZonedDateTime;
 
 include __DIR__ . '/../vendor/autoload.php';
+
+function stringifyEnum(UnitEnum $enum) {
+    return $enum::class . "::" . $enum->name;
+}
 
 function stringifyMoment(Moment $moment) {
     $tuple = $moment->toUnixTimestampTuple();
@@ -38,6 +42,10 @@ function stringifyZone(Zone $zone) {
     return "Zone('{$zone->format('e')}')";
 }
 
+function stringifyDuration(Duration $duration) {
+    return "Duration('{$duration->toIso()}')";
+}
+
 function stringifyPeriod(Period $period) {
     return "Period('{$period->toIso()}')";
 }
@@ -50,9 +58,11 @@ function stringifyMonotonicClock(MonotonicClock $clock) {
     return "MonotonicClock(resolution: " . stringifyPeriod($clock->resolution) . ", modifier: " . stringifyPeriod($clock->modifier) . ")";
 }
 
-function stringify(null|Moment|LocalDate|LocalTime|LocalDateTime|ZonedDateTime|Zone|Period|Clock $v) {
+function stringify(mixed $v) {
     return match (true) {
-        $v === null => 'null',
+        $v === null,
+        is_scalar($v) => var_export($v, true),
+        $v instanceof UnitEnum => stringifyEnum($v),
         $v instanceof Moment => stringifyMoment($v),
         $v instanceof LocalDate => stringifyLocalDate($v),
         $v instanceof LocalTime => stringifyLocalTime($v),
@@ -60,6 +70,7 @@ function stringify(null|Moment|LocalDate|LocalTime|LocalDateTime|ZonedDateTime|Z
         $v instanceof ZonedDateTime => stringifyZonedDateTime($v),
         $v instanceof Zone => stringifyZone($v),
         $v instanceof Period => stringifyPeriod($v),
+        $v instanceof Duration => stringifyDuration($v),
         $v instanceof WallClock => stringifyWallClock($v),
         $v instanceof MonotonicClock => stringifyMonotonicClock($v),
     };
