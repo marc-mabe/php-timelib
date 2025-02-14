@@ -26,7 +26,7 @@ final class Zone
                 // timezonedb lookup
                 return new Duration(
                     seconds: \DateTime::createFromTimestamp(0)->setTimezone($this->legacy)->getOffset()
-                )->normalized();
+                );
             }
 
             $match = \preg_match(
@@ -36,18 +36,23 @@ final class Zone
             );
             \assert($match !== false);
             if ($match) {
-                return new Duration(
-                    isNegative: $matches['sign'] === '-',
+                $duration = new Duration(
                     hours: (int)$matches['h'],
                     minutes: (int)($matches['m'] ?? 0),
                     seconds: (int)($matches['s'] ?? 0),
                 );
+
+                if ($matches['sign'] === '-') {
+                    $duration = $duration->negated();
+                }
+
+                return $duration;
             }
 
             // lookup transitions -> if only one starting at PHP_INT_MIN -> take it
             $transitions = $this->legacy->getTransitions();
             if (\count($transitions) === 1 && $transitions[0]['ts'] === PHP_INT_MIN) {
-                return new Duration(seconds: $transitions[0]['offset'])->normalized();
+                return new Duration(seconds: $transitions[0]['offset']);
             }
 
             return null;
@@ -76,15 +81,14 @@ final class Zone
     }
 
     public static function fromOffset(Duration $offset): self {
-        if ($offset->milliseconds || $offset->microseconds || $offset->nanoseconds) {
+        if ($offset->nanoOfSeconds) {
             throw new \ValueError("A time offset can not contain fractions of a second");
         }
 
-        $normalized = $offset->normalized();
-        $identifier = $normalized->isNegative ? '-' : '+'
-            . \str_pad((string)$normalized->hours, '0', STR_PAD_LEFT)
-            . ':' . \str_pad((string)$normalized->minutes, '0', STR_PAD_LEFT)
-            . ($normalized->seconds ? ':' . \str_pad((string)$normalized->minutes, '0', STR_PAD_LEFT) : '');
+        $identifier = $offset->isNegative ? '-' : '+'
+            . \str_pad((string)$offset->hours, '0', STR_PAD_LEFT)
+            . ':' . \str_pad((string)$offset->minuteOfHours, '0', STR_PAD_LEFT)
+            . ($offset->secondOfMinutes ? ':' . \str_pad((string)$offset->secondOfMinutes, '0', STR_PAD_LEFT) : '');
         return new self(new \DateTimeZone($identifier));
     }
 

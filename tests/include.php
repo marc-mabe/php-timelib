@@ -51,11 +51,11 @@ function stringifyPeriod(Period $period) {
 }
 
 function stringifyWallClock(WallClock $clock) {
-    return "WallClock(resolution: " . stringifyPeriod($clock->resolution) . ", modifier: " . stringifyPeriod($clock->modifier) . ")";
+    return "WallClock(resolution: " . stringify($clock->resolution) . ", modifier: " . stringify($clock->modifier) . ")";
 }
 
 function stringifyMonotonicClock(MonotonicClock $clock) {
-    return "MonotonicClock(resolution: " . stringifyPeriod($clock->resolution) . ", modifier: " . stringifyPeriod($clock->modifier) . ")";
+    return "MonotonicClock(resolution: " . stringify($clock->resolution) . ", modifier: " . stringify($clock->modifier) . ")";
 }
 
 function stringify(mixed $v) {

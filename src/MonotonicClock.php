@@ -4,11 +4,11 @@ namespace time;
 
 final class MonotonicClock implements Clock
 {
-    public readonly Period $resolution;
+    public readonly Duration $resolution;
 
-    public readonly Period $modifier;
+    public readonly Duration $modifier;
 
-    public function __construct(?Period $modifier = null) {
+    public function __construct(?Duration $modifier = null) {
         $hr = \hrtime();
         if (false === $hr) {
             throw new \RuntimeException('No monotonic timer available');
@@ -16,14 +16,14 @@ final class MonotonicClock implements Clock
 
         if ($modifier === null) {
             [$us, $s] = \explode(' ', \microtime(), 2);
-            $modifier = new Period(
+            $modifier = new Duration(
                 seconds:     (int)$s - $hr[0],
                 nanoseconds: (int)\substr($us, 2, -2) * 1_000 - $hr[1],
             );
         }
         $this->modifier = $modifier;
 
-        $this->resolution = new Period(nanoseconds: 1);
+        $this->resolution = new Duration(nanoseconds: 1);
     }
 
     public function takeMoment(): Moment

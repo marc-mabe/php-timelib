@@ -201,13 +201,13 @@ class DateTimeFormatter
             FormatToken::OffsetWithoutColon =>
                 ($offset->isNegative ? '-' : '+')
                 . \str_pad($offset->hours, 2, '0', STR_PAD_LEFT)
-                . \str_pad($offset->minutes, 2, '0', STR_PAD_LEFT)
-                . ($offset->seconds ? \str_pad($offset->seconds, 2, '0', STR_PAD_LEFT) : ''),
+                . \str_pad($offset->minuteOfHours, 2, '0', STR_PAD_LEFT)
+                . ($offset->secondOfMinutes ? \str_pad($offset->secondOfMinutes, 2, '0', STR_PAD_LEFT) : ''),
             FormatToken::OffsetWithColon =>
                 ($offset->isNegative ? '-' : '+')
                 . \str_pad($offset->hours, 2, '0', STR_PAD_LEFT)
-                . ':' . \str_pad($offset->minutes, 2, '0', STR_PAD_LEFT)
-                . ($offset->seconds ? ':' . \str_pad($offset->seconds, 2, '0', STR_PAD_LEFT) : ''),
+                . ':' . \str_pad($offset->minuteOfHours, 2, '0', STR_PAD_LEFT)
+                . ($offset->secondOfMinutes ? ':' . \str_pad($offset->secondOfMinutes, 2, '0', STR_PAD_LEFT) : ''),
             FormatToken::OffsetWithColonOrZ => $offset->isEmpty()
                 ? 'Z'
                 : $this->formatOffset(FormatToken::OffsetWithColon, $dateTimeZone),

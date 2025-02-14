@@ -67,7 +67,7 @@ final class ZonedDateTime implements Date, Time, Zoned
     }
 
     public Duration $offset {
-        get => new Duration(seconds: $this->legacySec->getOffset())->normalized();
+        get => new Duration(seconds: $this->legacySec->getOffset());
     }
 
     private function __construct(
@@ -75,17 +75,13 @@ final class ZonedDateTime implements Date, Time, Zoned
         public readonly Zone $zone,
     ) {}
 
-    public function add(Period $period): self
+    public function add(Duration $duration): self
     {
-        $s  = $this->legacySec->add($period->toLegacyInterval())->getTimestamp();
-        $ns = $this->nanoOfSecond; // TODO: handle fraction of a second
-        return new self(Moment::fromUnixTimestampTuple([$s, $ns]), $this->zone);
+        return new self($this->moment->add($duration), $this->zone);
     }
 
-    public function sub(Period $period): self {
-        return $period->isInverted
-            ? $this->add($period->abs())
-            : $this->add($period->negated());
+    public function sub(Duration $duration): self {
+        return $this->add($duration->isNegative ? $duration->abs() : $duration->negated());
     }
 
     public function truncatedTo(DateUnit|TimeUnit $unit): self {

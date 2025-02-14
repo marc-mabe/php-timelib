@@ -4,7 +4,7 @@ namespace time;
 
 interface Clock
 {
-    public Period $resolution { get; }
+    public Duration $resolution { get; }
 
     public function takeMoment(): Moment;
 

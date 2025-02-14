@@ -69,7 +69,7 @@ echo "\tMonotonicClock:  " . ($ct = $clock->takeUnixTimestamp(\time\TimeUnit::Ho
 echo ($ct * 60 * 60 - $ts < 1 ? 'OK' : 'FAIL') . "\n";
 
 --EXPECTF--
-MonotonicClock(resolution: Period('PT0.000000001S'), modifier: Period('PT%fS'))
+MonotonicClock(resolution: Duration('PT0.000000001S'), modifier: Duration('PT%sS'))
 
 ### Unix Timestamp (float) ###
 	microtime():     %f

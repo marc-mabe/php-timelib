@@ -57,12 +57,12 @@ echo "new Duration(nanoseconds: -123)\n";
 $duration = new time\Duration(nanoseconds: -123);
 echo "  " . stringify($duration) . "\n";
 
-echo "new Duration(true, 10, 11, 12, 100, 101, 102)\n";
-$duration = new time\Duration(true, 10, 11, 12, 100, 101, 102);
+echo "new Duration(10, 11, 12, 100, 101, 102)\n";
+$duration = new time\Duration(10, 11, 12, 100, 101, 102);
 echo "  " . stringify($duration) . "\n";
 
-echo "new Duration(false, -25, -61, -61, -1001, -1002, -1003)\n";
-$duration = new time\Duration(false, -25, -61, -61, -1001, -1002, -1003);
+echo "new Duration(-25, -61, -61, -1001, -1002, -1003)\n";
+$duration = new time\Duration(-25, -61, -61, -1001, -1002, -1003);
 echo "  " . stringify($duration) . "\n";
 
 --EXPECTF--
@@ -71,28 +71,28 @@ new Duration()
 new Duration(hours: 123)
   Duration('PT123H')
 new Duration(hours: -123)
-  Duration('PT-123H')
+  Duration('-PT123H')
 new Duration(minutes: 123)
-  Duration('PT123M')
+  Duration('PT2H3M')
 new Duration(minutes: -123)
-  Duration('PT-123M')
+  Duration('-PT2H3M')
 new Duration(seconds: 123)
-  Duration('PT123S')
+  Duration('PT2M3S')
 new time\Duration(seconds: -123)
-  Duration('PT-123S')
+  Duration('-PT2M3S')
 new Duration(milliseconds: 123)
   Duration('PT0.123S')
 new Duration(milliseconds: -123)
-  Duration('PT-0.123S')
+  Duration('-PT0.123S')
 new Duration(microseconds: 123)
   Duration('PT0.000123S')
 new Duration(microseconds: -123)
-  Duration('PT-0.000123S')
+  Duration('-PT0.000123S')
 new Duration(nanoseconds: 123)
   Duration('PT0.000000123S')
 new Duration(nanoseconds: -123)
-  Duration('PT-0.000000123S')
-new Duration(true, 10, 11, 12, 100, 101, 102)
-  Duration('-PT10H11M12.100101102S')
-new Duration(false, -25, -61, -61, -1001, -1002, -1003)
-  Duration('PT-25H-61M-61.1002003003S')
+  Duration('-PT0.000000123S')
+new Duration(10, 11, 12, 100, 101, 102)
+  Duration('PT10H11M12.100101102S')
+new Duration(-25, -61, -61, -1001, -1002, -1003)
+  Duration('-PT26H2M2.002003003S')

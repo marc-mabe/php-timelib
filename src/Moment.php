@@ -76,40 +76,18 @@ final class Moment implements Date, Time {
         public readonly int $nanoOfSecond,
     ) {}
 
-    public function add(Period $period): self
+    public function add(Duration $duration): self
     {
-        $periodNoFractions = $period
-            ->withMilliseconds(0)
-            ->withMicroseconds(0)
-            ->withNanoseconds(0);
-
-        $s = $this->legacySec
-            ->add($periodNoFractions->toLegacyInterval())
-            ->getTimestamp();
-
-        $ns = $period->isInverted
-            ? $this->nanoOfSecond
-                + $period->nanoseconds
-                + ($period->microseconds * 1_000)
-                + ($period->milliseconds * 1_000_000)
-            : $this->nanoOfSecond
-                - $period->nanoseconds
-                - ($period->microseconds * 1_000)
-                - ($period->milliseconds * 1_000_000);
-
-        if ($ns >= 1_000_000_000) {
-            $s += \intdiv($ns, 1_000_000_000);
-            $ns = $ns % 1_000_000_000;
-        } elseif ($ns < 0) {
-            // TODO
-        }
+        $ns = $this->nanoOfSecond + $duration->nanoOfSeconds;
+        $s  = $this->tsSec + $duration->seconds + \intdiv($ns, 1_000_000_000);
+        $ns = $ns % 1_000_000_000;
 
         return new self($s, $ns);
     }
 
-    public function sub(Period $period): self
+    public function sub(Duration $duration): self
     {
-        return $this->add($period->isInverted ? $period->abs() : $period->negated());
+        return $this->add($duration->isNegative ? $duration->abs() : $duration->negated());
     }
 
     public function withYear(int $year): self
