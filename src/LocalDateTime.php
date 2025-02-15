@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace time;
 
@@ -99,8 +99,8 @@ final class LocalDateTime implements Date, Time {
 
     public static function fromDateTime(Date $date, Time $time): self {
         $z = $date->dayOfYear - 1;
-        $n = str_pad($time->minute, 2, '0', STR_PAD_LEFT);
-        $s = str_pad($time->second, 2, '0', STR_PAD_LEFT);
+        $n = str_pad((string)$time->minute, 2, '0', STR_PAD_LEFT);
+        $s = str_pad((string)$time->second, 2, '0', STR_PAD_LEFT);
         return new self(\DateTimeImmutable::createFromFormat(
             'Y-z G:i:s',
             "{$date->year}-{$z} {$time->hour}:{$n}:{$s}",

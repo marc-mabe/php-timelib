@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace time;
 
@@ -116,7 +116,7 @@ final class Duration
             $timeIso .= $s;
 
             if ($ns) {
-                $timeIso .= '.' . \rtrim(\str_pad($ns, 9, '0', STR_PAD_LEFT), '0');
+                $timeIso .= '.' . \rtrim(\str_pad((string)$ns, 9, '0', STR_PAD_LEFT), '0');
             }
 
             $timeIso .= 'S';

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace time;
 
@@ -295,8 +295,8 @@ final class Moment implements Date, Time {
         int $nanoOfSecond = 0,
     ): self {
         $z = $dayOfYear - 1;
-        $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
-        $s = str_pad($second, 2, '0', STR_PAD_LEFT);
+        $i = str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
+        $s = str_pad((string)$second, 2, '0', STR_PAD_LEFT);
         $ts = \DateTime::createFromFormat(
             'Y-z G:i:s',
             "{$year}-{$z} {$hour}:{$i}:{$s}"
@@ -324,8 +324,8 @@ final class Moment implements Date, Time {
         int $nanoOfSecond = 0,
     ): self {
         $n = $month instanceof Month ? $month->value : $month;
-        $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
-        $s = str_pad($second, 2, '0', STR_PAD_LEFT);
+        $i = str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
+        $s = str_pad((string)$second, 2, '0', STR_PAD_LEFT);
         $ts = \DateTime::createFromFormat(
             'Y-n-j G:i:s',
             "{$year}-{$n}-{$dayOfMonth} {$hour}:{$i}:{$s}"

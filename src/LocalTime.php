@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace time;
 
@@ -39,8 +39,8 @@ final class LocalTime implements Time {
         int $second,
         int $nanoOfSecond = 0
     ): self {
-        $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
-        $s = str_pad($second, 2, '0', STR_PAD_LEFT);
+        $i = str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
+        $s = str_pad((string)$second, 2, '0', STR_PAD_LEFT);
         return new self(\DateTimeImmutable::createFromFormat(
             'Y-z G:i:s',
             "1970-0 $hour:$i:$s",

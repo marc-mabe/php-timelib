@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace time;
 
@@ -146,18 +146,18 @@ final class ZonedDateTime implements Date, Time, Zoned
     }
 
     public static function fromYmd(
-        Zone      $zone,
-        int       $year,
+        Zone $zone,
+        int $year,
         Month|int $month,
-        int       $dayOfMonth,
-        int       $hour = 0,
-        int       $minute = 0,
-        int       $second = 0,
-        int       $nanoOfSecond = 0,
+        int $dayOfMonth,
+        int $hour = 0,
+        int $minute = 0,
+        int $second = 0,
+        int $nanoOfSecond = 0,
     ): self {
         $n = $month instanceof Month ? $month->value : $month;
-        $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
-        $s = str_pad($second, 2, '0', STR_PAD_LEFT);
+        $i = \str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
+        $s = \str_pad((string)$second, 2, '0', STR_PAD_LEFT);
 
         $legacy = \DateTimeImmutable::createFromFormat(
             'Y-n-j G:i:s',
@@ -170,16 +170,16 @@ final class ZonedDateTime implements Date, Time, Zoned
 
     public static function fromYd(
         Zone $zone,
-        int  $year,
-        int  $dayOfYear,
-        int  $hour = 0,
-        int  $minute = 0,
-        int  $second = 0,
-        int  $nanoOfSecond = 0,
+        int $year,
+        int $dayOfYear,
+        int $hour = 0,
+        int $minute = 0,
+        int $second = 0,
+        int $nanoOfSecond = 0,
     ): self {
         $z = $dayOfYear -1;
-        $i = str_pad($minute, 2, '0', STR_PAD_LEFT);
-        $s = str_pad($second, 2, '0', STR_PAD_LEFT);
+        $i = \str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
+        $s = \str_pad((string)$second, 2, '0', STR_PAD_LEFT);
 
         $legacy = \DateTimeImmutable::createFromFormat(
             'Y-z G:i:s',
@@ -212,8 +212,8 @@ final class ZonedDateTime implements Date, Time, Zoned
         $time ??= LocalTime::fromHms(0, 0, 0);
 
         $z = $date->dayOfYear - 1;
-        $i = str_pad($time->minute, 2, '0', STR_PAD_LEFT);
-        $s = str_pad($time->second, 2, '0', STR_PAD_LEFT);
+        $i = \str_pad((string)$time->minute, 2, '0', STR_PAD_LEFT);
+        $s = \str_pad((string)$time->second, 2, '0', STR_PAD_LEFT);
 
         $legacy = \DateTimeImmutable::createFromFormat(
             'Y-z G:i:s',

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace time;
 
@@ -74,7 +74,7 @@ final class Period {
         $s  = $this->seconds + \intdiv($ns, 1_000_000_000);
         $ns = $ns % 1_000_000_000;
         if (!$s && $ns < 0) {
-            $timeIso .= '-0.' . \rtrim(\str_pad($ns * -1, 9, '0', STR_PAD_LEFT), '0') . 'S';
+            $timeIso .= '-0.' . \rtrim(\str_pad((string)($ns * -1), 9, '0', STR_PAD_LEFT), '0') . 'S';
         } elseif ($s || $ns) {
             if ($ns < 0) {
                 $s = $s < 0 ? $s + 1 : $s - 1;
@@ -84,7 +84,7 @@ final class Period {
             $timeIso .= $s;
 
             if ($ns) {
-                $timeIso .= '.' . \rtrim(\str_pad($ns, 9, '0', STR_PAD_LEFT), '0');
+                $timeIso .= '.' . \rtrim(\str_pad((string)$ns, 9, '0', STR_PAD_LEFT), '0');
             }
 
             $timeIso .= 'S';
