@@ -78,8 +78,8 @@ final class Moment implements Date, Time {
 
     public function add(Duration $duration): self
     {
-        $ns = $this->nanoOfSecond + $duration->nanoOfSeconds;
-        $s  = $this->tsSec + $duration->seconds + \intdiv($ns, 1_000_000_000);
+        $ns = $this->nanoOfSecond + $duration->nanosOfSecond;
+        $s  = $this->tsSec + $duration->totalSeconds + \intdiv($ns, 1_000_000_000);
         $ns = $ns % 1_000_000_000;
 
         return new self($s, $ns);

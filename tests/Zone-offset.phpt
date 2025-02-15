@@ -5,28 +5,37 @@ Zone->offset
 
 include __DIR__ . '/include.php';
 
-$identifiers = [
-    'GMT', 'UTC', 'Etc/GMT', 'Etc/GMT+1',
-    'CET', 'CEST',
-    '+00:00', '+12:34', '-12:34', '+12:34:56', '-12:34:56',
-    'Europe/Berlin'
+$zones = [
+    time\Zone::fromIdentifier('GMT'),
+    time\Zone::fromIdentifier('UTC'),
+    time\Zone::fromIdentifier('Etc/GMT'),
+    time\Zone::fromIdentifier('Etc/GMT+1'),
+    time\Zone::fromIdentifier('CET'),
+    time\Zone::fromIdentifier('CEST'),
+    time\Zone::fromIdentifier('+00:00'),
+    time\Zone::fromIdentifier('+12:34'),
+    time\Zone::fromIdentifier('-12:34'),
+    time\Zone::fromIdentifier('+12:34:56'),
+    time\Zone::fromIdentifier('-12:34:56'),
+    time\Zone::fromIdentifier('Europe/Berlin'),
+    time\ZoneOffset::fromDuration(new time\Duration(hours: -1, minutes: -2, seconds: -3)),
 ];
 
-foreach ($identifiers as $identifier) {
-    $zone = time\Zone::fromIdentifier($identifier);
+foreach ($zones as $zone) {
     echo stringify($zone) . ": " . stringify($zone->offset) . "\n";
 }
 
 --EXPECTF--
-Zone('GMT'): Duration('PT0S')
-Zone('UTC'): Duration('PT0S')
-Zone('Etc/GMT'): Duration('PT0S')
-Zone('Etc/GMT+1'): Duration('-PT1H')
-Zone('CET'): Duration('PT1H')
-Zone('CEST'): Duration('PT2H')
-Zone('+00:00'): Duration('PT0S')
-Zone('+12:34'): Duration('PT12H34M')
-Zone('-12:34'): Duration('-PT12H34M')
-Zone('+12:34:56'): Duration('PT12H34M56S')
-Zone('-12:34:56'): Duration('-PT12H34M56S')
-Zone('Europe/Berlin'): NULL
+time\Zone('GMT'): time\ZoneOffset('+00:00')
+time\Zone('UTC'): time\ZoneOffset('+00:00')
+time\Zone('Etc/GMT'): time\ZoneOffset('+00:00')
+time\Zone('Etc/GMT+1'): time\ZoneOffset('-01:00')
+time\Zone('CET'): time\ZoneOffset('+01:00')
+time\Zone('CEST'): time\ZoneOffset('+02:00')
+time\Zone('+00:00'): time\ZoneOffset('+00:00')
+time\Zone('+12:34'): time\ZoneOffset('+12:34')
+time\Zone('-12:34'): time\ZoneOffset('-12:34')
+time\Zone('+12:34:56'): time\ZoneOffset('+12:34:56')
+time\Zone('-12:34:56'): time\ZoneOffset('-12:34:56')
+time\Zone('Europe/Berlin'): NULL
+time\ZoneOffset('-01:02:03'): time\ZoneOffset('-01:02:03')

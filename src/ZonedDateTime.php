@@ -66,8 +66,8 @@ final class ZonedDateTime implements Date, Time, Zoned
         get => LocalTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
-    public Duration $offset {
-        get => new Duration(seconds: $this->legacySec->getOffset());
+    public ZoneOffset $offset {
+        get => ZoneOffset::fromDuration(new Duration(seconds: $this->legacySec->getOffset()));
     }
 
     private function __construct(

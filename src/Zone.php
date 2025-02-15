@@ -2,15 +2,13 @@
 
 namespace time;
 
-final class Zone
+class Zone
 {
-    public string $identifier {
-        get => $this->legacy->getName();
-    }
+    public readonly string $identifier;
 
     public string $name {
-        // FIXME: "\DateTimeZone::getName()" represents the identifier, not the name
-        get => $this->legacy->getName();
+        // FIXME: How to detect the human readable name of a time zone?
+        get => $this->identifier;
     }
 
     public bool $isAbbreviation {
@@ -20,17 +18,18 @@ final class Zone
     /**
      * The time offset if the zone is based on a fixed offset or abbreviation.
      */
-    public ?Duration $offset {
+    public ?ZoneOffset $offset {
         get {
             if ($this->isAbbreviation) {
                 // timezonedb lookup
-                return new Duration(
-                    seconds: \DateTime::createFromTimestamp(0)->setTimezone($this->legacy)->getOffset()
-                );
+                $legacy = new \DateTimeZone($this->identifier);
+                return ZoneOffset::fromDuration(new Duration(
+                    seconds: \DateTime::createFromTimestamp(0)->setTimezone($legacy)->getOffset()
+                ));
             }
 
             $match = \preg_match(
-                '/^(?:GMT|UTC)?(?<sign>[+-])(?<h>\d\d)(:?(?<m>\d\d)(:?(?<s>\d\d))?)?/',
+                '/^(?:GMT|UTC)?(?<sign>[+-])(?<h>\d\d):(?<m>\d\d)(:?(?<s>\d\d))?$/',
                 $this->identifier,
                 $matches
             );
@@ -38,7 +37,7 @@ final class Zone
             if ($match) {
                 $duration = new Duration(
                     hours: (int)$matches['h'],
-                    minutes: (int)($matches['m'] ?? 0),
+                    minutes: (int)$matches['m'],
                     seconds: (int)($matches['s'] ?? 0),
                 );
 
@@ -46,25 +45,35 @@ final class Zone
                     $duration = $duration->negated();
                 }
 
-                return $duration;
+                return ZoneOffset::fromDuration($duration);
             }
 
             // lookup transitions -> if only one starting at PHP_INT_MIN -> take it
-            $transitions = $this->legacy->getTransitions();
+            $legacy      = new \DateTimeZone($this->identifier);
+            $transitions = $legacy->getTransitions();
             if (\count($transitions) === 1 && $transitions[0]['ts'] === PHP_INT_MIN) {
-                return new Duration(seconds: $transitions[0]['offset']);
+                return ZoneOffset::fromDuration(new Duration(seconds: $transitions[0]['offset']));
             }
 
             return null;
         }
     }
 
-    private function __construct(
-        private readonly \DateTimeZone $legacy,
-    ) {}
+    protected function __construct(string $identifier)
+    {
+        // check for time offset
+        // lookup known regional time zones and abbreviations
+        // normalize identifier
+        $this->identifier = new \DateTimeZone($identifier)->getName();
+    }
+
+    public function __toString(): string
+    {
+        return $this->identifier;
+    }
 
     public function toLegacy(): \DateTimeZone {
-        return $this->legacy;
+        return new \DateTimeZone($this->identifier);
     }
 
     public function format(DateTimeFormatter|string $format): string {
@@ -73,23 +82,11 @@ final class Zone
     }
 
     public static function fromIdentifier(string $identifier): self {
-        return new self(new \DateTimeZone($identifier));
+        return new self($identifier);
     }
 
     public static function fromSystem(): self {
         return self::fromIdentifier(date_default_timezone_get());
-    }
-
-    public static function fromOffset(Duration $offset): self {
-        if ($offset->nanoOfSeconds) {
-            throw new \ValueError("A time offset can not contain fractions of a second");
-        }
-
-        $identifier = $offset->isNegative ? '-' : '+'
-            . \str_pad((string)$offset->hours, '0', STR_PAD_LEFT)
-            . ':' . \str_pad((string)$offset->minuteOfHours, '0', STR_PAD_LEFT)
-            . ($offset->secondOfMinutes ? ':' . \str_pad((string)$offset->secondOfMinutes, '0', STR_PAD_LEFT) : '');
-        return new self(new \DateTimeZone($identifier));
     }
 
     /**

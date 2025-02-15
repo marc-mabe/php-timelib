@@ -39,7 +39,7 @@ function stringifyZonedDateTime(ZonedDateTime $dt) {
 }
 
 function stringifyZone(Zone $zone) {
-    return "Zone('{$zone->format('e')}')";
+    return $zone::class . "('{$zone->format('e')}')";
 }
 
 function stringifyDuration(Duration $duration) {

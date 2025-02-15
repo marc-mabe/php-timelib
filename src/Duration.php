@@ -18,49 +18,57 @@ namespace time;
  */
 final class Duration
 {
-    public readonly int $seconds;
+    private readonly int $s;
 
     /** @var int<0, 999999999> */
-    public readonly int $nanoOfSeconds;
+    private readonly int $ns;
 
     public bool $isNegative {
-        get => $this->seconds < 0;
+        get => $this->s < 0;
     }
 
-    public int $hours {
-        get => \intdiv($this->seconds, 3_600);
+    public int $totalHours {
+        get => \intdiv($this->totalSeconds, 3_600);
     }
 
-    public int $minutes {
-        get => \intdiv($this->seconds, 60);
+    public int $totalMinutes {
+        get => \intdiv($this->totalSeconds, 60);
     }
 
-    public int $minuteOfHours {
-        get => $this->minutes % 60;
+    public int $minutesOfHour {
+        get => $this->totalMinutes % 60;
     }
 
-    public int $secondOfMinutes {
-        get => $this->seconds % 60;
+    public int $totalSeconds {
+        get => ($this->isNegative && $this->ns)  ? $this->s - 1 : $this->s;
     }
 
-    public int $milliseconds {
-        get => \intdiv($this->nanoOfSeconds, 1_000_000) + ($this->seconds * 1_000);
+    public int $secondsOfMinute {
+        get => $this->totalSeconds % 60;
     }
 
-    public int $milliOfSeconds {
-        get => $this->milliseconds % 1_000;
+    public int $totalMilliseconds {
+        get => \intdiv($this->ns, 1_000_000) + ($this->s * 1_000);
     }
 
-    public int $microseconds {
-        get => \intdiv($this->nanoOfSeconds, 1_000) + ($this->seconds * 1_000_000);
+    public int $millisOfSecond {
+        get => $this->totalMilliseconds % 1_000;
     }
 
-    public int $microOfSeconds {
-        get => $this->milliseconds % 1_000;
+    public int $totalMicroseconds {
+        get => \intdiv($this->ns, 1_000) + ($this->s * 1_000_000);
     }
 
-    public int $nanoseconds {
-        get => $this->nanoOfSeconds + ($this->seconds * 1_000_000_000);
+    public int $microsOfSecond {
+        get => $this->totalMilliseconds % 1_000;
+    }
+
+    public int $totalNanoseconds {
+        get => $this->ns + ($this->s * 1_000_000_000);
+    }
+
+    public int $nanosOfSecond {
+        get => $this->totalNanoseconds % 1_000;
     }
 
     public function __construct(
@@ -81,12 +89,12 @@ final class Duration
             $ns += 1_000_000_000;
         }
 
-        $this->seconds = $s;
-        $this->nanoOfSeconds = $ns;
+        $this->s = $s;
+        $this->ns = $ns;
     }
 
     public function isEmpty(): bool {
-        return !$this->seconds && !$this->nanoOfSeconds;
+        return !$this->s && !$this->ns;
     }
 
     public function toIso(): string
@@ -94,16 +102,16 @@ final class Duration
         $timeIso  = '';
         $abs      = $this->isNegative ? $this->abs() : $this;
 
-        if ($abs->hours) {
-            $timeIso .= $abs->hours . 'H';
+        if ($abs->totalHours) {
+            $timeIso .= $abs->totalHours . 'H';
         }
 
-        if ($abs->minuteOfHours) {
-            $timeIso .= $abs->minuteOfHours . 'M';
+        if ($abs->minutesOfHour) {
+            $timeIso .= $abs->minutesOfHour . 'M';
         }
 
-        $s  = $abs->secondOfMinutes;
-        $ns = $abs->nanoOfSeconds;
+        $s  = $abs->secondsOfMinute;
+        $ns = $abs->ns;
         if ($s || $ns) {
             $timeIso .= $s;
 
@@ -124,8 +132,8 @@ final class Duration
 
     public function abs(): self
     {
-        $s  = $this->seconds;
-        $ns = $this->nanoOfSeconds;
+        $s  = $this->s;
+        $ns = $this->ns;
 
         if ($s < 0) {
             $s *= -1;
@@ -141,8 +149,8 @@ final class Duration
 
     public function negated(): self
     {
-        $s  = $this->seconds;
-        $ns = $this->nanoOfSeconds;
+        $s  = $this->s;
+        $ns = $this->ns;
 
         if ($s >= 0) {
             $s *= -1;

@@ -20,9 +20,9 @@ echo "ZonedDateTime::fromDateTime(" . stringify($zone) . ", " . stringify($ldt) 
 echo stringify(time\ZonedDateTime::fromDateTime($zone, $ldt)) . "\n";
 
 --EXPECT--
-ZonedDateTime::fromDateTime(Zone('UTC'), LocalDate('Sat 2000-01-01'), LocalTime('01:02:03.000123456'))
+ZonedDateTime::fromDateTime(time\Zone('UTC'), LocalDate('Sat 2000-01-01'), LocalTime('01:02:03.000123456'))
 ZonedDateTime('Sat 2000-01-01 01:02:03.000123456 +00:00 [UTC]')
-ZonedDateTime::fromDateTime(Zone('UTC'), LocalDateTime('Sat 2000-01-01 01:02:03.000123456'), LocalDateTime('Sat 2000-01-01 01:02:03.000123456'))
+ZonedDateTime::fromDateTime(time\Zone('UTC'), LocalDateTime('Sat 2000-01-01 01:02:03.000123456'), LocalDateTime('Sat 2000-01-01 01:02:03.000123456'))
 ZonedDateTime('Sat 2000-01-01 01:02:03.000123456 +00:00 [UTC]')
-ZonedDateTime::fromDateTime(Zone('UTC'), LocalDateTime('Sat 2000-01-01 01:02:03.000123456'))
+ZonedDateTime::fromDateTime(time\Zone('UTC'), LocalDateTime('Sat 2000-01-01 01:02:03.000123456'))
 ZonedDateTime('Sat 2000-01-01 00:00:00 +00:00 [UTC]')

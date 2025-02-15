@@ -18,10 +18,10 @@ foreach ($identifiers as $identifier) {
 }
 
 --EXPECTF--
-Zone('UTC'): true
-Zone('GMT'): true
-Zone('CET'): true
-Zone('CEST'): true
-Zone('+00:00'): false
-Zone('+00:00'): false
-Zone('Europe/Berlin'): false
+time\Zone('UTC'): true
+time\Zone('GMT'): true
+time\Zone('CET'): true
+time\Zone('CEST'): true
+time\Zone('+00:00'): false
+time\Zone('+00:00'): false
+time\Zone('Europe/Berlin'): false
