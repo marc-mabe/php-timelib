@@ -4,15 +4,15 @@ namespace time;
 
 final class LocalTime implements Time {
     public int $hour {
-        get => (int)$this->legacySec->format('G');
+        get => \intdiv($this->secondsSinceMidnight, 3600) % 24;
     }
 
     public int $minute  {
-        get => (int)$this->legacySec->format('i');
+        get => \intdiv($this->secondsSinceMidnight, 60) % 60;
     }
 
     public int $second  {
-        get => (int)$this->legacySec->format('s');
+        get => $this->secondsSinceMidnight % 60;
     }
 
     public int $milliOfSecond {
@@ -24,7 +24,7 @@ final class LocalTime implements Time {
     }
 
     private function __construct(
-        private \DateTimeImmutable $legacySec,
+        private readonly int $secondsSinceMidnight,
         public readonly int $nanoOfSecond,
     ) {}
 
@@ -33,19 +33,20 @@ final class LocalTime implements Time {
         return $formatter->format($this);
     }
 
+    /**
+     * @param int<0, 23> $hour
+     * @param int<0, 59> $minute
+     * @param int<0, 59> $second
+     * @param int<0, 999999999> $nanoOfSecond
+     */
     public static function fromHms(
         int $hour,
         int $minute,
         int $second,
         int $nanoOfSecond = 0
     ): self {
-        $i = str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
-        $s = str_pad((string)$second, 2, '0', STR_PAD_LEFT);
-        return new self(\DateTimeImmutable::createFromFormat(
-            'Y-z G:i:s',
-            "1970-0 $hour:$i:$s",
-            new \DateTimeZone('UTC'),
-        ), $nanoOfSecond);
+        $secondsSinceMidnight = $hour * 3600 + $minute * 60 + $second;
+        return new self($secondsSinceMidnight, $nanoOfSecond);
     }
 
     public static function fromTimeUnit(int|float $value, TimeUnit $unit): self {}
