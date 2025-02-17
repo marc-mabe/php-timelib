@@ -60,7 +60,7 @@ final class Duration
     }
 
     public int $microsOfSecond {
-        get => $this->totalMilliseconds % 1_000;
+        get => $this->totalMilliseconds % 1_000_000;
     }
 
     public int $totalNanoseconds {
@@ -68,7 +68,7 @@ final class Duration
     }
 
     public int $nanosOfSecond {
-        get => $this->totalNanoseconds % 1_000;
+        get => $this->totalNanoseconds % 1_000_000_000;
     }
 
     public function __construct(
