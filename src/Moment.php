@@ -30,24 +30,26 @@ final class Moment implements Date, Time {
 
     public int $hour {
         get {
-            $s = $this->tsSec % (60 * 60 * 24);
-            $h = \intdiv($s, 60 * 60);
-            return ($s % 60) < 0 ? $h + 23 : $h;
+            $remainder = $this->tsSec % 86400;
+            $remainder += ($remainder < 0) * 86400;
+            return \intdiv($remainder, 3600);
         }
     }
 
     public int $minute  {
         get {
-            $s = $this->tsSec % (60 * 60);
-            $m = \intdiv($s, 60);
-            return ($s % 60) < 0 ? $m + 59 : $m;
+            $remainder = $this->tsSec % 86400;
+            $remainder += ($remainder < 0) * 86400;
+            $hours = \intdiv($remainder, 3600);
+            return \intdiv($remainder - $hours * 3600, 60);
         }
     }
 
     public int $second  {
         get {
-            $s = $this->tsSec % 60;
-            return $s < 0 ? $s + 60 : $s;
+            $remainder = $this->tsSec % 86400;
+            $remainder += ($remainder < 0) * 86400;
+            return $remainder % 60;
         }
     }
 
@@ -71,6 +73,7 @@ final class Moment implements Date, Time {
         get => LocalTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
+    /** @param int<0, 999999999> $nanoOfSecond */
     private function __construct(
         private readonly int $tsSec,
         public readonly int $nanoOfSecond,
@@ -82,12 +85,17 @@ final class Moment implements Date, Time {
         $s  = $this->tsSec + $duration->totalSeconds + \intdiv($ns, 1_000_000_000);
         $ns = $ns % 1_000_000_000;
 
+        if ($ns < 0) {
+            $ns = 1_000_000_000 + $ns;
+            $s += 1;
+        }
+
         return new self($s, $ns);
     }
 
     public function sub(Duration $duration): self
     {
-        return $this->add($duration->isNegative ? $duration->abs() : $duration->negated());
+        return $this->add($duration->inverted());
     }
 
     public function withYear(int $year): self

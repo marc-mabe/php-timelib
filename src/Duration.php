@@ -23,6 +23,10 @@ final class Duration
     /** @var int<0, 999999999> */
     private readonly int $ns;
 
+    public bool $isZero {
+        get => !$this->s && !$this->ns;
+    }
+
     public bool $isNegative {
         get => $this->s < 0;
     }
@@ -93,10 +97,6 @@ final class Duration
         $this->ns = $ns;
     }
 
-    public function isEmpty(): bool {
-        return !$this->s && !$this->ns;
-    }
-
     public function toIso(): string
     {
         $timeIso  = '';
@@ -130,37 +130,30 @@ final class Duration
         return $this->isNegative ? '-PT' . $timeIso : 'PT' . $timeIso;
     }
 
-    public function abs(): self
+    public function inverted(): self
     {
-        $s  = $this->s;
+        if ($this->isZero) {
+            return $this;
+        }
+
+        $s  = $this->s * -1;
         $ns = $this->ns;
 
-        if ($s < 0) {
-            $s *= -1;
-
-            if ($ns) {
-                $s -= 1;
-                $ns = 1_000_000_000 - $ns;
-            }
+        if ($ns) {
+            $s -= 1;
+            $ns = 1_000_000_000 - $ns;
         }
 
         return new self(seconds: $s, nanoseconds: $ns);
     }
 
+    public function abs(): self
+    {
+        return $this->isNegative ? $this->inverted() : $this;
+    }
+
     public function negated(): self
     {
-        $s  = $this->s;
-        $ns = $this->ns;
-
-        if ($s >= 0) {
-            $s *= -1;
-
-            if ($ns) {
-                $s -= 1;
-                $ns = 1_000_000_000 - $ns;
-            }
-        }
-
-        return new self(seconds: $s, nanoseconds: $ns);
+        return !$this->isNegative ? $this->inverted() : $this;
     }
 }

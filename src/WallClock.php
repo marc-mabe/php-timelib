@@ -32,7 +32,7 @@ final class WallClock implements Clock
     /** @return array{int, int<0, 999999999>} */
     public function takeUnixTimestampTuple(): array
     {
-        return $this->modifier->isEmpty()
+        return $this->modifier->isZero
             ? $this->takeUnixTimestampTupleWithoutModifier()
             : $this->takeMoment()->toUnixTimestampTuple();
     }

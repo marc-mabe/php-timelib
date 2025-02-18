@@ -200,7 +200,7 @@ class DateTimeFormatter
         return match ($token) {
             FormatToken::OffsetWithoutColon => \str_replace(':', '', $offset->identifier),
             FormatToken::OffsetWithColon => $offset->identifier,
-            FormatToken::OffsetWithColonOrZ => $offset->toDuration()->isEmpty() ? 'Z' : $offset->identifer,
+            FormatToken::OffsetWithColonOrZ => $offset->toDuration()->isZero ? 'Z' : $offset->identifer,
             FormatToken::OffsetInSeconds => (string)$offset->toDuration()->totalSeconds,
         };
     }
