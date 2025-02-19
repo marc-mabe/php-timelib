@@ -11,23 +11,11 @@ class Zone
         get => $this->identifier;
     }
 
-    public bool $isAbbreviation {
-        get => \array_key_exists(\strtolower($this->identifier), \DateTimeZone::listAbbreviations());
-    }
-
     /**
      * The time offset if the zone is based on a fixed offset or abbreviation.
      */
     public ?ZoneOffset $offset {
         get {
-            if ($this->isAbbreviation) {
-                // timezonedb lookup
-                $legacy = new \DateTimeZone($this->identifier);
-                return ZoneOffset::fromDuration(new Duration(
-                    seconds: \DateTime::createFromTimestamp(0)->setTimezone($legacy)->getOffset()
-                ));
-            }
-
             $match = \preg_match(
                 '/^(?:GMT|UTC)?(?<sign>[+-])(?<h>\d\d):(?<m>\d\d)(:?(?<s>\d\d))?$/',
                 $this->identifier,
@@ -48,10 +36,17 @@ class Zone
                 return ZoneOffset::fromDuration($duration);
             }
 
-            // lookup transitions -> if only one starting at PHP_INT_MIN -> take it
-            $legacy      = new \DateTimeZone($this->identifier);
+            // lookup transitions
+            // -> if no transition -> take offset of random date/time
+            // -> if only one starting at PHP_INT_MIN -> take it
+            $legacy = new \DateTimeZone($this->identifier);
+            /** @var false|list<array{ts: int, time: string, offset: int, isdst: bool, abbr: string}> $transitions */
             $transitions = $legacy->getTransitions();
-            if (\count($transitions) === 1 && $transitions[0]['ts'] === PHP_INT_MIN) {
+            if ($transitions === false) {
+                return ZoneOffset::fromDuration(new Duration(
+                    seconds: \DateTime::createFromTimestamp(0)->setTimezone($legacy)->getOffset()
+                ));
+            } elseif (\count($transitions) === 1 && $transitions[0]['ts'] === PHP_INT_MIN) {
                 return ZoneOffset::fromDuration(new Duration(seconds: $transitions[0]['offset']));
             }
 
@@ -65,6 +60,15 @@ class Zone
         // lookup known regional time zones and abbreviations
         // normalize identifier
         $this->identifier = new \DateTimeZone($identifier)->getName();
+
+        // DateTimeZone accepts ambiguous time zone abbreviations which we don't want to support.
+        // GMT and UTC are listed as time zone abbreviations but we know have have to support them.
+        if ($this->identifier !== 'UTC'
+            && $this->identifier !== 'GMT'
+            && \array_key_exists(\strtolower($this->identifier), \DateTimeZone::listAbbreviations())
+        ) {
+            throw new \RuntimeException("Time zone identifier '{$this->identifier}' is ambiguous");
+        }
     }
 
     public function __toString(): string

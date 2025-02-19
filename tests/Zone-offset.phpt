@@ -10,8 +10,6 @@ $zones = [
     time\Zone::fromIdentifier('UTC'),
     time\Zone::fromIdentifier('Etc/GMT'),
     time\Zone::fromIdentifier('Etc/GMT+1'),
-    time\Zone::fromIdentifier('CET'),
-    time\Zone::fromIdentifier('CEST'),
     time\Zone::fromIdentifier('+00:00'),
     time\Zone::fromIdentifier('+12:34'),
     time\Zone::fromIdentifier('-12:34'),
@@ -30,8 +28,6 @@ time\Zone('GMT'): time\ZoneOffset('+00:00')
 time\Zone('UTC'): time\ZoneOffset('+00:00')
 time\Zone('Etc/GMT'): time\ZoneOffset('+00:00')
 time\Zone('Etc/GMT+1'): time\ZoneOffset('-01:00')
-time\Zone('CET'): time\ZoneOffset('+01:00')
-time\Zone('CEST'): time\ZoneOffset('+02:00')
 time\Zone('+00:00'): time\ZoneOffset('+00:00')
 time\Zone('+12:34'): time\ZoneOffset('+12:34')
 time\Zone('-12:34'): time\ZoneOffset('-12:34')

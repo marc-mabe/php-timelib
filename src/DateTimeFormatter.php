@@ -229,19 +229,6 @@ class DateTimeFormatter
 
     private function formatZoneAbbreviationOrOffset(FormatToken $token, Date|Time|Zone|Zoned $dateTimeZone): string
     {
-        // If we have a zone and it's an abbreviation -> take it
-        $zone = null;
-        if ($dateTimeZone instanceof Zone) {
-            $zone = $dateTimeZone;
-        } elseif ($dateTimeZone instanceof Zoned) {
-            $zone = $dateTimeZone->zone;
-        }
-
-        if ($zone?->isAbbreviation) {
-            return $zone->identifier;
-        }
-
-        // If we have a date+time+zone -> lookup timezonedb
         if ($dateTimeZone instanceof Date && $dateTimeZone instanceof Time && $dateTimeZone instanceof Zoned) {
             $z = $dateTimeZone->dayOfYear - 1;
             $i = \str_pad((string)$dateTimeZone->minute, 2, '0', STR_PAD_LEFT);
@@ -256,13 +243,20 @@ class DateTimeFormatter
             return $legacy->format('T');
         }
 
-        // if we have a zone with fixed offset -> take it
+        $zone = null;
+        if ($dateTimeZone instanceof Zone) {
+            $zone = $dateTimeZone;
+        } elseif ($dateTimeZone instanceof Zoned) {
+            $zone = $dateTimeZone->zone;
+        }
+
+        // Fallback to fixed offset if possible
         if ($zone?->offset) {
             return 'GMT' . $this->formatOffset(FormatToken::OffsetWithoutColon, $dateTimeZone);
         }
 
         throw new \ValueError(
-            "Unexpected format: '{$token->value}' requires a time offset"
+            "Unexpected format: '{$token->value}' requires a Date&Time&Zoned or a time offset"
         );
     }
 }
