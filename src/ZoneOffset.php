@@ -5,6 +5,7 @@ namespace time;
 class ZoneOffset extends Zone implements \Stringable
 {
     public string $name {
+        // TODO: Find a way to get the human readable display name
         get => $this->identifier;
     }
 
