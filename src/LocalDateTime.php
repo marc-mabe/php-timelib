@@ -51,6 +51,9 @@ final class LocalDateTime implements Date, Time {
         get => LocalTime::fromHms($this->hour, $this->minute, $this->second);
     }
 
+    /**
+     * @param int<0, 999999999> $nanoOfSecond
+     */
     private function __construct(
         private readonly \DateTimeImmutable $legacySec,
         public readonly int $nanoOfSecond,
@@ -99,14 +102,14 @@ final class LocalDateTime implements Date, Time {
 
     public static function fromDateTime(Date $date, Time $time): self {
         $z = $date->dayOfYear - 1;
-        $n = str_pad((string)$time->minute, 2, '0', STR_PAD_LEFT);
-        $s = str_pad((string)$time->second, 2, '0', STR_PAD_LEFT);
-        return new self(\DateTimeImmutable::createFromFormat(
+        $n = \str_pad((string)$time->minute, 2, '0', STR_PAD_LEFT);
+        $s = \str_pad((string)$time->second, 2, '0', STR_PAD_LEFT);
+        $legacy = \DateTimeImmutable::createFromFormat(
             'Y-z G:i:s',
             "{$date->year}-{$z} {$time->hour}:{$n}:{$s}",
             new \DateTimeZone('+00:00'),
-        ), $time->nanoOfSecond);
+        );
+        assert($legacy !== false);
+        return new self($legacy, $time->nanoOfSecond);
     }
-
-    public static function parse(DateTimeParser $parser): self {}
 }

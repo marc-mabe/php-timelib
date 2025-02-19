@@ -23,6 +23,10 @@ final class LocalTime implements Time {
         get => \intdiv($this->nanoOfSecond, 1_000);
     }
 
+    /**
+     * @param int<0, 86399> $secondsSinceMidnight
+     * @param int<0, 999999999> $nanoOfSecond
+     */
     private function __construct(
         private readonly int $secondsSinceMidnight,
         public readonly int $nanoOfSecond,
@@ -48,6 +52,4 @@ final class LocalTime implements Time {
         $secondsSinceMidnight = $hour * 3600 + $minute * 60 + $second;
         return new self($secondsSinceMidnight, $nanoOfSecond);
     }
-
-    public static function fromTimeUnit(int|float $value, TimeUnit $unit): self {}
 }

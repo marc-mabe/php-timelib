@@ -293,23 +293,4 @@ final class Period {
     {
         return self::fromTime($start)->diff(self::fromTime($end));
     }
-
-    public static function fromDateDiff(Date $start, Date $end): self {}
-
-    public static function fromDateTimeDiff(Date&Time $start, Date&Time $end): self {}
-
-    public static function fromIso(string $isoFormat): self {}
-
-    public static function fromLegacyInterval(\DateInterval $interval): self {
-        return new self(
-            isInverted: $interval->invert,
-            years: $interval->y,
-            months: $interval->m,
-            days: $interval->d,
-            hours: $interval->h,
-            minutes: $interval->m,
-            seconds: $interval->s,
-            microseconds: $interval->f,
-        );
-    }
 }

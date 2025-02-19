@@ -139,6 +139,7 @@ class DateTimeFormatter
             FormatToken::OffsetWithColon,
             FormatToken::OffsetWithColonOrZ,
             FormatToken::OffsetInSeconds => $this->formatOffset($token, $dateTimeZone),
+            default => throw new \LogicException("Unhandled token '{$token->value}'"),
         };
     }
 
@@ -158,6 +159,7 @@ class DateTimeFormatter
                 => ($dateTimeZone->year < 0 || $dateTimeZone->year >= 10000 ? $sign : '')
                 . \str_pad($yearAbs, 4, '0', STR_PAD_LEFT),
             FormatToken::YearExtendedSign => $sign . \str_pad($yearAbs, 4, '0', STR_PAD_LEFT),
+            default => throw new \LogicException("Unhandled token '{$token->value}'"),
         };
     }
 
@@ -173,6 +175,7 @@ class DateTimeFormatter
             FormatToken::DayOfWeekName3Letter => \substr($dayOfWeek->name, 0, 3),
             FormatToken::DayOfWeekNumber => $dayOfWeek->value === 7 ? 0 : $dayOfWeek->value,
             FormatToken::DayOfWeekNumberIso => $dayOfWeek->value,
+            default => throw new \LogicException("Unhandled token '{$token->value}'"),
         };
     }
 
@@ -200,8 +203,9 @@ class DateTimeFormatter
         return match ($token) {
             FormatToken::OffsetWithoutColon => \str_replace(':', '', $offset->identifier),
             FormatToken::OffsetWithColon => $offset->identifier,
-            FormatToken::OffsetWithColonOrZ => $offset->toDuration()->isZero ? 'Z' : $offset->identifer,
-            FormatToken::OffsetInSeconds => (string)$offset->toDuration()->totalSeconds,
+            FormatToken::OffsetWithColonOrZ => $offset->totalSeconds ? $offset->identifier : 'Z',
+            FormatToken::OffsetInSeconds => (string)$offset->totalSeconds,
+            default => throw new \LogicException("Unhandled token '{$token->value}'"),
         };
     }
 
@@ -242,12 +246,14 @@ class DateTimeFormatter
             $z = $dateTimeZone->dayOfYear - 1;
             $i = \str_pad((string)$dateTimeZone->minute, 2, '0', STR_PAD_LEFT);
             $s = \str_pad((string)$dateTimeZone->second, 2, '0', STR_PAD_LEFT);
-
-            return \DateTimeImmutable::createFromFormat(
+            $legacy = \DateTimeImmutable::createFromFormat(
                 'Y-z G:i:s',
                 "{$dateTimeZone->year}-{$z} {$dateTimeZone->hour}:{$i}:{$s}",
                 new \DateTimeZone($dateTimeZone->zone->identifier),
-            )->format('T');
+            );
+            assert($legacy !== false);
+
+            return $legacy->format('T');
         }
 
         // if we have a zone with fixed offset -> take it

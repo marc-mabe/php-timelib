@@ -19,6 +19,12 @@ composer-install-php-8.4:
 test-php-8.4:
 	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' php ./vendor/bin/phpunit ./tests
 
+.PHONY: test-phpstan
+test-phpstan:
+	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' php ./vendor/bin/phpstan analyse
+
+test: test-php-8.4 test-phpstan
+
 .PHONY: shell-php-8.4
 shell-php-8.4:
 	docker run --rm -it -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' sh

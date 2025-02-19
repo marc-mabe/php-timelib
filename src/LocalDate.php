@@ -23,19 +23,23 @@ final class LocalDate implements Date {
 
     public static function fromYmd(int $year, Month|int $month, int $dayOfMonth): self {
         $n = $month instanceof Month ? $month->value : $month;
-        return new self(\DateTimeImmutable::createFromFormat(
+        $legacy = \DateTimeImmutable::createFromFormat(
             'Y-n-j',
             "{$year}-{$n}-{$dayOfMonth}",
             new \DateTimeZone('+00:00'),
-        ));
+        );
+        assert($legacy !== false);
+        return new self($legacy);
     }
 
     public static function fromYd(int $year, int $dayOfYear): self {
         $z = $dayOfYear - 1;
-        return new self(\DateTimeImmutable::createFromFormat(
+        $legacy = \DateTimeImmutable::createFromFormat(
             'Y-z',
             "{$year}-{$z}",
             new \DateTimeZone('+00:00'),
-        ));
+        );
+        assert($legacy !== false);
+        return new self($legacy);
     }
 }

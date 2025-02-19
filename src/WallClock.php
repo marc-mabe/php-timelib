@@ -4,7 +4,7 @@ namespace time;
 
 final class WallClock implements Clock
 {
-    /** @var callable(): array{int, int<0, 999999999>} */
+    /** @var \Closure(): array{int, int<0, 999999999>} */
     private readonly \Closure $timer;
     public readonly Duration $resolution;
 
@@ -14,8 +14,9 @@ final class WallClock implements Clock
         // \microtime() function is only available on operating systems
         // that support the gettimeofday() system call.
         if (\function_exists('microtime')) {
+            /** @phpstan-ignore assign.propertyType */
             $this->timer = static function () {
-                [$us, $s] = \explode(' ', \microtime());
+                [$us, $s] = \explode(' ', \microtime(), 2);
                 return [(int)$s, (int)\substr($us, 2, -2) * 1_000];
             };
             $this->resolution = new Duration(microseconds: 1);
@@ -50,12 +51,5 @@ final class WallClock implements Clock
         return $this->modifier->isZero
             ? ($this->timer)()
             : $this->takeMoment()->toUnixTimestampTuple();
-    }
-
-    /** @return array{int, int<0, 999999999>} */
-    private function takeUnixTimestampTupleWithoutModifier(): array
-    {
-        [$us, $s] = \explode(' ', \microtime());
-        return [(int)$s, (int)\substr($us, 2, -2) * 1_000];
     }
 }

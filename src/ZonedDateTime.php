@@ -5,8 +5,10 @@ namespace time;
 final class ZonedDateTime implements Date, Time, Zoned
 {
     private ?\DateTimeImmutable $_legacySec = null;
+
+    /** @phpstan-ignore property.onlyRead */
     private \DateTimeImmutable $legacySec {
-        get => $this->_legacySec ?? \DateTimeImmutable::createFromTimestamp($this->toUnixTimestampTuple()[0])
+        get => $this->_legacySec ??= \DateTimeImmutable::createFromTimestamp($this->toUnixTimestampTuple()[0])
             ->setTimezone(new \DateTimeZone($this->zone->identifier),);
     }
 
@@ -85,15 +87,6 @@ final class ZonedDateTime implements Date, Time, Zoned
         return new self($this->moment->sub($duration), $this->zone);
     }
 
-    public function truncatedTo(DateUnit|TimeUnit $unit): self {
-        // TODO
-    }
-
-    // TODO: Default rounding mode should match \round()
-    public function roundedTo(DateUnit|TimeUnit $unit, \RoundingMode $mode = \RoundingMode::HalfAwayFromZero): self {
-        // TODO
-    }
-
     public function moveToZone(Zone $zone): self
     {
         return new self($this->moment, $zone);
@@ -124,7 +117,7 @@ final class ZonedDateTime implements Date, Time, Zoned
         return $this->moment->toUnixTimestamp($unit, $fractions);
     }
 
-    /** @return array{int, int<0,999999999>} */
+    /** @return array{int, int<0, 999999999>} */
     public function toUnixTimestampTuple(): array
     {
         return $this->moment->toUnixTimestampTuple();
@@ -140,12 +133,20 @@ final class ZonedDateTime implements Date, Time, Zoned
         return new self(Moment::fromUnixTimestamp($timestamp, $unit), Zone::fromIdentifier('+00:00'));
     }
 
-    /** @param array{int, int<0,999999999>} $timestampTuple */
+    /** @param array{int, int<0, 999999999>} $timestampTuple */
     public static function fromUnixTimestampTuple(array $timestampTuple): self
     {
         return new self(Moment::fromUnixTimestampTuple($timestampTuple), Zone::fromIdentifier('+00:00'));
     }
 
+    /**
+     * @param Month|int<1, 12> $month
+     * @param int<1, 31> $dayOfMonth
+     * @param int<0, 23> $hour
+     * @param int<0, 59> $minute
+     * @param int<0, 59> $second
+     * @param int<0, 999999999> $nanoOfSecond
+     */
     public static function fromYmd(
         Zone $zone,
         int $year,
@@ -165,10 +166,18 @@ final class ZonedDateTime implements Date, Time, Zoned
             "{$year}-{$n}-{$dayOfMonth} {$hour}:{$i}:{$s}",
             new \DateTimeZone($zone->identifier),
         );
+        assert($legacy !== false);
 
         return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $nanoOfSecond]), $zone);
     }
 
+    /**
+     * @param int<1, 366> $dayOfYear
+     * @param int<0, 23> $hour
+     * @param int<0, 59> $minute
+     * @param int<0, 59> $second
+     * @param int<0, 999999999> $nanoOfSecond
+     */
     public static function fromYd(
         Zone $zone,
         int $year,
@@ -187,6 +196,7 @@ final class ZonedDateTime implements Date, Time, Zoned
             "{$year}-{$z} {$hour}:{$i}:{$s}",
             new \DateTimeZone($zone->identifier),
         );
+        assert($legacy !== false);
 
         return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $nanoOfSecond]), $zone);
     }
@@ -221,6 +231,7 @@ final class ZonedDateTime implements Date, Time, Zoned
             "{$date->year}-{$z} {$time->hour}:{$i}:{$s}",
             new \DateTimeZone($zone->identifier),
         );
+        assert($legacy !== false);
 
         return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $time->nanoOfSecond]), $zone);
     }

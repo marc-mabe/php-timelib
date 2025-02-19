@@ -4,6 +4,8 @@ namespace time;
 
 final class Moment implements Date, Time {
     private ?\DateTimeImmutable $_legacySec = null;
+
+    /** @phpstan-ignore property.onlyRead */
     private \DateTimeImmutable $legacySec {
         get => $this->_legacySec ??= \DateTimeImmutable::createFromTimestamp($this->tsSec);
     }
@@ -103,52 +105,62 @@ final class Moment implements Date, Time {
         return self::fromYmd($year, $this->month, $this->dayOfMonth, $this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
+    /** @param Month|int<1, 12> $month */
     public function withMonth(Month|int $month): self
     {
         return self::fromYmd($this->year, $month, $this->dayOfMonth, $this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
+    /** @param int<1, 31> $dayOfMonth */
     public function withDayOfMonth(int $dayOfMonth): self
     {
         return self::fromYmd($this->year, $this->month, $dayOfMonth, $this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
+    /** @param int<1, 366> $dayOfYear */
     public function withDayOfYear(int $dayOfYear): self
     {
         return self::fromYd($this->year, $dayOfYear, $this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
+    /** @param int<0, 23> $hour */
     public function withHour(int $hour): self
     {
         return self::fromYmd($this->year, $this->month, $this->dayOfMonth, $hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
+    /** @param int<0, 59> $minute */
     public function withMinute(int $minute): self
     {
         return self::fromYmd($this->year, $this->month, $this->dayOfMonth, $this->hour, $minute, $this->second, $this->nanoOfSecond);
     }
 
+    /** @param int<0, 59> $second */
     public function withSecond(int $second): self
     {
         return self::fromYmd($this->year, $this->month, $this->dayOfMonth, $this->hour, $this->minute, $second, $this->nanoOfSecond);
     }
 
+    /** @param int<0, 999> $milliOfSecond */
     public function withMilliOfSecond(int $milliOfSecond): self
     {
         return new self($this->tsSec, $milliOfSecond * 1_000_000);
     }
 
+    /** @param int<0, 999999> $microOfSecond */
     public function withMicroOfSecond(int $microOfSecond): self
     {
         return new self($this->tsSec, $microOfSecond * 1_000);
     }
 
+    /** @param int<0, 999999999> $nanoOfSecond */
     public function withNanoOfSecond(int $nanoOfSecond): self
     {
         return new self($this->tsSec, $nanoOfSecond);
     }
 
-    public function truncatedTo(DateUnit|TimeUnit $unit): self {
+    public function truncatedTo(DateUnit|TimeUnit $unit): self
+    {
         return match ($unit) {
             DateUnit::Year => self::fromYd($this->year, 1),
             DateUnit::Month => self::fromYmd($this->year, $this->month, 1),
@@ -168,7 +180,7 @@ final class Moment implements Date, Time {
                 $this->hour,
                 $this->minute,
                 $this->second,
-                \intdiv($this->nanoOfSecond, 1_000_000) * 1_000_000
+                \intdiv($this->nanoOfSecond, 1_000_000) * 1_000_000 // @phpstan-ignore argument.type
             ),
             TimeUnit::Microsecond => self::fromYd(
                 $this->year,
@@ -176,15 +188,10 @@ final class Moment implements Date, Time {
                 $this->hour,
                 $this->minute,
                 $this->second,
-                \intdiv($this->nanoOfSecond, 1_000) * 1_000
+                \intdiv($this->nanoOfSecond, 1_000) * 1_000 // @phpstan-ignore argument.type
             ),
             TimeUnit::Nanosecond => $this,
         };
-    }
-
-    // TODO: Default rounding mode should match \round()
-    public function roundedTo(DateUnit|TimeUnit $unit, \RoundingMode $mode = \RoundingMode::HalfAwayFromZero): self {
-        // TODO
     }
 
     public function format(DateTimeFormatter|string $format): string {
@@ -276,7 +283,10 @@ final class Moment implements Date, Time {
                 \intdiv($tsInt, 1_000_000_000),
                 $tsInt % 1_000_000_000,
             ],
+            TimeUnit::Minute => [(int)($timestamp * 60), (int)($timestamp * 60 / 1_000_000_000)],
+            TimeUnit::Hour => [(int)($timestamp * 3600), (int)($timestamp * 3600 / 1_000_000_000)],
         };
+        assert($ns >= 0 && $ns <1_000_000_000);
 
         return new self($tsSecInt, $ns);
     }
@@ -303,14 +313,15 @@ final class Moment implements Date, Time {
         int $nanoOfSecond = 0,
     ): self {
         $z = $dayOfYear - 1;
-        $i = str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
-        $s = str_pad((string)$second, 2, '0', STR_PAD_LEFT);
-        $ts = \DateTime::createFromFormat(
+        $i = \str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
+        $s = \str_pad((string)$second, 2, '0', STR_PAD_LEFT);
+        $legacy = \DateTime::createFromFormat(
             'Y-z G:i:s',
             "{$year}-{$z} {$hour}:{$i}:{$s}"
-        )->getTimestamp();
+        );
+        assert($legacy !== false);
 
-        return new self($ts, $nanoOfSecond);
+        return new self($legacy->getTimestamp(), $nanoOfSecond);
     }
 
     /**
@@ -334,12 +345,13 @@ final class Moment implements Date, Time {
         $n = $month instanceof Month ? $month->value : $month;
         $i = str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
         $s = str_pad((string)$second, 2, '0', STR_PAD_LEFT);
-        $ts = \DateTime::createFromFormat(
+        $legacy = \DateTime::createFromFormat(
             'Y-n-j G:i:s',
             "{$year}-{$n}-{$dayOfMonth} {$hour}:{$i}:{$s}"
-        )->getTimestamp();
+        );
+        assert($legacy !== false);
 
-        return new self($ts, $nanoOfSecond);
+        return new self($legacy->getTimestamp(), $nanoOfSecond);
     }
 
     public static function fromZonedDateTime(Date&Time&Zoned $zonedDateTime): self

@@ -10,6 +10,7 @@ final class MonotonicClock implements Clock
 
     public function __construct(?Duration $modifier = null) {
         $hr = \hrtime();
+        /** @phpstan-ignore identical.alwaysFalse */
         if (false === $hr) {
             throw new \RuntimeException('No monotonic timer available');
         }
@@ -54,8 +55,7 @@ final class MonotonicClock implements Clock
     /** @return array{int, int<0, 999999999>} */
     private function takeUnixTimestampTupleWithoutModifier(): array
     {
-        $hr = \hrtime();
-        assert($hr !== false);
-        return $hr;
+        /** @phpstan-ignore return.type */
+        return \hrtime();
     }
 }
