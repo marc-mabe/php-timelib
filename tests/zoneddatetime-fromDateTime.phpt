@@ -1,5 +1,5 @@
 --TEST--
-DateTime.fromDateTime
+ZonedDateTime->fromDateTime
 --FILE--
 <?php
 

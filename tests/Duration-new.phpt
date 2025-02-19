@@ -65,7 +65,7 @@ echo "new Duration(-25, -61, -61, -1001, -1002, -1003)\n";
 $duration = new time\Duration(-25, -61, -61, -1001, -1002, -1003);
 echo "  " . stringify($duration) . "\n";
 
---EXPECTF--
+--EXPECT--
 new Duration()
   Duration('PT0S')
 new Duration(hours: 123)

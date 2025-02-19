@@ -72,10 +72,6 @@ class Zone
         return $this->identifier;
     }
 
-    public function toLegacy(): \DateTimeZone {
-        return new \DateTimeZone($this->identifier);
-    }
-
     public function format(DateTimeFormatter|string $format): string {
         $formatter = $format instanceof DateTimeFormatter ? $format : new DateTimeFormatter($format);
         return $formatter->format($this);

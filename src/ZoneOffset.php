@@ -28,9 +28,7 @@ class ZoneOffset extends Zone implements \Stringable
 
     public function toDuration(): Duration
     {
-        return new Duration(
-            seconds: \DateTime::createFromTimestamp(0)->setTimezone($this->toLegacy())->getOffset()
-        );
+        return new Duration(seconds: $this->totalSeconds);
     }
 
     public static function fromDuration(Duration $duration): self {

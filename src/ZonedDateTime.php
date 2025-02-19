@@ -7,7 +7,7 @@ final class ZonedDateTime implements Date, Time, Zoned
     private ?\DateTimeImmutable $_legacySec = null;
     private \DateTimeImmutable $legacySec {
         get => $this->_legacySec ?? \DateTimeImmutable::createFromTimestamp($this->toUnixTimestampTuple()[0])
-            ->setTimezone($this->zone->toLegacy());
+            ->setTimezone(new \DateTimeZone($this->zone->identifier),);
     }
 
     public int $year {
@@ -80,8 +80,9 @@ final class ZonedDateTime implements Date, Time, Zoned
         return new self($this->moment->add($duration), $this->zone);
     }
 
-    public function sub(Duration $duration): self {
-        return $this->add($duration->isNegative ? $duration->abs() : $duration->negated());
+    public function sub(Duration $duration): self
+    {
+        return new self($this->moment->sub($duration), $this->zone);
     }
 
     public function truncatedTo(DateUnit|TimeUnit $unit): self {
@@ -162,7 +163,7 @@ final class ZonedDateTime implements Date, Time, Zoned
         $legacy = \DateTimeImmutable::createFromFormat(
             'Y-n-j G:i:s',
             "{$year}-{$n}-{$dayOfMonth} {$hour}:{$i}:{$s}",
-            $zone->toLegacy(),
+            new \DateTimeZone($zone->identifier),
         );
 
         return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $nanoOfSecond]), $zone);
@@ -184,7 +185,7 @@ final class ZonedDateTime implements Date, Time, Zoned
         $legacy = \DateTimeImmutable::createFromFormat(
             'Y-z G:i:s',
             "{$year}-{$z} {$hour}:{$i}:{$s}",
-            $zone->toLegacy(),
+            new \DateTimeZone($zone->identifier),
         );
 
         return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $nanoOfSecond]), $zone);
@@ -218,7 +219,7 @@ final class ZonedDateTime implements Date, Time, Zoned
         $legacy = \DateTimeImmutable::createFromFormat(
             'Y-z G:i:s',
             "{$date->year}-{$z} {$time->hour}:{$i}:{$s}",
-            $zone->toLegacy(),
+            new \DateTimeZone($zone->identifier),
         );
 
         return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $time->nanoOfSecond]), $zone);

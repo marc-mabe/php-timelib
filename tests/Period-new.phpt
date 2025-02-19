@@ -89,7 +89,7 @@ echo "new Period(false, -1, -13, -32, -25, -61, -61, -1001, -1002, -1003)\n";
 $period = new time\Period(false, -1, -13, -32, -25, -61, -61, -1001, -1002, -1003);
 echo "  " . stringify($period) . "\n";
 
---EXPECTF--
+--EXPECT--
 new Period()
   Period('P0D')
 new Period(years: 123)

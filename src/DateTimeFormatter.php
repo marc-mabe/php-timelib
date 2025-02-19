@@ -240,13 +240,13 @@ class DateTimeFormatter
         // If we have a date+time+zone -> lookup timezonedb
         if ($dateTimeZone instanceof Date && $dateTimeZone instanceof Time && $dateTimeZone instanceof Zoned) {
             $z = $dateTimeZone->dayOfYear - 1;
-            $i = str_pad($dateTimeZone->minute, 2, '0', STR_PAD_LEFT);
-            $s = str_pad($dateTimeZone->second, 2, '0', STR_PAD_LEFT);
+            $i = \str_pad((string)$dateTimeZone->minute, 2, '0', STR_PAD_LEFT);
+            $s = \str_pad((string)$dateTimeZone->second, 2, '0', STR_PAD_LEFT);
 
             return \DateTimeImmutable::createFromFormat(
                 'Y-z G:i:s',
                 "{$dateTimeZone->year}-{$z} {$dateTimeZone->hour}:{$i}:{$s}",
-                $dateTimeZone->zone->toLegacy(),
+                new \DateTimeZone($dateTimeZone->zone->identifier),
             )->format('T');
         }
 
