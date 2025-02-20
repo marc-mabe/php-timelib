@@ -16,14 +16,14 @@ final class MonotonicClock implements Clock
         }
 
         if ($modifier === null) {
-            [$us, $s] = \explode(' ', \microtime(), 2);
+            $wallTs   = new WallClock()->takeUnixTimestampTuple();
             $modifier = new Duration(
-                seconds:     (int)$s - $hr[0],
-                nanoseconds: (int)\substr($us, 2, -2) * 1_000 - $hr[1],
+                seconds:     $wallTs[0] - $hr[0],
+                nanoseconds: $wallTs[1] - $hr[1],
             );
         }
-        $this->modifier = $modifier;
 
+        $this->modifier   = $modifier;
         $this->resolution = new Duration(nanoseconds: 1);
     }
 
