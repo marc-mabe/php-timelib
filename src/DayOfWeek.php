@@ -31,4 +31,9 @@ enum DayOfWeek:int
     {
         return self::from($this->value === 7 ? 1 : $this->value + 1);
     }
+
+    public function diff(DayOfWeek $other): Period
+    {
+        return new Period(days: $other->value - $this->value);
+    }
 }

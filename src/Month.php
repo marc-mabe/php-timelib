@@ -2,7 +2,8 @@
 
 namespace time;
 
-enum Month:int {
+enum Month:int
+{
     case January = 1;
     case February = 2;
     case March = 3;
@@ -28,5 +29,10 @@ enum Month:int {
     public function getNext(): Month
     {
         return self::from($this->value === 12 ? 1 : $this->value + 1);
+    }
+
+    public function diff(Month $other): Period
+    {
+        return new Period(months: $other->value - $this->value);
     }
 }
