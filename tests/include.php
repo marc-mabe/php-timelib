@@ -7,6 +7,7 @@ use time\LocalDateTime;
 use time\LocalTime;
 use time\Moment;
 use time\MonotonicClock;
+use time\StopWatch;
 use time\WallClock;
 use time\Zone;
 use time\ZonedDateTime;
@@ -58,6 +59,13 @@ function stringifyMonotonicClock(MonotonicClock $clock) {
     return "MonotonicClock(resolution: " . stringify($clock->resolution) . ", modifier: " . stringify($clock->modifier) . ")";
 }
 
+function stringifyStopWatch(StopWatch $watch) {
+    $isRunning = stringify($watch->isRunning);
+    $elapsedNs = stringify($watch->getElapsedTime());
+
+    return $watch::class . "(elapsed: {$elapsedNs}ns, isRunning: {$isRunning})";
+}
+
 function stringify(mixed $v) {
     return match (true) {
         is_int($v) => (string)$v,
@@ -74,6 +82,7 @@ function stringify(mixed $v) {
         $v instanceof Duration => stringifyDuration($v),
         $v instanceof WallClock => stringifyWallClock($v),
         $v instanceof MonotonicClock => stringifyMonotonicClock($v),
+        $v instanceof StopWatch => stringifyStopWatch($v),
         is_array($v) && array_is_list($v) => '[' . implode(', ', array_map('stringify', $v)) . ']',
     };
 }

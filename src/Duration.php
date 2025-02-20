@@ -24,7 +24,7 @@ final class Duration
     private readonly int $ns;
 
     public bool $isZero {
-        get => !$this->s && !$this->ns;
+        get => !($this->s || $this->ns);
     }
 
     public bool $isNegative {

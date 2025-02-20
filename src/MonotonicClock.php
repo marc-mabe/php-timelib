@@ -29,13 +29,15 @@ final class MonotonicClock implements Clock
 
     public function takeMoment(): Moment
     {
-        $tuple = $this->takeUnixTimestampTupleWithoutModifier();
+        /** @var array{int, int<0, 999999999>} $tuple */
+        $tuple = \hrtime();
         return Moment::fromUnixTimestampTuple($tuple)->add($this->modifier);
     }
 
     public function takeZonedDateTime(Zone $zone): ZonedDateTime
     {
-        $tuple = $this->takeUnixTimestampTupleWithoutModifier();
+        /** @var array{int, int<0, 999999999>} $tuple */
+        $tuple = \hrtime();
         return Moment::fromUnixTimestampTuple($tuple)->add($this->modifier)->toZonedDateTime($zone);
     }
 
@@ -47,15 +49,11 @@ final class MonotonicClock implements Clock
     /** @return array{int, int<0, 999999999>} */
     public function takeUnixTimestampTuple(): array
     {
+        // take current time asap to prevent additional overhead
+        /** @var array{int, int<0, 999999999>} $tuple */
+        $tuple = \hrtime();
         return $this->modifier->isZero
-            ? $this->takeUnixTimestampTupleWithoutModifier()
-            : $this->takeMoment()->toUnixTimestampTuple();
-    }
-
-    /** @return array{int, int<0, 999999999>} */
-    private function takeUnixTimestampTupleWithoutModifier(): array
-    {
-        /** @phpstan-ignore return.type */
-        return \hrtime();
+            ? $tuple
+            : Moment::fromUnixTimestampTuple($tuple)->add($this->modifier)->toUnixTimestampTuple();;
     }
 }
