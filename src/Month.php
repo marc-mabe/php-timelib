@@ -19,4 +19,14 @@ enum Month:int {
     public function getAbbreviation():string {
         return \substr($this->name, 3);
     }
+
+    public function getPrevious(): Month
+    {
+        return self::from(($this->value - 1) ?: 12);
+    }
+
+    public function getNext(): Month
+    {
+        return self::from($this->value === 12 ? 1 : $this->value + 1);
+    }
 }

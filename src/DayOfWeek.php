@@ -21,4 +21,14 @@ enum DayOfWeek:int
     {
         return $this->value > 5;
     }
+
+    public function getPrevious(): DayOfWeek
+    {
+        return self::from(($this->value - 1) ?: 7);
+    }
+
+    public function getNext(): DayOfWeek
+    {
+        return self::from($this->value === 7 ? 1 : $this->value + 1);
+    }
 }
