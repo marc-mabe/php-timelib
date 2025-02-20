@@ -60,6 +60,7 @@ function stringifyMonotonicClock(MonotonicClock $clock) {
 
 function stringify(mixed $v) {
     return match (true) {
+        is_int($v) => (string)$v,
         $v === null,
         is_scalar($v) => var_export($v, true),
         $v instanceof UnitEnum => stringifyEnum($v),
@@ -73,5 +74,6 @@ function stringify(mixed $v) {
         $v instanceof Duration => stringifyDuration($v),
         $v instanceof WallClock => stringifyWallClock($v),
         $v instanceof MonotonicClock => stringifyMonotonicClock($v),
+        is_array($v) && array_is_list($v) => '[' . implode(', ', array_map('stringify', $v)) . ']',
     };
 }

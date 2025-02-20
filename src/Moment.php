@@ -200,7 +200,9 @@ final class Moment implements Date, Time {
     }
 
     /**
-     * Convert to current unix timestamp in defined unit
+     * Convert to unix timestamp in the defined unit.
+     *
+     * In case the fractions should not be included the resulting timestamp will be rounded down.
      *
      * @return int|float
      */
@@ -218,11 +220,11 @@ final class Moment implements Date, Time {
         }
 
         return match ($unit) {
-            TimeUnit::Hour        => ($this->tsSec < 0 && $this->nanoOfSecond ? $this->tsSec + 1 : $this->tsSec) / 3_600,
-            TimeUnit::Minute      => ($this->tsSec < 0 && $this->nanoOfSecond ? $this->tsSec + 1 : $this->tsSec) / 60,
-            TimeUnit::Second      => $this->tsSec < 0 && $this->nanoOfSecond ? $this->tsSec + 1 : $this->tsSec,
-            TimeUnit::Millisecond => ($this->tsSec * 1_000) + ($this->nanoOfSecond / 1_000_000),
-            TimeUnit::Microsecond => ($this->tsSec * 1_000_000) + ($this->nanoOfSecond / 1_000),
+            TimeUnit::Hour        => \intdiv($this->tsSec, 3_600),
+            TimeUnit::Minute      => \intdiv($this->tsSec, 60),
+            TimeUnit::Second      => $this->tsSec,
+            TimeUnit::Millisecond => ($this->tsSec * 1_000) + \intdiv($this->nanoOfSecond, 1_000_000),
+            TimeUnit::Microsecond => ($this->tsSec * 1_000_000) + \intdiv($this->nanoOfSecond, 1_000),
             TimeUnit::Nanosecond  => ($this->tsSec * 1_000_000_000) + $this->nanoOfSecond,
         };
     }
