@@ -70,6 +70,7 @@ final class GregorianCalendar
         $m = $month_portion + ($month_portion < 10 ? 3 : -9);
         $y += (int)($m <= 2);
 
+        /** @phpstan-ignore return.type */
         return [$y, $m, $d];
     }
 
@@ -85,9 +86,9 @@ final class GregorianCalendar
 
         // 1970-01-01 is a Thursday
         $dow = $daysSinceEpoch % 7;         // -6 (Fri) - 0 (Thu) - 6 (Wed)
-        $dow = $dow < 0 ? $dow + 7 : $dow;  // 0 (Thu) - 6 (Wed)
+        $dow = $dow < 0 ? $dow + 7 : $dow;  //  0 (Thu) - 6 (Wed)
         $dow = $dow - 3;                    // -3 (Thu) - 3 (Wed)
-        $dow = $dow <= 0 ? $dow + 7 : $dow; // 1 (Mon) - 7 (Sun)
+        $dow = $dow <= 0 ? $dow + 7 : $dow; //  1 (Mon) - 7 (Sun)
 
         return DayOfWeek::from($dow);
     }

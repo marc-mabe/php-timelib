@@ -83,16 +83,8 @@ final class Moment implements Date, Time {
 
     public function add(Duration $duration): self
     {
-        $ns = $this->nanoOfSecond + $duration->nanosOfSecond;
-        $s  = $this->tsSec + $duration->totalSeconds + \intdiv($ns, 1_000_000_000);
-        $ns = $ns % 1_000_000_000;
-
-        if ($ns < 0) {
-            $ns = 1_000_000_000 + $ns;
-            $s += 1;
-        }
-
-        return new self($s, $ns);
+        $tuple = $duration->addToUnixTimestampTuple([$this->tsSec, $this->nanoOfSecond]);
+        return new self($tuple[0], $tuple[1]);
     }
 
     public function sub(Duration $duration): self

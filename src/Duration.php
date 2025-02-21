@@ -156,4 +156,24 @@ final class Duration
     {
         return !$this->isNegative ? $this->inverted() : $this;
     }
+
+    /**
+     * Adds this duration to the specified unix timestamp tuple.
+     *
+     * @param array{int, int<0,999999999>} $tuple
+     * @return array{int, int<0,999999999>}
+     */
+    public function addToUnixTimestampTuple(array $tuple): array
+    {
+        $ns = $tuple[1] + $this->nanosOfSecond;
+        $s  = $tuple[0] + $this->totalSeconds + \intdiv($ns, 1_000_000_000);
+        $ns = $ns % 1_000_000_000;
+
+        if ($ns < 0) {
+            $ns = 1_000_000_000 + $ns;
+            $s += 1;
+        }
+
+        return [$s, $ns];
+    }
 }

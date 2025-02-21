@@ -8,6 +8,9 @@ final class MonotonicClock implements Clock
 
     public readonly Duration $modifier;
 
+    /** @var \Closure(): array{int, int<0,999999999>} */
+    private readonly \Closure $timer;
+
     public function __construct(?Duration $modifier = null) {
         $hr = \hrtime();
         /** @phpstan-ignore identical.alwaysFalse */
@@ -25,20 +28,29 @@ final class MonotonicClock implements Clock
 
         $this->modifier   = $modifier;
         $this->resolution = new Duration(nanoseconds: 1);
+
+        // Speedup timer in case an empty modifier is used
+        // like for time measurement StopWatch
+        if ($modifier->isZero) {
+            /** @phpstan-ignore assign.propertyType */
+            $this->timer = \hrtime(...);
+        } else {
+            $this->timer = static function () use ($modifier) {
+                /** @phpstan-ignore argument.type */
+                return $modifier->addToUnixTimestampTuple(\hrtime());
+            };
+        }
+
     }
 
     public function takeMoment(): Moment
     {
-        /** @var array{int, int<0, 999999999>} $tuple */
-        $tuple = \hrtime();
-        return Moment::fromUnixTimestampTuple($tuple)->add($this->modifier);
+        return Moment::fromUnixTimestampTuple(($this->timer)());
     }
 
     public function takeZonedDateTime(Zone $zone): ZonedDateTime
     {
-        /** @var array{int, int<0, 999999999>} $tuple */
-        $tuple = \hrtime();
-        return Moment::fromUnixTimestampTuple($tuple)->add($this->modifier)->toZonedDateTime($zone);
+        return $this->takeMoment()->toZonedDateTime($zone);
     }
 
     public function takeUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $fractions = false): int|float
@@ -49,11 +61,6 @@ final class MonotonicClock implements Clock
     /** @return array{int, int<0, 999999999>} */
     public function takeUnixTimestampTuple(): array
     {
-        // take current time asap to prevent additional overhead
-        /** @var array{int, int<0, 999999999>} $tuple */
-        $tuple = \hrtime();
-        return $this->modifier->isZero
-            ? $tuple
-            : Moment::fromUnixTimestampTuple($tuple)->add($this->modifier)->toUnixTimestampTuple();;
+        return ($this->timer)();
     }
 }
