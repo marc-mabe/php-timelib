@@ -11,15 +11,15 @@ final class Moment implements Date, Time {
     }
 
     public int $year {
-        get => (int)$this->legacySec->format('Y');
+        get => GregorianCalendar::getDateByUnixTimestamp($this->tsSec)[0];
     }
 
     public Month $month {
-        get => Month::from((int)$this->legacySec->format('m'));
+        get => Month::from(GregorianCalendar::getDateByUnixTimestamp($this->tsSec)[1]);
     }
 
     public int $dayOfMonth {
-        get => (int)$this->legacySec->format('j');
+        get => GregorianCalendar::getDateByUnixTimestamp($this->tsSec)[2];
     }
 
     public int $dayOfYear  {
