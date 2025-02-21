@@ -72,4 +72,23 @@ final class GregorianCalendar
 
         return [$y, $m, $d];
     }
+
+    /**
+     * Calculates the day of week from the given unix timestamp (in seconds).
+     *
+     * @return DayOfWeek
+     */
+    public static function getDowByUnixTimestamp(int $ts): DayOfWeek
+    {
+        $daysSinceEpoch = \intdiv($ts, self::SECONDS_PER_DAY);
+        $daysSinceEpoch += (($ts % self::SECONDS_PER_DAY) < 0) ? -1 : 0;
+
+        // 1970-01-01 is a Thursday
+        $dow = $daysSinceEpoch % 7;         // -6 (Fri) - 0 (Thu) - 6 (Wed)
+        $dow = $dow < 0 ? $dow + 7 : $dow;  // 0 (Thu) - 6 (Wed)
+        $dow = $dow - 3;                    // -3 (Thu) - 3 (Wed)
+        $dow = $dow <= 0 ? $dow + 7 : $dow; // 1 (Mon) - 7 (Sun)
+
+        return DayOfWeek::from($dow);
+    }
 }

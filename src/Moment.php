@@ -27,7 +27,7 @@ final class Moment implements Date, Time {
     }
 
     public DayOfWeek $dayOfWeek {
-        get => DayOfWeek::from((int)$this->legacySec->format('N'));
+        get => GregorianCalendar::getDowByUnixTimestamp($this->tsSec);
     }
 
     public int $hour {
