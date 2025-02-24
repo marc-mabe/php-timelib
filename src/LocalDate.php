@@ -37,30 +37,22 @@ final class LocalDate implements Date
         return $formatter->format($this);
     }
 
+    /**
+     * @param Month|int<1,12> $month
+     * @param int<1,31> $dayOfMonth
+     */
     public static function fromYmd(int $year, Month|int $month, int $dayOfMonth): self
     {
-        $n = $month instanceof Month ? $month->value : $month;
-        $legacy = \DateTimeImmutable::createFromFormat(
-            '|Y-n-j',
-            "{$year}-{$n}-{$dayOfMonth}",
-            new \DateTimeZone('+00:00'),
-        );
-        assert($legacy !== false);
-        $daysSinceEpoch = \intdiv($legacy->getTimestamp(), 24 * 3600);
+        $daysSinceEpoch = GregorianCalendar::getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
         return new self($daysSinceEpoch);
     }
 
+    /**
+     * @param int<1,366> $dayOfYear
+     */
     public static function fromYd(int $year, int $dayOfYear): self
     {
-        $z = $dayOfYear - 1;
-        $y = ($year < 0 ? '-' : '+') . str_pad((string)abs($year), 4, '0', STR_PAD_LEFT);
-        $legacy = \DateTimeImmutable::createFromFormat(
-            '|X-z',
-            "{$y}-{$z}",
-            new \DateTimeZone('+00:00'),
-        );
-        assert($legacy !== false);
-        $daysSinceEpoch = \intdiv($legacy->getTimestamp(), 24 * 3600);
+        $daysSinceEpoch = GregorianCalendar::getDaysSinceUnixEpochByYd($year, $dayOfYear);
         return new self($daysSinceEpoch);
     }
 }

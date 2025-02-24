@@ -92,16 +92,76 @@ final class GregorianCalendar
     }
 
     /**
+     * @param int $year
+     * @param Month|int<1, 12> $month
+     * @param int<1, 31> $dayOfMonth
+     * @return int
+     */
+    public static function getDaysSinceUnixEpochByYmd(int $year, Month|int $month, int $dayOfMonth): int
+    {
+        // TODO: Do not use legacy DateTime
+        $n = $month instanceof Month ? $month->value : $month;
+        $X = ($year < 0 ? '-' : '+') . \str_pad((string)abs($year), 4, '0', STR_PAD_LEFT);
+        $legacy = \DateTimeImmutable::createFromFormat(
+            '|X-n-j',
+            "{$X}-{$n}-{$dayOfMonth}",
+            new \DateTimeZone('+00:00'),
+        );
+        assert($legacy !== false);
+        return \intdiv($legacy->getTimestamp(), self::SECONDS_PER_DAY);
+    }
+
+    /**
+     * @param int $year
+     * @param Month|int<1, 12> $month
+     * @param int<1, 31> $dayOfMonth
+     * @return int
+     */
+    public static function getUnixTimestampByYmd(int $year, Month|int $month, int $dayOfMonth): int
+    {
+        return self::getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth) * self::SECONDS_PER_DAY;
+    }
+
+    /**
+     * @param int $year
+     * @param int<1, 366> $dayOfYear
+     * @return int
+     */
+    public static function getDaysSinceUnixEpochByYd(int $year, int $dayOfYear): int
+    {
+        // TODO: Do not use legacy DateTime
+        $z = $dayOfYear - 1;
+        $X = ($year < 0 ? '-' : '+') . \str_pad((string)abs($year), 4, '0', STR_PAD_LEFT);
+        $legacy = \DateTimeImmutable::createFromFormat(
+            '|X-z',
+            "{$X}-{$z}",
+            new \DateTimeZone('+00:00'),
+        );
+        assert($legacy !== false);
+        return \intdiv($legacy->getTimestamp(), self::SECONDS_PER_DAY);
+    }
+
+    /**
+     * @param int $year
+     * @param int<1, 366> $dayOfYear
+     * @return int
+     */
+    public static function getUnixTimestampByYd(int $year, int $dayOfYear): int
+    {
+        return self::getDaysSinceUnixEpochByYd($year, $dayOfYear) * self::SECONDS_PER_DAY;
+    }
+
+    /**
      * @param Month|int<1,12> $month
-     * @param int<1,31> $day
+     * @param int<1,31> $dayOfMonth
      * @return int<1,366>
      */
-    public static function getDayOfYearByYmd(int $year, Month|int $month, int $day): int
+    public static function getDayOfYearByYmd(int $year, Month|int $month, int $dayOfMonth): int
     {
         $prevMonth = $month instanceof Month ? $month->value - 1 : $month - 1;
         return (self::isLeapYear($year)
             ? self::OAYS_OF_YEAR_BY_MONTH_LEAP[$prevMonth]
-            : self::OAYS_OF_YEAR_BY_MONTH_COMMON[$prevMonth]) + $day;
+            : self::OAYS_OF_YEAR_BY_MONTH_COMMON[$prevMonth]) + $dayOfMonth;
     }
 
     /**

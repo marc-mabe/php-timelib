@@ -302,16 +302,9 @@ final class Moment implements Date, Time {
         int $second = 0,
         int $nanoOfSecond = 0,
     ): self {
-        $z = $dayOfYear - 1;
-        $i = \str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
-        $s = \str_pad((string)$second, 2, '0', STR_PAD_LEFT);
-        $legacy = \DateTime::createFromFormat(
-            'Y-z G:i:s',
-            "{$year}-{$z} {$hour}:{$i}:{$s}"
-        );
-        assert($legacy !== false);
-
-        return new self($legacy->getTimestamp(), $nanoOfSecond);
+        $ts = GregorianCalendar::getUnixTimestampByYd($year, $dayOfYear);
+        $ts += $hour * 3600 + $minute * 60 + $second;
+        return new self($ts, $nanoOfSecond);
     }
 
     /**
@@ -332,16 +325,9 @@ final class Moment implements Date, Time {
         int $second = 0,
         int $nanoOfSecond = 0,
     ): self {
-        $n = $month instanceof Month ? $month->value : $month;
-        $i = str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
-        $s = str_pad((string)$second, 2, '0', STR_PAD_LEFT);
-        $legacy = \DateTime::createFromFormat(
-            'Y-n-j G:i:s',
-            "{$year}-{$n}-{$dayOfMonth} {$hour}:{$i}:{$s}"
-        );
-        assert($legacy !== false);
-
-        return new self($legacy->getTimestamp(), $nanoOfSecond);
+        $ts = GregorianCalendar::getUnixTimestampByYmd($year, $month, $dayOfMonth);
+        $ts += $hour * 3600 + $minute * 60 + $second;
+        return new self($ts, $nanoOfSecond);
     }
 
     public static function fromZonedDateTime(Date&Time&Zoned $zonedDateTime): self
