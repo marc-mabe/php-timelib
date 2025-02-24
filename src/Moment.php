@@ -3,31 +3,27 @@
 namespace time;
 
 final class Moment implements Date, Time {
-    private ?\DateTimeImmutable $_legacySec = null;
-
-    /** @phpstan-ignore property.onlyRead */
-    private \DateTimeImmutable $legacySec {
-        get => $this->_legacySec ??= \DateTimeImmutable::createFromTimestamp($this->tsSec);
-    }
-
     public int $year {
-        get => GregorianCalendar::getDateByUnixTimestamp($this->tsSec)[0];
+        get => GregorianCalendar::getYmdByUnixTimestamp($this->tsSec)[0];
     }
 
     public Month $month {
-        get => Month::from(GregorianCalendar::getDateByUnixTimestamp($this->tsSec)[1]);
+        get => GregorianCalendar::getYmdByUnixTimestamp($this->tsSec)[1];
     }
 
     public int $dayOfMonth {
-        get => GregorianCalendar::getDateByUnixTimestamp($this->tsSec)[2];
+        get => GregorianCalendar::getYmdByUnixTimestamp($this->tsSec)[2];
     }
 
-    public int $dayOfYear  {
-        get => ((int)$this->legacySec->format('z') + 1);
+    public int $dayOfYear {
+        get {
+            $date = GregorianCalendar::getYmdByUnixTimestamp($this->tsSec);
+            return GregorianCalendar::getDayOfYearByYmd($date[0], $date[1], $date[2]);
+        }
     }
 
     public DayOfWeek $dayOfWeek {
-        get => GregorianCalendar::getDowByUnixTimestamp($this->tsSec);
+        get => GregorianCalendar::getDayOfWeekByUnixTimestamp($this->tsSec);
     }
 
     public int $hour {

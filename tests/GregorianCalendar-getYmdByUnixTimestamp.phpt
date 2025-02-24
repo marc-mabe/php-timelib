@@ -1,5 +1,5 @@
 --TEST--
-GregorianCalendar::getDateByUnixTimestamp()
+GregorianCalendar::getYmdByUnixTimestamp()
 --FILE--
 <?php
 
@@ -20,17 +20,17 @@ $unixTimestamps = [
 ];
 
 foreach ($unixTimestamps as $ts) {
-    echo $ts . ': ' . stringify(time\GregorianCalendar::getDateByUnixTimestamp($ts)) . "\n";
+    echo $ts . ': ' . stringify(time\GregorianCalendar::getYmdByUnixTimestamp($ts)) . "\n";
 }
 
 --EXPECT--
-1: [1970, 1, 1]
-0: [1970, 1, 1]
--1: [1969, 12, 31]
-86400: [1970, 1, 2]
--86401: [1969, 12, 30]
-954979200: [2000, 4, 6]
-955065599: [2000, 4, 6]
--62162035200: [0, 3, 1]
--62167219200: [0, 1, 1]
--101097676800: [-1234, 5, 6]
+1: [1970, time\Month::January, 1]
+0: [1970, time\Month::January, 1]
+-1: [1969, time\Month::December, 31]
+86400: [1970, time\Month::January, 2]
+-86401: [1969, time\Month::December, 30]
+954979200: [2000, time\Month::April, 6]
+955065599: [2000, time\Month::April, 6]
+-62162035200: [0, time\Month::March, 1]
+-62167219200: [0, time\Month::January, 1]
+-101097676800: [-1234, time\Month::May, 6]

@@ -2,44 +2,65 @@
 
 namespace time;
 
-final class LocalDate implements Date {
-    public int $year { get => (int)$this->legacy->format('Y'); }
-    public Month $month { get => Month::from((int)$this->legacy->format('m')); }
-    public int $dayOfMonth { get => (int)$this->legacy->format('d'); }
-    public int $dayOfYear  { get => ((int)$this->legacy->format('z') + 1); }
+final class LocalDate implements Date
+{
+    public int $year {
+        get => GregorianCalendar::getYmdByDaysSinceUnixEpoch($this->daysSinceEpoch)[0];
+    }
+
+    public Month $month {
+        get => GregorianCalendar::getYmdByDaysSinceUnixEpoch($this->daysSinceEpoch)[1];
+    }
+
+    public int $dayOfMonth {
+        get => GregorianCalendar::getYmdByDaysSinceUnixEpoch($this->daysSinceEpoch)[2];
+    }
+
+    public int $dayOfYear {
+        get {
+            $date = GregorianCalendar::getYmdByDaysSinceUnixEpoch($this->daysSinceEpoch);
+            return GregorianCalendar::getDayOfYearByYmd($date[0], $date[1], $date[2]);
+        }
+    }
 
     public DayOfWeek $dayOfWeek {
-        get => DayOfWeek::from((int)$this->legacy->format('N'));
+        get => GregorianCalendar::getDayOfWeekByDaysSinceUnixEpoch($this->daysSinceEpoch);
     }
 
     private function __construct(
-        private readonly \DateTimeImmutable $legacy,
+        private readonly int $daysSinceEpoch
     ) {}
 
-    public function format(DateTimeFormatter|string $format): string {
+    public function format(DateTimeFormatter|string $format): string
+    {
         $formatter = $format instanceof DateTimeFormatter ? $format : new DateTimeFormatter($format);
         return $formatter->format($this);
     }
 
-    public static function fromYmd(int $year, Month|int $month, int $dayOfMonth): self {
+    public static function fromYmd(int $year, Month|int $month, int $dayOfMonth): self
+    {
         $n = $month instanceof Month ? $month->value : $month;
         $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-n-j',
+            '|Y-n-j',
             "{$year}-{$n}-{$dayOfMonth}",
             new \DateTimeZone('+00:00'),
         );
         assert($legacy !== false);
-        return new self($legacy);
+        $daysSinceEpoch = \intdiv($legacy->getTimestamp(), 24 * 3600);
+        return new self($daysSinceEpoch);
     }
 
-    public static function fromYd(int $year, int $dayOfYear): self {
+    public static function fromYd(int $year, int $dayOfYear): self
+    {
         $z = $dayOfYear - 1;
+        $y = ($year < 0 ? '-' : '+') . str_pad((string)abs($year), 4, '0', STR_PAD_LEFT);
         $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-z',
-            "{$year}-{$z}",
+            '|X-z',
+            "{$y}-{$z}",
             new \DateTimeZone('+00:00'),
         );
         assert($legacy !== false);
-        return new self($legacy);
+        $daysSinceEpoch = \intdiv($legacy->getTimestamp(), 24 * 3600);
+        return new self($daysSinceEpoch);
     }
 }
