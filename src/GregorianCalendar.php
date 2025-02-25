@@ -84,7 +84,6 @@ final class GregorianCalendar
      */
     public static function getYmdByUnixTimestamp(int $ts): array
     {
-        // Calculate days since Hinnant epoch
         $days = \intdiv($ts, self::SECONDS_PER_DAY);
         $days -= (int)(($ts % self::SECONDS_PER_DAY) < 0);
 
