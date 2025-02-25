@@ -92,6 +92,9 @@ final class GregorianCalendar
     }
 
     /**
+     * Calculates the number of days since 1970-01-01 for the given year, month and day of month
+     * using the Hinnant algorithm.
+     *
      * @param int $year
      * @param Month|int<1, 12> $month
      * @param int<1, 31> $dayOfMonth
@@ -99,19 +102,19 @@ final class GregorianCalendar
      */
     public static function getDaysSinceUnixEpochByYmd(int $year, Month|int $month, int $dayOfMonth): int
     {
-        // TODO: Do not use legacy DateTime
-        $n = $month instanceof Month ? $month->value : $month;
-        $X = ($year < 0 ? '-' : '+') . \str_pad((string)abs($year), 4, '0', STR_PAD_LEFT);
-        $legacy = \DateTimeImmutable::createFromFormat(
-            '|X-n-j',
-            "{$X}-{$n}-{$dayOfMonth}",
-            new \DateTimeZone('+00:00'),
-        );
-        assert($legacy !== false);
-        return \intdiv($legacy->getTimestamp(), self::SECONDS_PER_DAY);
+        $month = $month instanceof Month ? $month->value : $month;
+        $year -= (int)($month <= 2);
+        $era = \intdiv($year >= 0 ? $year : $year - self::HINNANT_YEARS_PER_ERA - 1, self::HINNANT_YEARS_PER_ERA);
+        $yoe = $year - $era * self::HINNANT_YEARS_PER_ERA; // [0, 399]
+        $doy = \intdiv(153 * ($month > 2 ? $month - 3 : $month + 9) + 2, 5) + $dayOfMonth - 1; // [0, 365]
+        $doe = $yoe * self::DAYS_PER_YEAR_COMMON + \intdiv($yoe, 4) - \intdiv($yoe, 100) + $doy; // [0, 146096]
+        return $era * self::HINNANT_DAYS_PER_ERA + $doe - self::HINNANT_EPOCH_SHIFT;
     }
 
     /**
+     * Calculates the number of seconds since 1970-01-01 00:00:00 UTC for the given year, month and day of month
+     * using the Hinnant algorithm.
+     *
      * @param int $year
      * @param Month|int<1, 12> $month
      * @param int<1, 31> $dayOfMonth
@@ -129,16 +132,22 @@ final class GregorianCalendar
      */
     public static function getDaysSinceUnixEpochByYd(int $year, int $dayOfYear): int
     {
-        // TODO: Do not use legacy DateTime
-        $z = $dayOfYear - 1;
-        $X = ($year < 0 ? '-' : '+') . \str_pad((string)abs($year), 4, '0', STR_PAD_LEFT);
-        $legacy = \DateTimeImmutable::createFromFormat(
-            '|X-z',
-            "{$X}-{$z}",
-            new \DateTimeZone('+00:00'),
-        );
-        assert($legacy !== false);
-        return \intdiv($legacy->getTimestamp(), self::SECONDS_PER_DAY);
+        $daysOfYearByMonth = self::isLeapYear($year)
+            ? self::OAYS_OF_YEAR_BY_MONTH_LEAP
+            : self::OAYS_OF_YEAR_BY_MONTH_COMMON;
+
+        $dayOfMonth = 0;
+        for ($month = \intdiv($dayOfYear, 31) + 1; $month <= 12; $month++) {
+            if ($daysOfYearByMonth[$month] >= $dayOfYear) {
+                $dayOfMonth = $dayOfYear - $daysOfYearByMonth[$month - 1];
+                break;
+            }
+        }
+
+        assert($month > 0 && $month <= 12);
+        assert($dayOfMonth > 0 && $dayOfMonth <= 31);
+
+        return self::getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
     }
 
     /**
@@ -158,10 +167,11 @@ final class GregorianCalendar
      */
     public static function getDayOfYearByYmd(int $year, Month|int $month, int $dayOfMonth): int
     {
-        $prevMonth = $month instanceof Month ? $month->value - 1 : $month - 1;
+        $month = $month instanceof Month ? $month->value : $month;
         return (self::isLeapYear($year)
-            ? self::OAYS_OF_YEAR_BY_MONTH_LEAP[$prevMonth]
-            : self::OAYS_OF_YEAR_BY_MONTH_COMMON[$prevMonth]) + $dayOfMonth;
+            ? self::OAYS_OF_YEAR_BY_MONTH_LEAP[$month - 1]
+            : self::OAYS_OF_YEAR_BY_MONTH_COMMON[$month - 1]
+        ) + $dayOfMonth;
     }
 
     /**
