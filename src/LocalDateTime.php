@@ -4,35 +4,51 @@ namespace time;
 
 final class LocalDateTime implements Date, Time {
     public int $year {
-        get => (int)$this->legacySec->format('Y');
+        get => GregorianCalendar::getYmdByUnixTimestamp($this->tsSec)[0];
     }
 
     public Month $month {
-        get => Month::from((int)$this->legacySec->format('m'));
+        get => GregorianCalendar::getYmdByUnixTimestamp($this->tsSec)[1];
     }
 
     public int $dayOfMonth {
-        get => (int)$this->legacySec->format('d');
+        get => GregorianCalendar::getYmdByUnixTimestamp($this->tsSec)[2];
     }
 
     public int $dayOfYear  {
-        get => ((int)$this->legacySec->format('z') + 1);
+        get {
+            $date = GregorianCalendar::getYmdByUnixTimestamp($this->tsSec);
+            return GregorianCalendar::getDayOfYearByYmd($date[0], $date[1], $date[2]);
+        }
     }
 
     public DayOfWeek $dayOfWeek {
-        get => DayOfWeek::from((int)$this->legacySec->format('N'));
+        get => GregorianCalendar::getDayOfWeekByUnixTimestamp($this->tsSec);
     }
 
     public int $hour {
-        get => (int)$this->legacySec->format('H');
+        get {
+            $remainder = $this->tsSec % 86400;
+            $remainder += ($remainder < 0) * 86400;
+            return \intdiv($remainder, 3600);
+        }
     }
 
     public int $minute  {
-        get => (int)$this->legacySec->format('i');
+        get {
+            $remainder = $this->tsSec % 86400;
+            $remainder += ($remainder < 0) * 86400;
+            $hours = \intdiv($remainder, 3600);
+            return \intdiv($remainder - $hours * 3600, 60);
+        }
     }
 
     public int $second  {
-        get => (int)$this->legacySec->format('s');
+        get {
+            $remainder = $this->tsSec % 86400;
+            $remainder += ($remainder < 0) * 86400;
+            return $remainder % 60;
+        }
     }
 
     public int $milliOfSecond {
@@ -55,35 +71,32 @@ final class LocalDateTime implements Date, Time {
      * @param int<0, 999999999> $nanoOfSecond
      */
     private function __construct(
-        private readonly \DateTimeImmutable $legacySec,
+        private readonly int $tsSec,
         public readonly int $nanoOfSecond,
     ) {}
 
-    public function add(Period $period): self {
-        // FIXME: handle fraction of second
-        return new self($this->legacySec->add($period->toLegacyInterval()), 0);
+    public function add(Duration $duration): self
+    {
+        $tuple = $duration->addToUnixTimestampTuple([$this->tsSec, $this->nanoOfSecond]);
+        return new self($tuple[0], $tuple[1]);
     }
 
-    public function sub(Period $period): self {
-        // FIXME: handle fraction of second
-        return new self($this->legacySec->sub($period->toLegacyInterval()), 0);
+    public function sub(Duration $duration): self
+    {
+        return $this->add($duration->inverted());
     }
 
-    public function format(DateTimeFormatter|string $format): string {
+    public function format(DateTimeFormatter|string $format): string
+    {
         $formatter = $format instanceof DateTimeFormatter ? $format : new DateTimeFormatter($format);
         return $formatter->format($this);
     }
 
-    public static function fromDateTime(Date $date, Time $time): self {
-        $z = $date->dayOfYear - 1;
-        $n = \str_pad((string)$time->minute, 2, '0', STR_PAD_LEFT);
-        $s = \str_pad((string)$time->second, 2, '0', STR_PAD_LEFT);
-        $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-z G:i:s',
-            "{$date->year}-{$z} {$time->hour}:{$n}:{$s}",
-            new \DateTimeZone('+00:00'),
-        );
-        assert($legacy !== false);
-        return new self($legacy, $time->nanoOfSecond);
+    public static function fromDateTime(Date $date, Time $time): self
+    {
+        $ts = GregorianCalendar::getUnixTimestampByYmd($date->year, $date->month, $date->dayOfMonth);
+        $ts += $time->hour * 3600 + $time->minute * 60 + $time->second;
+
+        return new self($ts, $time->nanoOfSecond);
     }
 }
