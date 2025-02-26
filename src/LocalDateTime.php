@@ -74,11 +74,6 @@ final class LocalDateTime implements Date, Time {
         return $formatter->format($this);
     }
 
-    public static function fromNow(Clock $clock = new WallClock()): self {
-        [$ts, $ns] = $clock->takeUnixTimestampTuple();
-        return new self(\DateTimeImmutable::createFromTimestamp($ts), $ns);
-    }
-
     public static function fromDateTime(Date $date, Time $time): self {
         $z = $date->dayOfYear - 1;
         $n = \str_pad((string)$time->minute, 2, '0', STR_PAD_LEFT);

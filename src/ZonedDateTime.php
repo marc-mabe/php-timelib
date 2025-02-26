@@ -123,11 +123,6 @@ final class ZonedDateTime implements Date, Time, Zoned
         return $this->moment->toUnixTimestampTuple();
     }
 
-    public static function fromNow(Zone $zone, Clock $clock = new WallClock()): self
-    {
-        return $clock->takeZonedDateTime($zone);
-    }
-
     public static function fromUnixTimestamp(int|float $timestamp, TimeUnit $unit = TimeUnit::Second): self
     {
         return new self(Moment::fromUnixTimestamp($timestamp, $unit), Zone::fromIdentifier('+00:00'));
