@@ -87,12 +87,12 @@ final class ZonedDateTime implements Date, Time, Zoned
         return new self($this->moment->sub($duration), $this->zone);
     }
 
-    public function moveToZone(Zone $zone): self
+    public function withZoneSameMoment(Zone $zone): self
     {
         return new self($this->moment, $zone);
     }
 
-    public function withZone(Zone $zone): self
+    public function withZoneSameLocal(Zone $zone): self
     {
         return self::fromDateTime($zone, $this->date, $this->time);
     }

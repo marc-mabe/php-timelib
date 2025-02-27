@@ -224,7 +224,7 @@ final class Moment implements Date, Time {
 
     public function toZonedDateTime(Zone $zone): ZonedDateTime
     {
-        return ZonedDateTime::fromUnixTimestampTuple($this->toUnixTimestampTuple())->moveToZone($zone);
+        return ZonedDateTime::fromUnixTimestampTuple($this->toUnixTimestampTuple())->withZoneSameMoment($zone);
     }
 
     public static function fromUnixTimestamp(int|float $timestamp, TimeUnit $unit = TimeUnit::Second): self
