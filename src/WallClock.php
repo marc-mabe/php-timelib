@@ -5,45 +5,55 @@ namespace time;
 final class WallClock implements Clock
 {
     /** @var \Closure(): array{int, int<0, 999999999>} */
-    private static \Closure $timer;
-    private static Duration $timerResolution;
+    private static \Closure $globalTimer;
+    private static Duration $globalTimerResolution;
 
     public readonly Duration $resolution;
+
+    /** @var \Closure(): array{int, int<0,999999999>} */
+    private readonly \Closure $timer;
 
     public function __construct(
         public readonly Duration $modifier = new Duration(),
     ) {
-        if (!isset(self::$timer, self::$timerResolution)) {
+        if (!isset(self::$globalTimer, self::$globalTimerResolution)) {
             // \microtime() function is only available on operating systems
             // that support the gettimeofday() system call.
             if (\function_exists('microtime')) {
                 /** @phpstan-ignore assign.propertyType */
-                self::$timer = static function () {
+                self::$globalTimer = static function () {
                     [$us, $s] = \explode(' ', \microtime(), 2);
                     return [(int)$s, (int)\substr($us, 2, -2) * 1_000];
                 };
-                self::$timerResolution = new Duration(microseconds: 1);
+                self::$globalTimerResolution = new Duration(microseconds: 1);
             } else {
-                self::$timer = static function () {
+                self::$globalTimer = static function () {
                     return [\time(), 0];
                 };
-                self::$timerResolution = new Duration(seconds: 1);
+                self::$globalTimerResolution = new Duration(seconds: 1);
             }
         }
 
-        $this->resolution = self::$timerResolution;
+        $this->resolution = self::$globalTimerResolution;
+
+        // Setup timer including modifier
+        if ($modifier->isZero) {
+            $this->timer = self::$globalTimer;
+        } else {
+            $this->timer = static function () use ($modifier) {
+                return $modifier->addToUnixTimestampTuple((self::$globalTimer)());
+            };
+        }
     }
 
     public function takeMoment(): Moment
     {
-        $tuple = (self::$timer)();
-        return Moment::fromUnixTimestampTuple($tuple)->add($this->modifier);
+        return Moment::fromUnixTimestampTuple(($this->timer)());
     }
 
     public function takeZonedDateTime(Zone $zone): ZonedDateTime
     {
-        $tuple = (self::$timer)();
-        return Moment::fromUnixTimestampTuple($tuple)->add($this->modifier)->toZonedDateTime($zone);
+        return $this->takeMoment()->toZonedDateTime($zone);
     }
 
     public function takeUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $fractions = false): int|float
@@ -54,8 +64,6 @@ final class WallClock implements Clock
     /** @return array{int, int<0, 999999999>} */
     public function takeUnixTimestampTuple(): array
     {
-        return $this->modifier->isZero
-            ? (self::$timer)()
-            : $this->takeMoment()->toUnixTimestampTuple();
+        return ($this->timer)();
     }
 }

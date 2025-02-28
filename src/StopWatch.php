@@ -15,7 +15,7 @@ class StopWatch
     }
 
     public function __construct(
-        public readonly Clock $clock = new MonotonicClock(new Duration())
+        public readonly Clock $clock = new MonotonicClock(initClock: null)
     ) {}
 
     public function start(): void
