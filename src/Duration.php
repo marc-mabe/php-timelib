@@ -3,14 +3,14 @@
 namespace time;
 
 /**
- * A `Duration` is an amount of time that strictly follows the following definition:
+ * A `Duration` is a relative amount of time that strictly follows the following definition:
  *   - each microsecond has 1000 nanoseconds
  *   - each millisecond has 1000 microseconds
  *   - each second has 1000 milliseconds
  *   - each minute has 60 seconds
  *   - each hour has 60 minutes
  *
- * It's measured in the number of seconds with nanosecond adjustment.
+ * It's measured in the number of total seconds with nanoOfSecond adjustment.
  *
  * NOTE: There is no DST (daylight saving time), nor leap seconds or similar edge cases involved.
  *
