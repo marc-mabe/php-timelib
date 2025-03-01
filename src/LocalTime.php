@@ -32,11 +32,6 @@ final class LocalTime implements Time {
         public readonly int $nanoOfSecond,
     ) {}
 
-    public function format(DateTimeFormatter|string $format): string {
-        $formatter = $format instanceof DateTimeFormatter ? $format : new DateTimeFormatter($format);
-        return $formatter->format($this);
-    }
-
     /**
      * @param int<0, 23> $hour
      * @param int<0, 59> $minute

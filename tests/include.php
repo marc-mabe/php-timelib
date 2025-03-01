@@ -19,28 +19,33 @@ function stringifyEnum(UnitEnum $enum) {
 }
 
 function stringifyMoment(Moment $moment) {
+    $fmt   = new time\DateTimeFormatter('D Y-m-d H:i:sf');
     $tuple = $moment->toUnixTimestampTuple();
-    return "Moment('{$moment->format('D Y-m-d H:i:sf')}', {$tuple[0]}, {$tuple[1]})";
+    return "Moment('{$fmt->format($moment)}', {$tuple[0]}, {$tuple[1]})";
 }
 
 function stringifyLocalDate(LocalDate $date) {
-    return "LocalDate('{$date->format('D Y-m-d')}')";
+    $fmt = new time\DateTimeFormatter('D Y-m-d');
+    return "LocalDate('{$fmt->format($date)}')";
 }
 
 function stringifyLocalTime(LocalTime $time) {
-    return "LocalTime('{$time->format('H:i:sf')}')";
+    $fmt = new time\DateTimeFormatter('H:i:sf');
+    return "LocalTime('{$fmt->format($time)}')";
 }
 
 function stringifyLocalDateTime(LocalDateTime $dt) {
-    return "LocalDateTime('{$dt->format('D Y-m-d H:i:sf')}')";
+    $fmt = new time\DateTimeFormatter('D Y-m-d H:i:sf');
+    return "LocalDateTime('{$fmt->format($dt)}')";
 }
 
 function stringifyZonedDateTime(ZonedDateTime $dt) {
-    return "ZonedDateTime('{$dt->format('D Y-m-d H:i:sf P [e]')}')";
+    $fmt = new time\DateTimeFormatter('D Y-m-d H:i:sf P [e]');
+    return "ZonedDateTime('{$fmt->format($dt)}')";
 }
 
 function stringifyZone(Zone $zone) {
-    return $zone::class . "('{$zone->format('e')}')";
+    return $zone::class . "('{$zone->identifier}')";
 }
 
 function stringifyDuration(Duration $duration) {

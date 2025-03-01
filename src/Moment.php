@@ -182,11 +182,6 @@ final class Moment implements Date, Time {
         };
     }
 
-    public function format(DateTimeFormatter|string $format): string {
-        $formatter = $format instanceof DateTimeFormatter ? $format : new DateTimeFormatter($format);
-        return $formatter->format($this);
-    }
-
     /**
      * Convert to unix timestamp in the defined unit.
      *

@@ -31,12 +31,6 @@ final class LocalDate implements Date
         private readonly int $daysSinceEpoch
     ) {}
 
-    public function format(DateTimeFormatter|string $format): string
-    {
-        $formatter = $format instanceof DateTimeFormatter ? $format : new DateTimeFormatter($format);
-        return $formatter->format($this);
-    }
-
     /**
      * @param Month|int<1,12> $month
      * @param int<1,31> $dayOfMonth

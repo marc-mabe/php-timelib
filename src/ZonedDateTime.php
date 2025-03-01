@@ -97,11 +97,6 @@ final class ZonedDateTime implements Date, Time, Zoned
         return self::fromDateTime($zone, $this->date, $this->time);
     }
 
-    public function format(DateTimeFormatter|string $format): string {
-        $formatter = $format instanceof DateTimeFormatter ? $format : new DateTimeFormatter($format);
-        return $formatter->format($this);
-    }
-
     public function toMoment(): Moment
     {
         return $this->moment;

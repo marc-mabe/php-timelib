@@ -86,12 +86,6 @@ final class LocalDateTime implements Date, Time {
         return $this->add($duration->inverted());
     }
 
-    public function format(DateTimeFormatter|string $format): string
-    {
-        $formatter = $format instanceof DateTimeFormatter ? $format : new DateTimeFormatter($format);
-        return $formatter->format($this);
-    }
-
     public static function fromDateTime(Date $date, Time $time): self
     {
         $ts = GregorianCalendar::getUnixTimestampByYmd($date->year, $date->month, $date->dayOfMonth);
