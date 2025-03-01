@@ -4,44 +4,36 @@ namespace time;
 
 final class ZonedDateTime implements Date, Time, Zoned
 {
-    private ?\DateTimeImmutable $_legacySec = null;
-
-    /** @phpstan-ignore property.onlyRead */
-    private \DateTimeImmutable $legacySec {
-        get => $this->_legacySec ??= \DateTimeImmutable::createFromTimestamp($this->toUnixTimestampTuple()[0])
-            ->setTimezone(new \DateTimeZone($this->zone->identifier),);
-    }
-
     public int $year {
-        get => (int)$this->legacySec->format('Y');
+        get => $this->adjusted->year;
     }
 
     public Month $month {
-        get => Month::from((int)$this->legacySec->format('n'));
+        get => $this->adjusted->month;
     }
 
     public int $dayOfMonth {
-        get => (int)$this->legacySec->format('j');
+        get => $this->adjusted->dayOfMonth;
     }
 
     public int $dayOfYear {
-        get => (int)$this->legacySec->format('z');
+        get => $this->adjusted->dayOfYear;
     }
 
     public DayOfWeek $dayOfWeek {
-        get => DayOfWeek::from((int)$this->legacySec->format('N'));
+        get => $this->adjusted->dayOfWeek;
     }
 
     public int $hour {
-        get => (int)$this->legacySec->format('G');
+        get => $this->adjusted->hour;
     }
 
     public int $minute {
-        get => (int)$this->legacySec->format('i');
+        get => $this->adjusted->minute;
     }
 
     public int $second {
-        get => (int)$this->legacySec->format('s');
+        get => $this->adjusted->second;
     }
 
     public int $milliOfSecond {
@@ -68,14 +60,22 @@ final class ZonedDateTime implements Date, Time, Zoned
         get => LocalTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
-    public ZoneOffset $offset {
-        get => ZoneOffset::fromDuration(new Duration(seconds: $this->legacySec->getOffset()));
-    }
+    public readonly ZoneOffset $offset;
+
+    private readonly Moment $adjusted;
 
     private function __construct(
         private readonly Moment $moment,
         public readonly Zone $zone,
-    ) {}
+    ) {
+        // Use legacy to lookup timezone db
+        $legacy = \DateTimeImmutable::createFromTimestamp($moment->toUnixTimestampTuple()[0])
+            ->setTimezone(new \DateTimeZone($zone->identifier));
+        $offsetDuration = new Duration(seconds: $legacy->getOffset());
+
+        $this->adjusted = $this->moment->add($offsetDuration);
+        $this->offset = ZoneOffset::fromDuration($offsetDuration);
+    }
 
     public function add(Duration $duration): self
     {
