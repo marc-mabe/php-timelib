@@ -71,10 +71,11 @@ final class ZonedDateTime implements Date, Time, Zoned
         // Use legacy to lookup timezone db
         $legacy = \DateTimeImmutable::createFromTimestamp($moment->toUnixTimestampTuple()[0])
             ->setTimezone(new \DateTimeZone($zone->identifier));
-        $offsetDuration = new Duration(seconds: $legacy->getOffset());
+        $offsetSeconds  = $legacy->getOffset();
+        $offsetDuration = new Duration(seconds: $offsetSeconds);
 
         $this->adjusted = $this->moment->add($offsetDuration);
-        $this->offset = ZoneOffset::fromDuration($offsetDuration);
+        $this->offset   = new ZoneOffset($offsetSeconds);
     }
 
     public function add(Duration $duration): self

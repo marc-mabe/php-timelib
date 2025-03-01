@@ -43,11 +43,9 @@ class Zone
             /** @var false|list<array{ts: int, time: string, offset: int, isdst: bool, abbr: string}> $transitions */
             $transitions = $legacy->getTransitions();
             if ($transitions === false) {
-                return ZoneOffset::fromDuration(new Duration(
-                    seconds: \DateTime::createFromTimestamp(0)->setTimezone($legacy)->getOffset()
-                ));
+                return new ZoneOffset(\DateTime::createFromTimestamp(0)->setTimezone($legacy)->getOffset());
             } elseif (\count($transitions) === 1 && $transitions[0]['ts'] === PHP_INT_MIN) {
-                return ZoneOffset::fromDuration(new Duration(seconds: $transitions[0]['offset']));
+                return new ZoneOffset($transitions[0]['offset']);
             }
 
             return null;
