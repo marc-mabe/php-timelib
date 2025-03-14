@@ -11,6 +11,8 @@ use time\StopWatch;
 use time\WallClock;
 use time\Zone;
 use time\ZonedDateTime;
+use time\ZoneInfo;
+use time\ZoneTransition;
 
 include __DIR__ . '/../vendor/autoload.php';
 
@@ -48,6 +50,17 @@ function stringifyZone(Zone $zone) {
     return $zone::class . "('{$zone->identifier}')";
 }
 
+function stringifyZoneInfo(ZoneInfo $zoneInfo) {
+    $fixedOffset = stringify($zoneInfo->fixedOffset);
+    return "ZoneInfo(fixedOffset={$fixedOffset})";
+}
+
+function stringifyZoneTransition(ZoneTransition $transition) {
+    $offset = stringify($transition->offset);
+    $moment = stringify($transition->moment);
+    return "ZoneTransition(offset={$offset}, moment={$moment})";
+}
+
 function stringifyDuration(Duration $duration) {
     return "Duration('{$duration->toIso()}')";
 }
@@ -83,6 +96,8 @@ function stringify(mixed $v) {
         $v instanceof LocalDateTime => stringifyLocalDateTime($v),
         $v instanceof ZonedDateTime => stringifyZonedDateTime($v),
         $v instanceof Zone => stringifyZone($v),
+        $v instanceof ZoneInfo => stringifyZoneInfo($v),
+        $v instanceof ZoneTransition => stringifyZoneTransition($v),
         $v instanceof Period => stringifyPeriod($v),
         $v instanceof Duration => stringifyDuration($v),
         $v instanceof WallClock => stringifyWallClock($v),

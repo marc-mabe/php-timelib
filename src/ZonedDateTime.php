@@ -68,14 +68,9 @@ final class ZonedDateTime implements Date, Time, Zoned
         private readonly Moment $moment,
         public readonly Zone $zone,
     ) {
-        // Use legacy to lookup timezone db
-        $legacy = \DateTimeImmutable::createFromTimestamp($moment->toUnixTimestampTuple()[0])
-            ->setTimezone(new \DateTimeZone($zone->identifier));
-        $offsetSeconds  = $legacy->getOffset();
-        $offsetDuration = new Duration(seconds: $offsetSeconds);
-
-        $this->adjusted = $this->moment->add($offsetDuration);
-        $this->offset   = new ZoneOffset($offsetSeconds);
+        $offset         = $zone->getOffsetAt($moment);
+        $this->adjusted = $this->moment->add($offset->toDuration());
+        $this->offset   = $offset;
     }
 
     public function add(Duration $duration): self
@@ -121,13 +116,13 @@ final class ZonedDateTime implements Date, Time, Zoned
 
     public static function fromUnixTimestamp(int|float $timestamp, TimeUnit $unit = TimeUnit::Second): self
     {
-        return new self(Moment::fromUnixTimestamp($timestamp, $unit), Zone::fromIdentifier('+00:00'));
+        return new self(Moment::fromUnixTimestamp($timestamp, $unit), new ZoneOffset(totalSeconds: 0));
     }
 
     /** @param array{int, int<0, 999999999>} $timestampTuple */
     public static function fromUnixTimestampTuple(array $timestampTuple): self
     {
-        return new self(Moment::fromUnixTimestampTuple($timestampTuple), Zone::fromIdentifier('+00:00'));
+        return new self(Moment::fromUnixTimestampTuple($timestampTuple), new ZoneOffset(totalSeconds: 0));
     }
 
     /**

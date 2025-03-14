@@ -230,7 +230,7 @@ Moment::fromDateTime
     Moment('Mon 2025-02-03 15:25:06.987654321', 1738596306, 987654321)
   fromDateTime(LocalDate('Mon 2025-02-03'), LocalTime('16:25:06.987654321'), time\Zone('UTC'))
     Moment('Mon 2025-02-03 16:25:06.987654321', 1738599906, 987654321)
-  fromDateTime(LocalDate('Sat 0-01-01'), LocalTime('00:00:00'), time\Zone('+00:00'))
+  fromDateTime(LocalDate('Sat 0-01-01'), LocalTime('00:00:00'), time\ZoneOffset('+00:00'))
     Moment('Sat 0-01-01 00:00:00', -62167219200, 0)
 Moment::fromZonedDateTime
   fromZonedDateTime(ZonedDateTime('Mon 2025-02-03 16:25:06.987654321 +01:00 [Europe/Berlin]'))

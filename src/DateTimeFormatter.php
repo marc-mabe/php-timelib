@@ -183,9 +183,9 @@ class DateTimeFormatter
     {
         $offset = null;
         if ($dateTimeZone instanceof Zone) {
-            $offset = $dateTimeZone->offset;
+            $offset = $dateTimeZone->fixedOffset;
         } elseif ($dateTimeZone instanceof Zoned) {
-            $offset = $dateTimeZone->zone->offset;
+            $offset = $dateTimeZone->zone->fixedOffset;
         }
 
         if ($offset === null) {
@@ -251,7 +251,7 @@ class DateTimeFormatter
         }
 
         // Fallback to fixed offset if possible
-        if ($zone?->offset) {
+        if ($zone?->fixedOffset) {
             return 'GMT' . $this->formatOffset(FormatToken::OffsetWithoutColon, $dateTimeZone);
         }
 

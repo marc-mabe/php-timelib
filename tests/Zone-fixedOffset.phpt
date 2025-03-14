@@ -1,5 +1,5 @@
 --TEST--
-Zone->offset
+Zone->fixedOffset
 --FILE--
 <?php
 
@@ -20,7 +20,7 @@ $zones = [
 ];
 
 foreach ($zones as $zone) {
-    echo stringify($zone) . ": " . stringify($zone->offset) . "\n";
+    echo stringify($zone) . ": " . stringify($zone->fixedOffset) . "\n";
 }
 
 --EXPECTF--
@@ -28,10 +28,10 @@ time\Zone('GMT'): time\ZoneOffset('+00:00')
 time\Zone('UTC'): time\ZoneOffset('+00:00')
 time\Zone('Etc/GMT'): time\ZoneOffset('+00:00')
 time\Zone('Etc/GMT+1'): time\ZoneOffset('-01:00')
-time\Zone('+00:00'): time\ZoneOffset('+00:00')
-time\Zone('+12:34'): time\ZoneOffset('+12:34')
-time\Zone('-12:34'): time\ZoneOffset('-12:34')
-time\Zone('+12:34:56'): time\ZoneOffset('+12:34:56')
-time\Zone('-12:34:56'): time\ZoneOffset('-12:34:56')
+time\ZoneOffset('+00:00'): time\ZoneOffset('+00:00')
+time\ZoneOffset('+12:34'): time\ZoneOffset('+12:34')
+time\ZoneOffset('-12:34'): time\ZoneOffset('-12:34')
+time\ZoneOffset('+12:34:56'): time\ZoneOffset('+12:34:56')
+time\ZoneOffset('-12:34:56'): time\ZoneOffset('-12:34:56')
 time\Zone('Europe/Berlin'): NULL
 time\ZoneOffset('-01:02:03'): time\ZoneOffset('-01:02:03')
