@@ -143,18 +143,13 @@ final class ZonedDateTime implements Date, Time, Zoned
         int $second = 0,
         int $nanoOfSecond = 0,
     ): self {
-        $n = $month instanceof Month ? $month->value : $month;
-        $i = \str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
-        $s = \str_pad((string)$second, 2, '0', STR_PAD_LEFT);
+        $localDays = GregorianCalendar::getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
+        $localTs   = $localDays * 60 * 60 * 24;
+        $localTs  += $hour * 3600 + $minute * 60 + $second;
 
-        $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-n-j G:i:s',
-            "{$year}-{$n}-{$dayOfMonth} {$hour}:{$i}:{$s}",
-            new \DateTimeZone($zone->identifier),
-        );
-        assert($legacy !== false);
-
-        return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $nanoOfSecond]), $zone);
+        $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
+        $ts     = $localTs - $offset->totalSeconds;
+        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond]), $zone);
     }
 
     /**
@@ -173,18 +168,13 @@ final class ZonedDateTime implements Date, Time, Zoned
         int $second = 0,
         int $nanoOfSecond = 0,
     ): self {
-        $z = $dayOfYear -1;
-        $i = \str_pad((string)$minute, 2, '0', STR_PAD_LEFT);
-        $s = \str_pad((string)$second, 2, '0', STR_PAD_LEFT);
+        $localDays = GregorianCalendar::getDaysSinceUnixEpochByYd($year, $dayOfYear);
+        $localTs   = $localDays * 60 * 60 * 24;
+        $localTs  += $hour * 3600 + $minute * 60 + $second;
 
-        $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-z G:i:s',
-            "{$year}-{$z} {$hour}:{$i}:{$s}",
-            new \DateTimeZone($zone->identifier),
-        );
-        assert($legacy !== false);
-
-        return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $nanoOfSecond]), $zone);
+        $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
+        $ts     = $localTs - $offset->totalSeconds;
+        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond]), $zone);
     }
 
     public static function fromZonedDateTime(Date&Time&Zoned $zonedDateTime): self
@@ -206,19 +196,37 @@ final class ZonedDateTime implements Date, Time, Zoned
 
     public static function fromDateTime(Zone $zone, Date $date, ?Time $time = null): self
     {
-        $time ??= LocalTime::fromHms(0, 0, 0);
+        $localDays = GregorianCalendar::getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
+        $localTs   = $localDays * 60 * 60 * 24;
+        $localTs  += $time ? $time->hour * 3600 + $time->minute * 60 + $time->second : 0;
 
-        $z = $date->dayOfYear - 1;
-        $i = \str_pad((string)$time->minute, 2, '0', STR_PAD_LEFT);
-        $s = \str_pad((string)$time->second, 2, '0', STR_PAD_LEFT);
+        $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
+        $ts     = $localTs - $offset->totalSeconds;
+        $ns     = $time ? $time->nanoOfSecond : 0;
+        return new self(Moment::fromUnixTimestampTuple([$ts, $ns]), $zone);
+    }
 
-        $legacy = \DateTimeImmutable::createFromFormat(
-            'Y-z G:i:s',
-            "{$date->year}-{$z} {$time->hour}:{$i}:{$s}",
-            new \DateTimeZone($zone->identifier),
-        );
-        assert($legacy !== false);
+    private static function findOffsetByLocalTimestamp(Zone $zone, int $localTs): ZoneOffset
+    {
+        $offset = $zone->fixedOffset;
+        if ($offset) {
+            return $offset;
+        }
 
-        return new self(Moment::fromUnixTimestampTuple([$legacy->getTimestamp(), $time->nanoOfSecond]), $zone);
+        $tsMin = $localTs - 3600 * 18;
+        $tsMax = $localTs + 3600 * 18;
+
+        $transMin = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$tsMin, 0]));
+        \assert($transMin !== null);
+
+        $transUnzonedTs = $transMin->moment->toUnixTimestampTuple()[0] + $transMin->offset->totalSeconds;
+        if ($transUnzonedTs <= $localTs) {
+            return $transMin->offset;
+        }
+
+        $transMax = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$tsMax, 0]));
+        \assert($transMax !== null);
+
+        return $transMax->offset;
     }
 }

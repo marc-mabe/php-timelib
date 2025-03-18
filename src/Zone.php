@@ -108,8 +108,11 @@ class Zone
             public function getOffsetAt(Moment $moment): ZoneOffset
             {
                 return $this->fixedOffset
-                    ?? new ZoneOffset(\DateTimeImmutable::createFromTimestamp($moment->toUnixTimestampTuple()[0])
-                        ->setTimezone($this->legacy)->getOffset());
+                    ?? new ZoneOffset(
+                        \DateTime::createFromTimestamp($moment->toUnixTimestampTuple()[0])
+                            ->setTimezone($this->legacy)
+                            ->getOffset()
+                    );
             }
 
             public function getTransitions(
