@@ -14,7 +14,7 @@ var_dump($period);
 echo $period->toIso() . "\n";
 
 $period = new time\Period(
-    isInverted: true,
+    isNegative: true,
     years: 123, months: 456, days: 789,
     hours: 123, minutes: 456, seconds: 789,
     milliseconds: 123, microseconds: 456, nanoseconds: 789,
@@ -34,13 +34,13 @@ $period = new time\Period();
 var_dump($period);
 echo $period->toIso() . "\n";
 
-$period = new time\Period(isInverted: true);
+$period = new time\Period(isNegative: true);
 var_dump($period);
 echo $period->toIso() . "\n";
 
 --EXPECTF--
 object(time\Period)#%d (%d) {
-  ["isInverted"]=>
+  ["isNegative"]=>
   bool(false)
   ["years"]=>
   int(123)
@@ -63,7 +63,7 @@ object(time\Period)#%d (%d) {
 }
 P123Y456M789DT123H456M789.123456789S
 object(time\Period)#%d (%d) {
-  ["isInverted"]=>
+  ["isNegative"]=>
   bool(true)
   ["years"]=>
   int(123)
@@ -86,7 +86,7 @@ object(time\Period)#%d (%d) {
 }
 -P123Y456M789DT123H456M789.123456789S
 object(time\Period)#%d (%d) {
-  ["isInverted"]=>
+  ["isNegative"]=>
   bool(false)
   ["years"]=>
   int(-123)
@@ -107,9 +107,9 @@ object(time\Period)#%d (%d) {
   ["nanoseconds"]=>
   int(-789)
 }
-P-123Y-456M-789DT-123H-456M-788.1123456789S
+P-123Y-456M-789DT-123H-456M-789.123456789S
 object(time\Period)#%d (%d) {
-  ["isInverted"]=>
+  ["isNegative"]=>
   bool(false)
   ["years"]=>
   int(0)
@@ -132,7 +132,7 @@ object(time\Period)#%d (%d) {
 }
 P0D
 object(time\Period)#%d (%d) {
-  ["isInverted"]=>
+  ["isNegative"]=>
   bool(true)
   ["years"]=>
   int(0)

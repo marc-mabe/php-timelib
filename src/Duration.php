@@ -95,12 +95,67 @@ final class Duration
         $this->nanosOfSecond = $ns;
     }
 
+    public function equals(self $other): bool
+    {
+        return $this->totalSeconds === $other->totalSeconds
+            && $this->nanosOfSecond === $other->nanosOfSecond;
+    }
+
     public function add(self $other): self
     {
         return new self(
             seconds: $this->totalSeconds + $other->totalSeconds,
             nanoseconds: $this->nanosOfSecond + $other->nanosOfSecond,
         );
+    }
+
+    /**
+     * Adds this duration to the specified unix timestamp tuple.
+     *
+     * @param array{int, int<0,999999999>} $tuple
+     * @return array{int, int<0,999999999>}
+     */
+    public function addToUnixTimestampTuple(array $tuple): array
+    {
+        $ns = $tuple[1] + $this->nanosOfSecond;
+        $s  = $tuple[0] + $this->totalSeconds + \intdiv($ns, 1_000_000_000);
+        $ns = $ns % 1_000_000_000;
+        return [$s, $ns];
+    }
+
+    public function diff(self $other): self
+    {
+        return new self(
+            seconds: \abs($this->totalSeconds - $other->totalSeconds),
+            nanoseconds: \abs($this->nanosOfSecond - $other->nanosOfSecond),
+        );
+    }
+
+    public function inverted(): self
+    {
+        if ($this->isZero) {
+            return $this;
+        }
+
+        $s  = $this->totalSeconds * -1;
+        $ns = $this->nanosOfSecond;
+
+        if ($ns) {
+            $s -= 1;
+            $ns = 1_000_000_000 - $ns;
+        }
+
+        return new self(seconds: $s, nanoseconds: $ns);
+    }
+
+    public function abs(): self
+    {
+        return $this->isNegative ? $this->inverted() : $this;
+    }
+
+    public function negated(): self
+    {
+        return !$this->isNegative ? $this->inverted() : $this;
     }
 
     public function toIso(): string
@@ -134,46 +189,5 @@ final class Duration
         }
 
         return $this->isNegative ? '-PT' . $timeIso : 'PT' . $timeIso;
-    }
-
-    public function inverted(): self
-    {
-        if ($this->isZero) {
-            return $this;
-        }
-
-        $s  = $this->totalSeconds * -1;
-        $ns = $this->nanosOfSecond;
-
-        if ($ns) {
-            $s -= 1;
-            $ns = 1_000_000_000 - $ns;
-        }
-
-        return new self(seconds: $s, nanoseconds: $ns);
-    }
-
-    public function abs(): self
-    {
-        return $this->isNegative ? $this->inverted() : $this;
-    }
-
-    public function negated(): self
-    {
-        return !$this->isNegative ? $this->inverted() : $this;
-    }
-
-    /**
-     * Adds this duration to the specified unix timestamp tuple.
-     *
-     * @param array{int, int<0,999999999>} $tuple
-     * @return array{int, int<0,999999999>}
-     */
-    public function addToUnixTimestampTuple(array $tuple): array
-    {
-        $ns = $tuple[1] + $this->nanosOfSecond;
-        $s  = $tuple[0] + $this->totalSeconds + \intdiv($ns, 1_000_000_000);
-        $ns = $ns % 1_000_000_000;
-        return [$s, $ns];
     }
 }
