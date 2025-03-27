@@ -21,7 +21,13 @@ $date = time\LocalDate::fromYmd(2000, time\Month::October, 29);
 $time = time\LocalTime::fromHms(1, 59, 59);
 
 echo "ZonedDateTime::fromDateTime(" . stringify($bln) . ", " . stringify($date) . ", " . stringify($time) . ")\n";
-echo stringify(time\ZonedDateTime::fromDateTime($bln, $date, time\LocalTime::fromHms(1, 59, 59))) . "\n";
+echo stringify(time\ZonedDateTime::fromDateTime($bln, $date, $time)) . "\n";
+
+$date = time\LocalDate::fromYmd(2000, time\Month::October, 29);
+$time = time\LocalTime::fromHms(3, 0, 0);
+
+echo "ZonedDateTime::fromDateTime(" . stringify($bln) . ", " . stringify($date) . ", " . stringify($time) . ")\n";
+echo stringify(time\ZonedDateTime::fromDateTime($bln, $date, $time)) . "\n";
 
 $date = time\LocalDate::fromYmd(2000, time\Month::October, 29);
 $time = time\LocalTime::fromHms(2, 30, 3, 123456);
@@ -40,6 +46,8 @@ ZonedDateTime::fromDateTime(time\Zone('Europe/Berlin'), LocalDate('Sun 2000-10-2
 ZonedDateTime('Sun 2000-10-29 02:30:03.000123456 +02:00 [Europe/Berlin]')
 ZonedDateTime::fromDateTime(time\Zone('Europe/Berlin'), LocalDate('Sun 2000-10-29'), LocalTime('01:59:59'))
 ZonedDateTime('Sun 2000-10-29 01:59:59 +02:00 [Europe/Berlin]')
+ZonedDateTime::fromDateTime(time\Zone('Europe/Berlin'), LocalDate('Sun 2000-10-29'), LocalTime('03:00:00'))
+ZonedDateTime('Sun 2000-10-29 03:00:00 +01:00 [Europe/Berlin]')
 ZonedDateTime::fromDateTime(time\Zone('UTC'), LocalDateTime('Sun 2000-10-29 02:30:03.000123456'), LocalDateTime('Sun 2000-10-29 02:30:03.000123456'))
 ZonedDateTime('Sun 2000-10-29 02:30:03.000123456 +00:00 [UTC]')
 ZonedDateTime::fromDateTime(time\Zone('UTC'), LocalDateTime('Sun 2000-10-29 02:30:03.000123456'))

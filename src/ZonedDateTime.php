@@ -213,20 +213,25 @@ final class ZonedDateTime implements Date, Time, Zoned
             return $offset;
         }
 
-        $tsMin = $localTs - 3600 * 18;
-        $tsMax = $localTs + 3600 * 18;
+        $minTs   = $localTs - 3600 * 18;
+        $minTran = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$minTs, 0]));
+        \assert($minTran !== null);
+        $minStart = $minTran->moment->toUnixTimestampTuple()[0] + $minTran->offset->totalSeconds;
 
-        $transMin = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$tsMin, 0]));
-        \assert($transMin !== null);
+        $maxTs   = $localTs + 3600 * 18;
+        $maxTran = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$maxTs, 0]));
+        \assert($maxTran !== null);
 
-        $transUnzonedTs = $transMin->moment->toUnixTimestampTuple()[0] + $transMin->offset->totalSeconds;
-        if ($transUnzonedTs <= $localTs) {
-            return $transMin->offset;
+        if ($minStart <= $localTs) {
+            // NOTE: The local end of the min transition needs to take the max transition time
+            //       together with the min transition offset
+            $minEnd = $maxTran->moment->toUnixTimestampTuple()[0] + $minTran->offset->totalSeconds;
+
+            if ($minEnd > $localTs) {
+                return $minTran->offset;
+            }
         }
 
-        $transMax = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$tsMax, 0]));
-        \assert($transMax !== null);
-
-        return $transMax->offset;
+        return $maxTran->offset;
     }
 }
