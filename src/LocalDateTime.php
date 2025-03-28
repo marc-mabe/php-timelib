@@ -2,28 +2,29 @@
 
 namespace time;
 
-final class LocalDateTime implements Date, Time {
+final class LocalDateTime implements Date, Time
+{
     public int $year {
-        get => GregorianCalendar::getYmdByUnixTimestamp($this->tsSec)[0];
+        get => $this->calendar->getYmdByUnixTimestamp($this->tsSec)[0];
     }
 
     public Month $month {
-        get => GregorianCalendar::getYmdByUnixTimestamp($this->tsSec)[1];
+        get => $this->calendar->getYmdByUnixTimestamp($this->tsSec)[1];
     }
 
     public int $dayOfMonth {
-        get => GregorianCalendar::getYmdByUnixTimestamp($this->tsSec)[2];
+        get => $this->calendar->getYmdByUnixTimestamp($this->tsSec)[2];
     }
 
     public int $dayOfYear  {
         get {
-            $date = GregorianCalendar::getYmdByUnixTimestamp($this->tsSec);
-            return GregorianCalendar::getDayOfYearByYmd($date[0], $date[1], $date[2]);
+            $date = $this->calendar->getYmdByUnixTimestamp($this->tsSec);
+            return $this->calendar->getDayOfYearByYmd($date[0], $date[1], $date[2]);
         }
     }
 
     public DayOfWeek $dayOfWeek {
-        get => GregorianCalendar::getDayOfWeekByUnixTimestamp($this->tsSec);
+        get => $this->calendar->getDayOfWeekByUnixTimestamp($this->tsSec);
     }
 
     public int $hour {
@@ -60,7 +61,7 @@ final class LocalDateTime implements Date, Time {
     }
 
     public LocalDate $date {
-        get => LocalDate::fromYd($this->year, $this->dayOfYear);
+        get => LocalDate::fromYd($this->year, $this->dayOfYear, calendar: $this->calendar);
     }
 
     public LocalTime $time {
@@ -73,12 +74,13 @@ final class LocalDateTime implements Date, Time {
     private function __construct(
         private readonly int $tsSec,
         public readonly int $nanoOfSecond,
+        public readonly Calendar $calendar,
     ) {}
 
     public function add(Duration $duration): self
     {
         $tuple = $duration->addToUnixTimestampTuple([$this->tsSec, $this->nanoOfSecond]);
-        return new self($tuple[0], $tuple[1]);
+        return new self($tuple[0], $tuple[1], $this->calendar);
     }
 
     public function sub(Duration $duration): self
@@ -88,9 +90,9 @@ final class LocalDateTime implements Date, Time {
 
     public static function fromDateTime(Date $date, Time $time): self
     {
-        $ts = GregorianCalendar::getUnixTimestampByYmd($date->year, $date->month, $date->dayOfMonth);
+        $ts = $date->calendar->getUnixTimestampByYmd($date->year, $date->month, $date->dayOfMonth);
         $ts += $time->hour * 3600 + $time->minute * 60 + $time->second;
 
-        return new self($ts, $time->nanoOfSecond);
+        return new self($ts, $time->nanoOfSecond, $date->calendar);
     }
 }

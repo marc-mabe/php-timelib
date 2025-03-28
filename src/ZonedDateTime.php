@@ -4,6 +4,10 @@ namespace time;
 
 final class ZonedDateTime implements Date, Time, Zoned
 {
+    public Calendar $calendar {
+        get => $this->adjusted->calendar;
+    }
+
     public int $year {
         get => $this->adjusted->year;
     }
@@ -53,7 +57,7 @@ final class ZonedDateTime implements Date, Time, Zoned
     }
 
     public LocalDate $date {
-        get => LocalDate::fromYd($this->year, $this->dayOfYear);
+        get => LocalDate::fromYd($this->year, $this->dayOfYear, calendar: $this->calendar);
     }
 
     public LocalTime $time {
@@ -114,15 +118,24 @@ final class ZonedDateTime implements Date, Time, Zoned
         return $this->moment->toUnixTimestampTuple();
     }
 
-    public static function fromUnixTimestamp(int|float $timestamp, TimeUnit $unit = TimeUnit::Second): self
-    {
-        return new self(Moment::fromUnixTimestamp($timestamp, $unit), new ZoneOffset(totalSeconds: 0));
+    public static function fromUnixTimestamp(
+        int|float $timestamp,
+        TimeUnit $unit = TimeUnit::Second,
+        ?Calendar $calendar = null
+    ): self {
+        return new self(
+            Moment::fromUnixTimestamp($timestamp, $unit, $calendar),
+            new ZoneOffset(totalSeconds: 0),
+        );
     }
 
     /** @param array{int, int<0, 999999999>} $timestampTuple */
-    public static function fromUnixTimestampTuple(array $timestampTuple): self
+    public static function fromUnixTimestampTuple(array $timestampTuple, ?Calendar $calendar = null): self
     {
-        return new self(Moment::fromUnixTimestampTuple($timestampTuple), new ZoneOffset(totalSeconds: 0));
+        return new self(
+            Moment::fromUnixTimestampTuple($timestampTuple, $calendar),
+            new ZoneOffset(totalSeconds: 0),
+        );
     }
 
     /**
@@ -142,14 +155,17 @@ final class ZonedDateTime implements Date, Time, Zoned
         int $minute = 0,
         int $second = 0,
         int $nanoOfSecond = 0,
+        ?Calendar $calendar = null,
     ): self {
-        $localDays = GregorianCalendar::getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
+        $calendar ??= GregorianCalendar::getInstance();
+
+        $localDays = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
         $localTs   = $localDays * 60 * 60 * 24;
         $localTs  += $hour * 3600 + $minute * 60 + $second;
 
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
         $ts     = $localTs - $offset->totalSeconds;
-        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond]), $zone);
+        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar), $zone);
     }
 
     /**
@@ -167,14 +183,17 @@ final class ZonedDateTime implements Date, Time, Zoned
         int $minute = 0,
         int $second = 0,
         int $nanoOfSecond = 0,
+        ?Calendar $calendar = null,
     ): self {
-        $localDays = GregorianCalendar::getDaysSinceUnixEpochByYd($year, $dayOfYear);
+        $calendar ??= GregorianCalendar::getInstance();
+
+        $localDays = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
         $localTs   = $localDays * 60 * 60 * 24;
         $localTs  += $hour * 3600 + $minute * 60 + $second;
 
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
         $ts     = $localTs - $offset->totalSeconds;
-        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond]), $zone);
+        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar), $zone);
     }
 
     public static function fromZonedDateTime(Date&Time&Zoned $zonedDateTime): self
@@ -191,19 +210,20 @@ final class ZonedDateTime implements Date, Time, Zoned
             $zonedDateTime->minute,
             $zonedDateTime->second,
             $zonedDateTime->nanoOfSecond,
+            calendar: $zonedDateTime->calendar,
         );
     }
 
     public static function fromDateTime(Zone $zone, Date $date, ?Time $time = null): self
     {
-        $localDays = GregorianCalendar::getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
+        $localDays = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
         $localTs   = $localDays * 60 * 60 * 24;
         $localTs  += $time ? $time->hour * 3600 + $time->minute * 60 + $time->second : 0;
 
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
         $ts     = $localTs - $offset->totalSeconds;
         $ns     = $time ? $time->nanoOfSecond : 0;
-        return new self(Moment::fromUnixTimestampTuple([$ts, $ns]), $zone);
+        return new self(Moment::fromUnixTimestampTuple([$ts, $ns], $date->calendar), $zone);
     }
 
     private static function findOffsetByLocalTimestamp(Zone $zone, int $localTs): ZoneOffset

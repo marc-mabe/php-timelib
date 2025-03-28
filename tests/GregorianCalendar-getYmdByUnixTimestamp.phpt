@@ -1,10 +1,11 @@
 --TEST--
-GregorianCalendar::getYmdByUnixTimestamp()
+GregorianCalendar->getYmdByUnixTimestamp()
 --FILE--
 <?php
 
 include __DIR__ . '/include.php';
 
+$calendar = time\GregorianCalendar::getInstance();
 $utc = new DateTimeZone('UTC');
 $unixTimestamps = [
     1,
@@ -20,7 +21,7 @@ $unixTimestamps = [
 ];
 
 foreach ($unixTimestamps as $ts) {
-    echo $ts . ': ' . stringify(time\GregorianCalendar::getYmdByUnixTimestamp($ts)) . "\n";
+    echo $ts . ': ' . stringify($calendar->getYmdByUnixTimestamp($ts)) . "\n";
 }
 
 --EXPECT--

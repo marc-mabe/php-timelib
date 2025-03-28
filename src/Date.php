@@ -3,6 +3,8 @@
 namespace time;
 
 interface Date {
+    public Calendar $calendar { get; }
+
     public int $year { get; }
     public Month $month { get; }
 

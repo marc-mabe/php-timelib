@@ -53,14 +53,31 @@ Represents a specific moment at a specific time zone.
 A class that represents a specific time zone via a timezone identifier.
 
 The identifier is one of:
-- `+-HH:MM[:SS]`
+- `±HH:MM[:SS]`
 - `UTC` / `GMT`
 - Regional identifier like `Europe/Berlin` from timezone DB
 
 ### ZoneOffset (extends Zone)
 
 A specialized zone representing a fixed time offset only.
-It's used in `ZonedDateTime->offset`.
+
+It's used in
+* `ZonedDateTime->offset`
+* `Zone->fixedOffset`
+* `ZoneInfo->fixedOffset`
+* `ZoneTransition->offset`
+
+### ZoneInfo
+
+A representation of a time zone or offset with information of all zone transitions.
+
+How these zone transitions are stored internally (like via database or rules)
+is not defined by this class. 
+
+### ZoneTransition
+
+A representation of a single zone transition with the exact moment
+when the transition happened/happens and the zone offset that has been / will be applied. 
 
 ### Duration
 
@@ -92,6 +109,12 @@ An abstraction of the system monotonic timer.
 
 By default it's initialized with the wall clock.
 
+### GregorianCalendar
+
+Singleton implementation of the gregorian calendar system.
+
+Currently, this is the default calendar system used if not provided.
+
 ### Stopwatch
 
 For time measurement using `MonotonicClock`
@@ -104,3 +127,4 @@ The following interfaces are defined:
 * `Time`: An object that represents a time
 * `Zoned`: An object that is adjusted by time zone
 * `Clock`: A clock
+* `Calendar`: An object that represents a calendar system
