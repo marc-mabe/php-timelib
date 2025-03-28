@@ -55,7 +55,6 @@ class DateTimeFormatter
             FormatToken::IsLeapYear => $dateTimeZone instanceof Date
                 ? (GregorianCalendar::isLeapYear($dateTimeZone->year) ? '1' : '0')
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
-            FormatToken::YearOfWeekIso => "TODO[{$token->name}]",
 
             // Month
             FormatToken::Month => $dateTimeZone instanceof Date
@@ -75,7 +74,8 @@ class DateTimeFormatter
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
 
             // Week
-            FormatToken::WeekOfYearIso => "TODO[{$token->name}]",
+            FormatToken::WeekOfYearIso => "TODO[{$token->name}]", // TODO: Support WeekOfYearIso
+            FormatToken::YearOfWeekIso => "TODO[{$token->name}]", // TODO: Support YearOfWeekIso
             FormatToken::DayOfWeekName,
             FormatToken::DayOfWeekName3Letter,
             FormatToken::DayOfWeekNumber,
@@ -101,8 +101,8 @@ class DateTimeFormatter
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
 
             // Time
-            FormatToken::MeridiemAbbrLower => "TODO[{$token->name}]",
-            FormatToken::MeridiemAbbrUpper => "TODO[{$token->name}]",
+            FormatToken::MeridiemAbbrLower => "TODO[{$token->name}]", // TODO: Support MeridiemAbbrLower
+            FormatToken::MeridiemAbbrUpper => "TODO[{$token->name}]", // TODO: Support MeridiemAbbrUpper
 
             FormatToken::Hour12 => $dateTimeZone instanceof Time
                 ? (string)($dateTimeZone->hour % 12)
@@ -123,7 +123,7 @@ class DateTimeFormatter
             FormatToken::SecondWithLeadingZeros => $dateTimeZone instanceof Time
                 ? \str_pad((string)$dateTimeZone->second, 2, '0', STR_PAD_LEFT)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a time"),
-            FormatToken::SecondsSinceUnixEpoch => "TODO[{$token->name}]",
+            FormatToken::SecondsSinceUnixEpoch => "TODO[{$token->name}]", // TODO: Support SecondsSinceUnixEpoch
 
             FormatToken::MilliOfSecond => $dateTimeZone instanceof Time
                 ? \str_pad((string)$dateTimeZone->milliOfSecond, 3, '0', STR_PAD_LEFT)
@@ -141,7 +141,7 @@ class DateTimeFormatter
             // Time zone and offset
             FormatToken::TimezoneIdentifier => $this->formatZoneId($token, $dateTimeZone),
             FormatToken::TimezoneAbbrOrOffset => $this->formatZoneAbbreviationOrOffset($token, $dateTimeZone),
-            FormatToken::IsDaylightSavingTime => "TODO[{$token->name}]",
+            FormatToken::IsDaylightSavingTime => "TODO[{$token->name}]", // TODO: Support IsDaylightSavingTime
             FormatToken::OffsetWithoutColon,
             FormatToken::OffsetWithColon,
             FormatToken::OffsetWithColonOrZ,
@@ -189,21 +189,17 @@ class DateTimeFormatter
     private function formatOffset(FormatToken $token, Date|Time|Zone|Zoned $dateTimeZone): string
     {
         $offset = null;
-        if ($dateTimeZone instanceof Zone) {
+        if ($dateTimeZone instanceof ZonedDateTime) {
+            $offset = $dateTimeZone->offset;
+        } elseif ($dateTimeZone instanceof Zone) {
             $offset = $dateTimeZone->fixedOffset;
         } elseif ($dateTimeZone instanceof Zoned) {
             $offset = $dateTimeZone->zone->fixedOffset;
         }
 
         if ($offset === null) {
-            if ($dateTimeZone instanceof ZonedDateTime) {
-                $offset = $dateTimeZone->offset;
-            }
-        }
-
-        if ($offset === null) {
             throw new \ValueError(
-                "Unexpected format: '{$token->value}' requires a date/time and a time zone or a time zone with fixed offset"
+                "Unexpected format: '{$token->value}' requires a date+time+zone or a fixed time offset"
             );
         }
 
@@ -236,25 +232,26 @@ class DateTimeFormatter
 
     private function formatZoneAbbreviationOrOffset(FormatToken $token, Date|Time|Zone|Zoned $dateTimeZone): string
     {
-        if ($dateTimeZone instanceof Date && $dateTimeZone instanceof Time && $dateTimeZone instanceof Zoned) {
+        $zone = null;
+        if ($dateTimeZone instanceof Zone) {
+            $zone = $dateTimeZone;
+        } elseif ($dateTimeZone instanceof Zoned) {
+            $zone = $dateTimeZone->zone;
+        }
+
+        if ($zone && $dateTimeZone instanceof Date && $dateTimeZone instanceof Time) {
+            // TODO: Don't use legacy interface
             $z = $dateTimeZone->dayOfYear - 1;
             $i = \str_pad((string)$dateTimeZone->minute, 2, '0', STR_PAD_LEFT);
             $s = \str_pad((string)$dateTimeZone->second, 2, '0', STR_PAD_LEFT);
             $legacy = \DateTimeImmutable::createFromFormat(
                 'Y-z G:i:s',
                 "{$dateTimeZone->year}-{$z} {$dateTimeZone->hour}:{$i}:{$s}",
-                new \DateTimeZone($dateTimeZone->zone->identifier),
+                new \DateTimeZone($zone->identifier),
             );
             assert($legacy !== false);
 
             return $legacy->format('T');
-        }
-
-        $zone = null;
-        if ($dateTimeZone instanceof Zone) {
-            $zone = $dateTimeZone;
-        } elseif ($dateTimeZone instanceof Zoned) {
-            $zone = $dateTimeZone->zone;
         }
 
         // Fallback to fixed offset if possible
@@ -263,7 +260,7 @@ class DateTimeFormatter
         }
 
         throw new \ValueError(
-            "Unexpected format: '{$token->value}' requires a Date&Time&Zoned or a time offset"
+            "Unexpected format: '{$token->value}' requires Date&Time&(Zone|Zoned) or a fixed time offset"
         );
     }
 }
