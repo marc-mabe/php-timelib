@@ -2,7 +2,7 @@
 
 namespace time;
 
-class ZoneOffset extends Zone implements \Stringable
+final class ZoneOffset extends Zone implements \Stringable
 {
     public string $name {
         get => $this->identifier;
