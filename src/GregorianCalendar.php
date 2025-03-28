@@ -9,8 +9,8 @@ final class GregorianCalendar
     private const array DAYS_IN_MONTH_COMMON = [0,  31,  28,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31];
     private const array DAYS_IN_MONTH_LEAP   = [0,  31,  29,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31];
 
-    private const array OAYS_OF_YEAR_BY_MONTH_COMMON = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];
-    private const array OAYS_OF_YEAR_BY_MONTH_LEAP   = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
+    private const array DAYS_OF_YEAR_BY_MONTH_COMMON = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];
+    private const array DAYS_OF_YEAR_BY_MONTH_LEAP   = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
 
     private const int SECONDS_PER_DAY = 24 * 3600;
 
@@ -132,8 +132,8 @@ final class GregorianCalendar
     public static function getDaysSinceUnixEpochByYd(int $year, int $dayOfYear): int
     {
         $daysOfYearByMonth = self::isLeapYear($year)
-            ? self::OAYS_OF_YEAR_BY_MONTH_LEAP
-            : self::OAYS_OF_YEAR_BY_MONTH_COMMON;
+            ? self::DAYS_OF_YEAR_BY_MONTH_LEAP
+            : self::DAYS_OF_YEAR_BY_MONTH_COMMON;
 
         $dayOfMonth = 0;
         for ($month = \intdiv($dayOfYear, 31) + 1; $month <= 12; $month++) {
@@ -168,8 +168,8 @@ final class GregorianCalendar
     {
         $month = $month instanceof Month ? $month->value : $month;
         return (self::isLeapYear($year)
-            ? self::OAYS_OF_YEAR_BY_MONTH_LEAP[$month - 1]
-            : self::OAYS_OF_YEAR_BY_MONTH_COMMON[$month - 1]
+            ? self::DAYS_OF_YEAR_BY_MONTH_LEAP[$month - 1]
+            : self::DAYS_OF_YEAR_BY_MONTH_COMMON[$month - 1]
         ) + $dayOfMonth;
     }
 
