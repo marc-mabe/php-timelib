@@ -213,12 +213,12 @@ final class ZonedDateTime implements Date, Time, Zoned
             return $offset;
         }
 
-        $minTs   = $localTs - 3600 * 18;
+        $minTs   = $localTs + ZoneOffset::TOTAL_SECONDS_MIN;
         $minTran = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$minTs, 0]));
         \assert($minTran !== null);
         $minStart = $minTran->moment->toUnixTimestampTuple()[0] + $minTran->offset->totalSeconds;
 
-        $maxTs   = $localTs + 3600 * 18;
+        $maxTs   = $localTs + ZoneOffset::TOTAL_SECONDS_MAX;
         $maxTran = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$maxTs, 0]));
         \assert($maxTran !== null);
 

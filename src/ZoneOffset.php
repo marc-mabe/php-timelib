@@ -4,6 +4,9 @@ namespace time;
 
 final class ZoneOffset extends Zone implements \Stringable
 {
+    const int TOTAL_SECONDS_MAX = 60 * 60 * 18;
+    const int TOTAL_SECONDS_MIN = -60 * 60 * 18;
+
     public string $name {
         get => $this->identifier;
     }
@@ -13,6 +16,14 @@ final class ZoneOffset extends Zone implements \Stringable
     public function __construct(
         public readonly int $totalSeconds
     ) {
+        if ($totalSeconds > self::TOTAL_SECONDS_MAX || $totalSeconds < self::TOTAL_SECONDS_MIN) {
+            throw new \InvalidArgumentException(\sprintf(
+                "Zone offset must be between %s and %s",
+                new self(self::TOTAL_SECONDS_MAX)->identifier,
+                new self(self::TOTAL_SECONDS_MIN)->identifier,
+            ));
+        }
+
         $abs        = new Duration(seconds: \abs($totalSeconds));
         $identifier = ($totalSeconds < 0 ? '-' : '+')
             . \str_pad((string)$abs->totalHours, 2, '0', STR_PAD_LEFT)
