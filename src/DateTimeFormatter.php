@@ -88,7 +88,14 @@ class DateTimeFormatter
             FormatToken::DayOfMonthWithLeadingZeros => $dateTimeZone instanceof Date
                 ? \str_pad((string)$dateTimeZone->dayOfMonth, 2, '0', STR_PAD_LEFT)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
-            FormatToken::DayOfMonthOrdinalSuffix => "TODO[{$token->name}]",
+            FormatToken::DayOfMonthOrdinalSuffix => $dateTimeZone instanceof Date
+                ? match ($dateTimeZone->dayOfMonth) {
+                    1, 21, 31 => 'st',
+                    2, 22     => 'nd',
+                    3, 23     => 'rd',
+                    default   => 'th',
+                }
+                : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::DayOfYear => $dateTimeZone instanceof Date
                 ? (string)$dateTimeZone->dayOfYear
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
