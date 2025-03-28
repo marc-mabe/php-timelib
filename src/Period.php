@@ -136,7 +136,7 @@ final class Period {
      *
      * All other units will be unaffected by this.
      */
-    public function normalizedMonths(): self
+    public function withNormalizedMonthsIntoYears(): self
     {
         if ($this->months < 12 && $this->months > -12) {
             return $this;
@@ -165,7 +165,7 @@ final class Period {
      *
      * All other units will be unaffected by this.
      */
-    public function normalizedFractions(): self
+    public function withNormalizedFractionsIntoSeconds(): self
     {
         $us = $this->microseconds + \intdiv($this->nanoseconds, 1_000);
         $ns = $this->nanoseconds % 1_000;

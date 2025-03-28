@@ -1,5 +1,5 @@
 --TEST--
-Period->normalizedMonth
+Period->withNormalizedMonthsIntoYears
 --FILE--
 <?php
 
@@ -40,7 +40,7 @@ $periods = [
 ];
 
 foreach ($periods as $period) {
-    echo stringify($period) . ' -> ' . stringify($period->normalizedMonths()) . "\n";
+    echo stringify($period) . ' -> ' . stringify($period->withNormalizedMonthsIntoYears()) . "\n";
 }
 
 --EXPECTF--

@@ -1,5 +1,5 @@
 --TEST--
-Period->normalizedMonth
+Period->withNormalizedFractionsIntoSeconds
 --FILE--
 <?php
 
@@ -39,7 +39,7 @@ $periods = [
 ];
 
 foreach ($periods as $period) {
-    $normalized = $period->normalizedFractions();
+    $normalized = $period->withNormalizedFractionsIntoSeconds();
     echo stringify($period)
         . "({$period->seconds}s {$period->milliseconds}ms {$period->microseconds}us {$period->nanoseconds}ns)"
         . ' -> ' . stringify($normalized)
