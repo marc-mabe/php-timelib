@@ -136,7 +136,7 @@ final class Period {
      *
      * All other units will be unaffected by this.
      */
-    public function normalizedMonths(): self
+    public function withNormalizedMonthsIntoYears(): self
     {
         if ($this->months < 12 && $this->months > -12) {
             return $this;
