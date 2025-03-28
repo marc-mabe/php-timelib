@@ -20,9 +20,14 @@ class ZoneOffset extends Zone implements \Stringable
             . ($abs->secondsOfMinute ? ':' . \str_pad((string)$abs->secondsOfMinute, 2, '0', STR_PAD_LEFT) : '');
 
         $info = new class ($this) extends ZoneInfo {
+            public readonly ZoneOffset $fixedOffset;
+
             public function __construct(
-                public readonly ?ZoneOffset $fixedOffset
-            ) {}
+                ?ZoneOffset $fixedOffset
+            ) {
+                \assert($fixedOffset !== null);
+                $this->fixedOffset = $fixedOffset;
+            }
 
             public function getTransitions(
                 ?Moment $from = null,
@@ -33,8 +38,8 @@ class ZoneOffset extends Zone implements \Stringable
                 return new \ArrayIterator();
             }
 
-            public function getOffsetAt(Moment $moment): ZoneOffset {
-                \assert($this->fixedOffset !== null);
+            public function getOffsetAt(Moment $moment): ZoneOffset
+            {
                 return $this->fixedOffset;
             }
         };
