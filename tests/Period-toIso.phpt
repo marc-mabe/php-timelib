@@ -6,7 +6,7 @@ Period->toIso
 include __DIR__ . '/include.php';
 
 $period = new time\Period(
-    years: 123, months: 456, days: 789,
+    years: 12, months: 34, weeks: 56, days: 78,
     hours: 123, minutes: 456, seconds: 789,
     milliseconds: 123, microseconds: 456, nanoseconds: 789,
 );
@@ -15,7 +15,7 @@ echo $period->toIso() . "\n";
 
 $period = new time\Period(
     isNegative: true,
-    years: 123, months: 456, days: 789,
+    years: 12, months: 34, weeks: 56, days: 78,
     hours: 123, minutes: 456, seconds: 789,
     milliseconds: 123, microseconds: 456, nanoseconds: 789,
 );
@@ -23,7 +23,7 @@ var_dump($period);
 echo $period->toIso() . "\n";
 
 $period = new time\Period(
-    years: -123, months: -456, days: -789,
+    years: -12, months: -34, weeks: -56, days: -78,
     hours: -123, minutes: -456, seconds: -789,
     milliseconds: -123, microseconds: -456, nanoseconds: -789,
 );
@@ -43,11 +43,13 @@ object(time\Period)#%d (%d) {
   ["isNegative"]=>
   bool(false)
   ["years"]=>
-  int(123)
+  int(12)
   ["months"]=>
-  int(456)
+  int(34)
+  ["weeks"]=>
+  int(56)
   ["days"]=>
-  int(789)
+  int(78)
   ["hours"]=>
   int(123)
   ["minutes"]=>
@@ -61,16 +63,18 @@ object(time\Period)#%d (%d) {
   ["nanoseconds"]=>
   int(789)
 }
-P123Y456M789DT123H456M789.123456789S
+P12Y34M56W78DT123H456M789.123456789S
 object(time\Period)#%d (%d) {
   ["isNegative"]=>
   bool(true)
   ["years"]=>
-  int(123)
+  int(12)
   ["months"]=>
-  int(456)
+  int(34)
+  ["weeks"]=>
+  int(56)
   ["days"]=>
-  int(789)
+  int(78)
   ["hours"]=>
   int(123)
   ["minutes"]=>
@@ -84,16 +88,18 @@ object(time\Period)#%d (%d) {
   ["nanoseconds"]=>
   int(789)
 }
--P123Y456M789DT123H456M789.123456789S
+-P12Y34M56W78DT123H456M789.123456789S
 object(time\Period)#%d (%d) {
   ["isNegative"]=>
   bool(false)
   ["years"]=>
-  int(-123)
+  int(-12)
   ["months"]=>
-  int(-456)
+  int(-34)
+  ["weeks"]=>
+  int(-56)
   ["days"]=>
-  int(-789)
+  int(-78)
   ["hours"]=>
   int(-123)
   ["minutes"]=>
@@ -107,13 +113,15 @@ object(time\Period)#%d (%d) {
   ["nanoseconds"]=>
   int(-789)
 }
-P-123Y-456M-789DT-123H-456M-789.123456789S
+P-12Y-34M-56W-78DT-123H-456M-789.123456789S
 object(time\Period)#%d (%d) {
   ["isNegative"]=>
   bool(false)
   ["years"]=>
   int(0)
   ["months"]=>
+  int(0)
+  ["weeks"]=>
   int(0)
   ["days"]=>
   int(0)
@@ -137,6 +145,8 @@ object(time\Period)#%d (%d) {
   ["years"]=>
   int(0)
   ["months"]=>
+  int(0)
+  ["weeks"]=>
   int(0)
   ["days"]=>
   int(0)

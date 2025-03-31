@@ -81,12 +81,12 @@ echo "new Period(nanoseconds: -123)\n";
 $period = new time\Period(nanoseconds: -123);
 echo "  " . stringify($period) . "\n";
 
-echo "new Period(true, 1, 2, 3, 10, 11, 12, 100, 101, 102)\n";
-$period = new time\Period(true, 1, 2, 3, 10, 11, 12, 100, 101, 102);
+echo "new Period(true, 1, 2, 3, 4, 10, 11, 12, 100, 101, 102)\n";
+$period = new time\Period(true, 1, 2, 3, 4, 10, 11, 12, 100, 101, 102);
 echo "  " . stringify($period) . "\n";
 
-echo "new Period(false, -1, -13, -32, -25, -61, -61, -1001, -1002, -1003)\n";
-$period = new time\Period(false, -1, -13, -32, -25, -61, -61, -1001, -1002, -1003);
+echo "new Period(false, -1, -13, -25, -32, -25, -61, -61, -1001, -1002, -1003)\n";
+$period = new time\Period(false, -1, -13, -25, -32, -25, -61, -61, -1001, -1002, -1003);
 echo "  " . stringify($period) . "\n";
 
 --EXPECT--
@@ -128,7 +128,7 @@ new Period(nanoseconds: 123)
   Period('PT0.000000123S')
 new Period(nanoseconds: -123)
   Period('PT-0.000000123S')
-new Period(true, 1, 2, 3, 10, 11, 12, 100, 101, 102)
-  Period('-P1Y2M3DT10H11M12.100101102S')
-new Period(false, -1, -13, -32, -25, -61, -61, -1001, -1002, -1003)
-  Period('P-1Y-13M-32DT-25H-61M-62.002003003S')
+new Period(true, 1, 2, 3, 4, 10, 11, 12, 100, 101, 102)
+  Period('-P1Y2M3W4DT10H11M12.100101102S')
+new Period(false, -1, -13, -25, -32, -25, -61, -61, -1001, -1002, -1003)
+  Period('P-1Y-13M-25W-32DT-25H-61M-62.002003003S')

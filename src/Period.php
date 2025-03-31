@@ -19,6 +19,7 @@ final class Period {
         public readonly bool $isNegative = false,
         public readonly int $years = 0,
         public readonly int $months = 0,
+        public readonly int $weeks = 0,
         public readonly int $days = 0,
         public readonly int $hours = 0,
         public readonly int $minutes = 0,
@@ -36,6 +37,7 @@ final class Period {
 
         return $this->years === $other->years
             && $this->months === $other->months
+            && $this->weeks === $other->weeks
             && $this->days === $other->days
             && $this->hours === $other->hours
             && $this->minutes === $other->minutes
@@ -54,6 +56,7 @@ final class Period {
         return new self(
             years: $this->years + $other->years,
             months: $this->months + $other->months,
+            weeks: $this->weeks + $other->weeks,
             days: $this->days + $other->days,
             hours: $this->hours + $other->hours,
             minutes: $this->minutes + $other->minutes,
@@ -72,6 +75,7 @@ final class Period {
         return new self(
             years: \abs($self->years - $other->years),
             months: \abs($self->months - $other->months),
+            weeks: \abs($self->weeks - $other->weeks),
             days: \abs($self->days - $other->days),
             hours: \abs($self->hours - $other->hours),
             minutes: \abs($self->minutes - $other->minutes),
@@ -93,6 +97,7 @@ final class Period {
             isNegative: !$this->isNegative,
             years: $this->years * -1,
             months: $this->months * -1,
+            weeks: $this->weeks * -1,
             days: $this->days * -1,
             hours: $this->hours * -1,
             minutes: $this->minutes * -1,
@@ -109,6 +114,7 @@ final class Period {
             isNegative: !$this->isNegative,
             years: $this->years,
             months: $this->months,
+            weeks: $this->weeks,
             days: $this->days,
             hours: $this->hours,
             minutes: $this->minutes,
@@ -146,7 +152,38 @@ final class Period {
             isNegative: $this->isNegative,
             years: $this->years + \intdiv($this->months, 12),
             months: $this->months % 12,
+            weeks: $this->weeks,
             days: $this->days,
+            hours: $this->hours,
+            minutes: $this->minutes,
+            seconds: $this->seconds,
+            milliseconds: $this->milliseconds,
+            microseconds: $this->microseconds,
+            nanoseconds: $this->nanoseconds,
+        );
+    }
+
+    /**
+     * The days unit is adjusted to have an absolute value less than +/-6,
+     * with the weeks unit being adjusted to compensate.
+     *
+     * The sign of the days and weeks units will be the same after normalization.
+     * E.g, a period of "1 week and -15 days" will be normalized to "-1 week and -1 days".
+     *
+     * All other units will be unaffected by this.
+     */
+    public function withNormalizedDaysIntoWeeks(): self
+    {
+        if ($this->days < 7 && $this->days > -7) {
+            return $this;
+        }
+
+        return new self(
+            isNegative: $this->isNegative,
+            years: $this->years,
+            months: $this->months,
+            weeks: $this->weeks + \intdiv($this->days, 7),
+            days: $this->days % 7,
             hours: $this->hours,
             minutes: $this->minutes,
             seconds: $this->seconds,
@@ -215,6 +252,7 @@ final class Period {
             isNegative: $this->isNegative,
             years: $this->years,
             months: $this->months,
+            weeks: $this->weeks,
             days: $this->days,
             hours: $this->hours,
             minutes: $this->minutes,
@@ -231,6 +269,7 @@ final class Period {
             isNegative: $this->isNegative,
             years: $years,
             months: $this->months,
+            weeks: $this->weeks,
             days: $this->days,
             hours: $this->hours,
             minutes: $this->minutes,
@@ -247,6 +286,24 @@ final class Period {
             isNegative: $this->isNegative,
             years: $this->years,
             months: $months,
+            weeks: $this->weeks,
+            days: $this->days,
+            hours: $this->hours,
+            minutes: $this->minutes,
+            seconds: $this->seconds,
+            milliseconds: $this->milliseconds,
+            microseconds: $this->microseconds,
+            nanoseconds: $this->nanoseconds,
+        );
+    }
+
+    public function withWeeks(int $weeks): self
+    {
+        return new self(
+            isNegative: $this->isNegative,
+            years: $this->years,
+            months: $this->months,
+            weeks: $weeks,
             days: $this->days,
             hours: $this->hours,
             minutes: $this->minutes,
@@ -263,6 +320,7 @@ final class Period {
             isNegative: $this->isNegative,
             years: $this->years,
             months: $this->months,
+            weeks: $this->weeks,
             days: $days,
             hours: $this->hours,
             minutes: $this->minutes,
@@ -279,6 +337,7 @@ final class Period {
             isNegative: $this->isNegative,
             years: $this->years,
             months: $this->months,
+            weeks: $this->weeks,
             days: $this->days,
             hours: $hours,
             minutes: $this->minutes,
@@ -295,6 +354,7 @@ final class Period {
             isNegative: $this->isNegative,
             years: $this->years,
             months: $this->months,
+            weeks: $this->weeks,
             days: $this->days,
             hours: $this->hours,
             minutes: $minutes,
@@ -311,6 +371,7 @@ final class Period {
             isNegative: $this->isNegative,
             years: $this->years,
             months: $this->months,
+            weeks: $this->weeks,
             days: $this->days,
             hours: $this->hours,
             minutes: $this->minutes,
@@ -327,6 +388,7 @@ final class Period {
             isNegative: $this->isNegative,
             years: $this->years,
             months: $this->months,
+            weeks: $this->weeks,
             days: $this->days,
             hours: $this->hours,
             minutes: $this->minutes,
@@ -343,6 +405,7 @@ final class Period {
             isNegative: $this->isNegative,
             years: $this->years,
             months: $this->months,
+            weeks: $this->weeks,
             days: $this->days,
             hours: $this->hours,
             minutes: $this->minutes,
@@ -359,6 +422,7 @@ final class Period {
             isNegative: $this->isNegative,
             years: $this->years,
             months: $this->months,
+            weeks: $this->weeks,
             days: $this->days,
             hours: $this->hours,
             minutes: $this->minutes,
@@ -378,6 +442,9 @@ final class Period {
         }
         if ($this->months) {
             $dateIso .= $this->months . 'M';
+        }
+        if ($this->weeks) {
+            $dateIso .= $this->weeks . 'W';
         }
         if ($this->days) {
             $dateIso .= $this->days . 'D';
