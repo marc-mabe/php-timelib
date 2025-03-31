@@ -89,7 +89,7 @@ and does not need to handle time zone on applying.
 A relative time including dates
 that needs to handle time zone on applying.
 
-### DateUnit / TimeUnit / Month / DayOfMonth (enum)
+### DateUnit / TimeUnit / Month / DayOfWeek (enum)
 
 Represents a specific predefined unit of a date or time. 
 
