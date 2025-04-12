@@ -2,7 +2,7 @@
 
 namespace time;
 
-final class ZonedDateTime implements Date, Time, Zoned
+final class ZonedDateTime implements Momented, Date, Time, Zoned
 {
     public Calendar $calendar {
         get => $this->adjusted->calendar;
@@ -69,7 +69,7 @@ final class ZonedDateTime implements Date, Time, Zoned
     private readonly Moment $adjusted;
 
     private function __construct(
-        private readonly Moment $moment,
+        public readonly Moment $moment,
         public readonly Zone $zone,
     ) {
         $offset         = $zone->getOffsetAt($moment);
@@ -95,11 +95,6 @@ final class ZonedDateTime implements Date, Time, Zoned
     public function withZoneSameLocal(Zone $zone): self
     {
         return self::fromDateTime($zone, $this->date, $this->time);
-    }
-
-    public function toMoment(): Moment
-    {
-        return $this->moment;
     }
 
     /**

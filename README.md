@@ -123,6 +123,8 @@ without wall clock initializer by default.
 ### Interfaces
 
 The following interfaces are defined:
+* `Momented`: Something that represents a specific point-in-time
+  via a `moment` property providing a `Moment` object.
 * `Date`: An object that represents a date
 * `Time`: An object that represents a time
 * `Zoned`: An object that is adjusted by time zone

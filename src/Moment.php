@@ -2,8 +2,10 @@
 
 namespace time;
 
-final class Moment implements Date, Time
+final class Moment implements Momented, Date, Time, Zoned
 {
+    public readonly Moment $moment;
+
     public int $year {
         get => $this->calendar->getYmdByUnixTimestamp($this->tsSec)[0];
     }
@@ -72,12 +74,18 @@ final class Moment implements Date, Time
         get => LocalTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
+    public ZoneOffset $zone {
+        get => $this->zone ??= new ZoneOffset(0);
+    }
+
     /** @param int<0, 999999999> $nanoOfSecond */
     private function __construct(
         private readonly int $tsSec,
         public readonly int $nanoOfSecond,
         public readonly Calendar $calendar,
-    ) {}
+    ) {
+        $this->moment = $this;
+    }
 
     public function add(Duration $duration): self
     {

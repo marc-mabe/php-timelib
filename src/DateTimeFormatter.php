@@ -6,10 +6,31 @@ class DateTimeFormatter
 {
     public function __construct(
         public string $format = 'Y-m-d H:i:s',
+        public ?Zone $zone = null,
     ) {}
 
-    public function format(Date|Time|Zone|Zoned $dateTimeZone): string
+    public function format(Momented|Date|Time|Zone|Zoned $dateTimeZone): string
     {
+        // Convert a Momented into a Date&Time&Zoned
+        // by preferring the optionally defined zone of the formatter
+        if ($dateTimeZone instanceof Momented) {
+            if ($this->zone) {
+                if (!$dateTimeZone instanceof Date
+                    || !$dateTimeZone instanceof Time
+                    || !$dateTimeZone instanceof Zoned
+                    || $dateTimeZone->zone !== $this->zone
+                ) {
+                    $dateTimeZone = $dateTimeZone->moment->toZonedDateTime($this->zone);
+                }
+            } elseif ($dateTimeZone instanceof Zoned) {
+                if (!$dateTimeZone instanceof Date || !$dateTimeZone instanceof Time) {
+                    $dateTimeZone = $dateTimeZone->moment->toZonedDateTime($dateTimeZone->zone);
+                }
+            } else {
+                $dateTimeZone = $dateTimeZone->moment;
+            }
+        }
+
         $formatted = '';
         $formatLen = \strlen($this->format);
         $inEscape  = false;
