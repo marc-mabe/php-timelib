@@ -2,7 +2,7 @@
 
 namespace time;
 
-interface Zoned extends Date, Time
+interface Zoned
 {
     public Zone $zone { get; }
 }
