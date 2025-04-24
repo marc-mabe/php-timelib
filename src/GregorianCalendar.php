@@ -69,11 +69,13 @@ final class GregorianCalendar implements Calendar
         $days += self::HINNANT_EPOCH_SHIFT;
         $era = \intdiv($days >= 0 ? $days : $days - self::HINNANT_DAYS_PER_ERA + 1, self::HINNANT_DAYS_PER_ERA);
         $dayOfEra = $days - $era * self::HINNANT_DAYS_PER_ERA;
+        \assert($dayOfEra >= 0 && $dayOfEra < self::HINNANT_DAYS_PER_ERA);
 
         $yearOfEra = \intdiv(
             $dayOfEra - \intdiv($dayOfEra, 1460) + \intdiv($dayOfEra, 36524) - \intdiv($dayOfEra, 146096),
             self::DAYS_PER_YEAR_COMMON
         );
+        \assert($yearOfEra >= 0 && $yearOfEra < self::HINNANT_YEARS_PER_ERA);
 
         $year = $yearOfEra + $era * self::HINNANT_YEARS_PER_ERA;
         $dayOfYear = $dayOfEra - (
@@ -81,12 +83,19 @@ final class GregorianCalendar implements Calendar
             + \intdiv($yearOfEra, 4)
             - \intdiv($yearOfEra, 100)
         );
+        \assert($dayOfYear >= 0 && $dayOfYear < self::DAYS_PER_YEAR_LEAP);
+
         $monthPortion = \intdiv(5 * $dayOfYear + 2, 153);
+        \assert($monthPortion >= 0 && $monthPortion <= 11);
+
         $day = $dayOfYear - \intdiv(153 * $monthPortion + 2, 5) + 1;
-        $month = $monthPortion + ($monthPortion < 10 ? 3 : -9);
+        \assert($day >= 1 && $day <= 31);
+
+        $month = $monthPortion + ($monthPortion < 10 ? 3 : -9);// [1, 12]
+        \assert($month >= 1 && $month <= 12);
+
         $year += (int)($month <= 2);
 
-        /** @phpstan-ignore return.type */
         return [$year, Month::from($month), $day];
     }
 
@@ -117,10 +126,16 @@ final class GregorianCalendar implements Calendar
             $month -= 3;
         }
 
-        $era = \intdiv($year >= 0 ? $year : $year - (self::HINNANT_YEARS_PER_ERA - 1), self::HINNANT_YEARS_PER_ERA);
-        $yoe = $year - $era * self::HINNANT_YEARS_PER_ERA; // [0, 399]
-        $doy = \intdiv(153 * $month + 2, 5) + $dayOfMonth - 1;   // [0, 365]
-        $doe = $yoe * self::DAYS_PER_YEAR_COMMON + \intdiv($yoe, 4) - \intdiv($yoe, 100) + $doy; // [0, 146096]
+        $era = \intdiv($year >= 0 ? $year : $year - self::HINNANT_YEARS_PER_ERA + 1, self::HINNANT_YEARS_PER_ERA);
+        $yoe = $year - $era * self::HINNANT_YEARS_PER_ERA;
+        \assert($yoe >= 0 && $yoe < self::HINNANT_YEARS_PER_ERA);
+
+        $doy = \intdiv(153 * $month + 2, 5) + $dayOfMonth - 1;
+        \assert($doy >= 0 && $doy < 366);
+
+        $doe = $yoe * self::DAYS_PER_YEAR_COMMON + \intdiv($yoe, 4) - \intdiv($yoe, 100) + $doy;
+        \assert($doe >= 0 && $doe < self::HINNANT_DAYS_PER_ERA);
+
         return $era * self::HINNANT_DAYS_PER_ERA + $doe - self::HINNANT_EPOCH_SHIFT;
     }
 
@@ -150,8 +165,8 @@ final class GregorianCalendar implements Calendar
             }
         }
 
-        assert($month > 0 && $month <= 12);
-        assert($dayOfMonth > 0 && $dayOfMonth <= 31);
+        \assert($month > 0 && $month <= 12);
+        \assert($dayOfMonth > 0 && $dayOfMonth <= 31);
 
         return $this->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
     }
