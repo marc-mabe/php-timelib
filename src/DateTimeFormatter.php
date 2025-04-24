@@ -68,6 +68,10 @@ class DateTimeFormatter
     private function formatToken(FormatToken $token, Date|Time|Zone|Zoned $dateTimeZone): string
     {
         return match ($token) {
+            FormatToken::SecondsSinceUnixEpoch => $dateTimeZone instanceof Momented
+                ? (string)$dateTimeZone->moment->toUnixTimestamp()
+                : throw new \ValueError("Unexpected format: '{$token->value}' requires a Momented"),
+
             // Year
             FormatToken::Year,
             FormatToken::Year2Digit,
@@ -149,7 +153,6 @@ class DateTimeFormatter
             FormatToken::SecondWithLeadingZeros => $dateTimeZone instanceof Time
                 ? \str_pad((string)$dateTimeZone->second, 2, '0', STR_PAD_LEFT)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a time"),
-            FormatToken::SecondsSinceUnixEpoch => "TODO[{$token->name}]", // TODO: Support SecondsSinceUnixEpoch
 
             FormatToken::MilliOfSecond => $dateTimeZone instanceof Time
                 ? \str_pad((string)$dateTimeZone->milliOfSecond, 3, '0', STR_PAD_LEFT)
@@ -172,6 +175,7 @@ class DateTimeFormatter
             FormatToken::OffsetWithColon,
             FormatToken::OffsetWithColonOrZ,
             FormatToken::OffsetInSeconds => $this->formatOffset($token, $dateTimeZone),
+
             default => throw new \LogicException("Unhandled token '{$token->value}'"),
         };
     }
