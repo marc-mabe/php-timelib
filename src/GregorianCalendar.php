@@ -7,8 +7,8 @@ final class GregorianCalendar implements Calendar
     private const int DAYS_PER_YEAR_COMMON = 365;
     private const int DAYS_PER_YEAR_LEAP   = 366;
 
-    private const array DAYS_IN_MONTH_COMMON = [0,  31,  28,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31];
-    private const array DAYS_IN_MONTH_LEAP   = [0,  31,  29,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31];
+    private const array DAYS_IN_MONTH_COMMON = [31,  28,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31];
+    private const array DAYS_IN_MONTH_LEAP   = [31,  29,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31];
 
     private const array DAYS_OF_YEAR_BY_MONTH_COMMON = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];
     private const array DAYS_OF_YEAR_BY_MONTH_LEAP   = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
@@ -39,6 +39,9 @@ final class GregorianCalendar implements Calendar
         return $year % 4 === 0 && ($year % 100 !== 0 || $year % 400 === 0);
     }
 
+    /**
+     * @return int<365,366>
+     */
     public function getDaysInYear(int $year): int
     {
         return $this->isLeapYear($year)
@@ -46,6 +49,10 @@ final class GregorianCalendar implements Calendar
             : self::DAYS_PER_YEAR_COMMON;
     }
 
+    /**
+     * @param Month|int<1,12> $month
+     * @return int<28,31>
+     */
     public function getDaysInMonth(int $year, Month|int $month): int
     {
         $monthIdx = ($month instanceof Month ? $month->value : $month) - 1;
@@ -54,6 +61,9 @@ final class GregorianCalendar implements Calendar
             : self::DAYS_IN_MONTH_COMMON[$monthIdx];
     }
 
+    /**
+     * @return array{int, Month, int<1,31>}
+     */
     public function getYmdByDaysSinceUnixEpoch(int $days): array
     {
         $days += self::HINNANT_EPOCH_SHIFT;
@@ -80,6 +90,9 @@ final class GregorianCalendar implements Calendar
         return [$year, Month::from($month), $day];
     }
 
+    /**
+     * @return array{int, Month, int<1,31>}
+     */
     public function getYmdByUnixTimestamp(int $ts): array
     {
         $days = \intdiv($ts, self::SECONDS_PER_DAY);
@@ -88,22 +101,41 @@ final class GregorianCalendar implements Calendar
         return $this->getYmdByDaysSinceUnixEpoch($days);
     }
 
+    /**
+     * @param Month|int<1,12> $month
+     * @param int<1,31> $dayOfMonth
+     */
     public function getDaysSinceUnixEpochByYmd(int $year, Month|int $month, int $dayOfMonth): int
     {
         $month = $month instanceof Month ? $month->value : $month;
-        $year -= (int)($month <= 2);
-        $era = \intdiv($year >= 0 ? $year : $year - self::HINNANT_YEARS_PER_ERA - 1, self::HINNANT_YEARS_PER_ERA);
+
+        // adjust leap days to the end of the year and month between 0 and 11
+        if ($month <= 2) {
+            $year -= 1;
+            $month += 9;
+        } else {
+            $month -= 3;
+        }
+
+        $era = \intdiv($year >= 0 ? $year : $year - (self::HINNANT_YEARS_PER_ERA - 1), self::HINNANT_YEARS_PER_ERA);
         $yoe = $year - $era * self::HINNANT_YEARS_PER_ERA; // [0, 399]
-        $doy = \intdiv(153 * ($month > 2 ? $month - 3 : $month + 9) + 2, 5) + $dayOfMonth - 1;   // [0, 365]
+        $doy = \intdiv(153 * $month + 2, 5) + $dayOfMonth - 1;   // [0, 365]
         $doe = $yoe * self::DAYS_PER_YEAR_COMMON + \intdiv($yoe, 4) - \intdiv($yoe, 100) + $doy; // [0, 146096]
         return $era * self::HINNANT_DAYS_PER_ERA + $doe - self::HINNANT_EPOCH_SHIFT;
     }
 
+    /**
+     * @param Month|int<1,12> $month
+     * @param int<1,31> $dayOfMonth
+     */
     public function getUnixTimestampByYmd(int $year, Month|int $month, int $dayOfMonth): int
     {
         return $this->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth) * self::SECONDS_PER_DAY;
     }
 
+    /**
+     * @param int<1,366> $dayOfYear
+     */
     public function getDaysSinceUnixEpochByYd(int $year, int $dayOfYear): int
     {
         $daysOfYearByMonth = self::isLeapYear($year)
@@ -124,11 +156,19 @@ final class GregorianCalendar implements Calendar
         return $this->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
     }
 
+    /**
+     * @param int<1,366> $dayOfYear
+     */
     public function getUnixTimestampByYd(int $year, int $dayOfYear): int
     {
         return $this->getDaysSinceUnixEpochByYd($year, $dayOfYear) * self::SECONDS_PER_DAY;
     }
 
+    /**
+     * @param Month|int<1,12> $month
+     * @param int<1,31> $dayOfMonth
+     * @return int<1,366>
+     */
     public function getDayOfYearByYmd(int $year, Month|int $month, int $dayOfMonth): int
     {
         $month = $month instanceof Month ? $month->value : $month;
