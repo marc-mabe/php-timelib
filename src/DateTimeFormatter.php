@@ -122,8 +122,12 @@ class DateTimeFormatter
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
 
             // Time
-            FormatToken::MeridiemAbbrLower => "TODO[{$token->name}]", // TODO: Support MeridiemAbbrLower
-            FormatToken::MeridiemAbbrUpper => "TODO[{$token->name}]", // TODO: Support MeridiemAbbrUpper
+            FormatToken::MeridiemAbbrLower => $dateTimeZone instanceof Time
+                ? $dateTimeZone->hour >= 12 ? 'pm' : 'am'
+                : throw new \ValueError("Unexpected format: '{$token->value}' requires a time"),
+            FormatToken::MeridiemAbbrUpper => $dateTimeZone instanceof Time
+                ? $dateTimeZone->hour >= 12 ? 'PM' : 'AM'
+                : throw new \ValueError("Unexpected format: '{$token->value}' requires a time"),
 
             FormatToken::Hour12 => $dateTimeZone instanceof Time
                 ? (string)($dateTimeZone->hour % 12)
@@ -131,6 +135,7 @@ class DateTimeFormatter
             FormatToken::Hour12WithLeadingZeros => $dateTimeZone instanceof Time
                 ? \str_pad((string)($dateTimeZone->hour % 12), 2, '0', STR_PAD_LEFT)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a time"),
+
             FormatToken::Hour24 => $dateTimeZone instanceof Time
                 ? (string)$dateTimeZone->hour
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a time"),
