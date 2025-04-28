@@ -98,6 +98,20 @@ final class LocalDateTime implements Date, Time
         return $this->add($duration->inverted());
     }
 
+    public function withCalendar(Calendar $calendar): self
+    {
+        return $this->calendar === $calendar
+            ? $this
+            : new self($this->tsSec, $this->nanoOfSecond, $calendar, $this->weekInfo);
+    }
+
+    public function withWeekInfo(WeekInfo $weekInfo): self
+    {
+        return $this->weekInfo === $weekInfo
+            ? $this
+            : new self($this->tsSec, $this->nanoOfSecond, $this->calendar, $weekInfo);
+    }
+
     public static function fromDateTime(Date $date, Time $time): self
     {
         $ts = $date->calendar->getUnixTimestampByYmd($date->year, $date->month, $date->dayOfMonth);

@@ -42,6 +42,20 @@ final class LocalDate implements Date
         public readonly WeekInfo $weekInfo,
     ) {}
 
+    public function withCalendar(Calendar $calendar): self
+    {
+        return $this->calendar === $calendar
+            ? $this
+            : new self($this->daysSinceEpoch, $calendar, $this->weekInfo);
+    }
+
+    public function withWeekInfo(WeekInfo $weekInfo): self
+    {
+        return $this->weekInfo === $weekInfo
+            ? $this
+            : new self($this->daysSinceEpoch, $this->calendar, $weekInfo);
+    }
+
     /**
      * @param Month|int<1,12> $month
      * @param int<1,31> $dayOfMonth

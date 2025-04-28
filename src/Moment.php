@@ -256,6 +256,20 @@ final class Moment implements Momented, Date, Time, Zoned
         );
     }
 
+    public function withCalendar(Calendar $calendar): self
+    {
+        return $this->calendar === $calendar
+            ? $this
+            : new self($this->tsSec, $this->nanoOfSecond, $calendar, $this->weekInfo);
+    }
+
+    public function withWeekInfo(WeekInfo $weekInfo): self
+    {
+        return $this->weekInfo === $weekInfo
+            ? $this
+            : new self($this->tsSec, $this->nanoOfSecond, $this->calendar, $weekInfo);
+    }
+
     public function truncatedTo(DateUnit|TimeUnit $unit): self
     {
         return match ($unit) {

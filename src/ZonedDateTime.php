@@ -110,6 +110,20 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         return self::fromDateTime($zone, $this->date, $this->time);
     }
 
+    public function withCalendar(Calendar $calendar): self
+    {
+        return $this->calendar === $calendar
+            ? $this
+            : new self($this->moment->withCalendar($calendar), $this->zone);
+    }
+
+    public function withWeekInfo(WeekInfo $weekInfo): self
+    {
+        return $this->weekInfo === $weekInfo
+            ? $this
+            : new self($this->moment->withWeekInfo($weekInfo), $this->zone);
+    }
+
     /**
      * Convert to current unix timestamp in defined unit
      *

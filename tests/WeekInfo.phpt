@@ -7,7 +7,7 @@ include __DIR__ . '/include.php';
 
 $defs = [
     time\WeekInfo::fromIso(),
-    new time\WeekInfo(\time\DayOfWeek::Sunday, 1), // US
+    time\WeekInfo::from(\time\DayOfWeek::Sunday, 1), // US
 ];
 
 $dates = [

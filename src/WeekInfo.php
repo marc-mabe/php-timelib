@@ -4,10 +4,13 @@ namespace time;
 
 final class WeekInfo
 {
+    /** @var \WeakMap<WeekInfo, null> */
+    private static \WeakMap $cache;
+
     /**
      * @param int<1,7> $minDaysInFirstWeek
      */
-    public function __construct(
+    private function __construct(
         public readonly DayOfWeek $firstDayOfWeek,
         public readonly int $minDaysInFirstWeek,
     ) {}
@@ -75,8 +78,32 @@ final class WeekInfo
         return $date->year;
     }
 
+    /**
+     * @param int<1,7> $minDaysInFirstWeek
+     */
+    public static function from(DayOfWeek $firstDayOfWeek, int $minDaysInFirstWeek): self
+    {
+        if (!isset(self::$cache)) {
+            /** @var \WeakMap<WeekInfo, null> $cache */
+            $cache = new \WeakMap();
+            self::$cache = $cache;
+        }
+
+        foreach (self::$cache as $weekInfo => $_) {
+            if ($weekInfo->firstDayOfWeek === $firstDayOfWeek
+                && $weekInfo->minDaysInFirstWeek === $minDaysInFirstWeek
+            ) {
+                return $weekInfo;
+            }
+        }
+
+        $weekInfo = new self($firstDayOfWeek, $minDaysInFirstWeek);
+        self::$cache->offsetSet($weekInfo, null);
+        return $weekInfo;
+    }
+
     public static function fromIso(): self
     {
-        return new self(DayOfWeek::Monday, 4);
+        return self::from(DayOfWeek::Monday, 4);
     }
 }
