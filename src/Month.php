@@ -18,7 +18,7 @@ enum Month:int
     case December = 12;
 
     public function getAbbreviation():string {
-        return \substr($this->name, 3);
+        return \substr($this->name, 0, 3);
     }
 
     public function getPrevious(): Month
