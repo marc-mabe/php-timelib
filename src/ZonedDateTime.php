@@ -64,6 +64,19 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         get => LocalTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
+    public WeekInfo $weekInfo {
+        get => $this->moment->weekInfo;
+    }
+
+    /** @var int<1,max> */
+    public int $weekOfYear {
+        get => $this->weekInfo->getWeekOfYear($this);
+    }
+
+    public int $yearOfWeek {
+        get => $this->weekInfo->getYearOfWeek($this);
+    }
+
     public readonly ZoneOffset $offset;
 
     private readonly Moment $adjusted;
@@ -116,19 +129,23 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
     public static function fromUnixTimestamp(
         int|float $timestamp,
         TimeUnit $unit = TimeUnit::Second,
-        ?Calendar $calendar = null
+        ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
     ): self {
         return new self(
-            Moment::fromUnixTimestamp($timestamp, $unit, $calendar),
+            Moment::fromUnixTimestamp($timestamp, $unit, $calendar, $weekInfo),
             new ZoneOffset(totalSeconds: 0),
         );
     }
 
     /** @param array{int, int<0, 999999999>} $timestampTuple */
-    public static function fromUnixTimestampTuple(array $timestampTuple, ?Calendar $calendar = null): self
-    {
+    public static function fromUnixTimestampTuple(
+        array $timestampTuple,
+        ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
+    ): self {
         return new self(
-            Moment::fromUnixTimestampTuple($timestampTuple, $calendar),
+            Moment::fromUnixTimestampTuple($timestampTuple, $calendar, $weekInfo),
             new ZoneOffset(totalSeconds: 0),
         );
     }
@@ -151,6 +168,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         int $second = 0,
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
     ): self {
         $calendar ??= GregorianCalendar::getInstance();
 
@@ -160,7 +178,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
 
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
         $ts     = $localTs - $offset->totalSeconds;
-        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar), $zone);
+        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar, $weekInfo), $zone);
     }
 
     /**
@@ -179,6 +197,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         int $second = 0,
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
     ): self {
         $calendar ??= GregorianCalendar::getInstance();
 
@@ -188,7 +207,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
 
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
         $ts     = $localTs - $offset->totalSeconds;
-        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar), $zone);
+        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar, $weekInfo), $zone);
     }
 
     public static function fromZonedDateTime(Date&Time&Zoned $zonedDateTime): self
@@ -206,6 +225,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
             $zonedDateTime->second,
             $zonedDateTime->nanoOfSecond,
             calendar: $zonedDateTime->calendar,
+            weekInfo: $zonedDateTime->weekInfo,
         );
     }
 
@@ -218,7 +238,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
         $ts     = $localTs - $offset->totalSeconds;
         $ns     = $time ? $time->nanoOfSecond : 0;
-        return new self(Moment::fromUnixTimestampTuple([$ts, $ns], $date->calendar), $zone);
+        return new self(Moment::fromUnixTimestampTuple([$ts, $ns], $date->calendar, $date->weekInfo), $zone);
     }
 
     private static function findOffsetByLocalTimestamp(Zone $zone, int $localTs): ZoneOffset

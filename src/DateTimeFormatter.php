@@ -99,8 +99,12 @@ class DateTimeFormatter
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
 
             // Week
-            FormatToken::WeekOfYearIso => "TODO[{$token->name}]", // TODO: Support WeekOfYearIso
-            FormatToken::YearOfWeekIso => "TODO[{$token->name}]", // TODO: Support YearOfWeekIso
+            FormatToken::WeekOfYearIso => $dateTimeZone instanceof Date
+                ? (string)WeekInfo::fromIso()->getWeekOfYear($dateTimeZone)
+                : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
+            FormatToken::YearOfWeekIso => $dateTimeZone instanceof Date
+                ? (string)WeekInfo::fromIso()->getYearOfWeek($dateTimeZone)
+                : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::DayOfWeekName,
             FormatToken::DayOfWeekName3Letter,
             FormatToken::DayOfWeekNumber,

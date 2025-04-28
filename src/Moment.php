@@ -78,11 +78,21 @@ final class Moment implements Momented, Date, Time, Zoned
         get => $this->zone ??= new ZoneOffset(0);
     }
 
+    /** @var int<1,max> */
+    public int $weekOfYear {
+        get => $this->weekInfo->getWeekOfYear($this);
+    }
+
+    public int $yearOfWeek {
+        get => $this->weekInfo->getYearOfWeek($this);
+    }
+
     /** @param int<0, 999999999> $nanoOfSecond */
     private function __construct(
         private readonly int $tsSec,
         public readonly int $nanoOfSecond,
         public readonly Calendar $calendar,
+        public readonly WeekInfo $weekInfo,
     ) {
         $this->moment = $this;
     }
@@ -90,7 +100,12 @@ final class Moment implements Momented, Date, Time, Zoned
     public function add(Duration $duration): self
     {
         $tuple = $duration->addToUnixTimestampTuple([$this->tsSec, $this->nanoOfSecond]);
-        return new self($tuple[0], $tuple[1], $this->calendar);
+        return new self(
+            $tuple[0],
+            $tuple[1],
+            calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
+        );
     }
 
     public function sub(Duration $duration): self
@@ -109,6 +124,7 @@ final class Moment implements Momented, Date, Time, Zoned
             $this->second,
             $this->nanoOfSecond,
             calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
         );
     }
 
@@ -124,6 +140,7 @@ final class Moment implements Momented, Date, Time, Zoned
             $this->second,
             $this->nanoOfSecond,
             calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
         );
     }
 
@@ -139,6 +156,7 @@ final class Moment implements Momented, Date, Time, Zoned
             $this->second,
             $this->nanoOfSecond,
             calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
         );
     }
 
@@ -153,6 +171,7 @@ final class Moment implements Momented, Date, Time, Zoned
             $this->second,
             $this->nanoOfSecond,
             calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
         );
     }
 
@@ -168,6 +187,7 @@ final class Moment implements Momented, Date, Time, Zoned
             $this->second,
             $this->nanoOfSecond,
             calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
         );
     }
 
@@ -183,6 +203,7 @@ final class Moment implements Momented, Date, Time, Zoned
             $this->second,
             $this->nanoOfSecond,
             calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
         );
     }
 
@@ -198,40 +219,79 @@ final class Moment implements Momented, Date, Time, Zoned
             $second,
             $this->nanoOfSecond,
             calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
         );
     }
 
     /** @param int<0, 999> $milliOfSecond */
     public function withMilliOfSecond(int $milliOfSecond): self
     {
-        return new self($this->tsSec, $milliOfSecond * 1_000_000, $this->calendar);
+        return new self(
+            $this->tsSec,
+            $milliOfSecond * 1_000_000,
+            calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
+        );
     }
 
     /** @param int<0, 999999> $microOfSecond */
     public function withMicroOfSecond(int $microOfSecond): self
     {
-        return new self($this->tsSec, $microOfSecond * 1_000, $this->calendar);
+        return new self(
+            $this->tsSec,
+            $microOfSecond * 1_000,
+            calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
+        );
     }
 
     /** @param int<0, 999999999> $nanoOfSecond */
     public function withNanoOfSecond(int $nanoOfSecond): self
     {
-        return new self($this->tsSec, $nanoOfSecond, $this->calendar);
+        return new self(
+            $this->tsSec,
+            $nanoOfSecond,
+            calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
+        );
     }
 
     public function truncatedTo(DateUnit|TimeUnit $unit): self
     {
         return match ($unit) {
-            DateUnit::Year => self::fromYd($this->year, 1, calendar: $this->calendar),
-            DateUnit::Month => self::fromYmd($this->year, $this->month, 1, calendar: $this->calendar),
-            DateUnit::Day => self::fromYd($this->year, $this->dayOfYear, calendar: $this->calendar),
-            TimeUnit::Hour => self::fromYd($this->year, $this->dayOfYear, $this->hour, calendar: $this->calendar),
+            DateUnit::Year => self::fromYd(
+                $this->year,
+                1,
+                calendar: $this->calendar,
+                weekInfo: $this->weekInfo,
+            ),
+            DateUnit::Month => self::fromYmd(
+                $this->year,
+                $this->month,
+                1,
+                calendar: $this->calendar,
+                weekInfo: $this->weekInfo,
+            ),
+            DateUnit::Day => self::fromYd(
+                $this->year,
+                $this->dayOfYear,
+                calendar: $this->calendar,
+                weekInfo: $this->weekInfo,
+            ),
+            TimeUnit::Hour => self::fromYd(
+                $this->year,
+                $this->dayOfYear,
+                $this->hour,
+                calendar: $this->calendar,
+                weekInfo: $this->weekInfo,
+            ),
             TimeUnit::Minute => self::fromYd(
                 $this->year,
                 $this->dayOfYear,
                 $this->hour,
                 $this->minute,
                 calendar: $this->calendar,
+                weekInfo: $this->weekInfo,
             ),
             TimeUnit::Second => self::fromYd(
                 $this->year,
@@ -240,6 +300,7 @@ final class Moment implements Momented, Date, Time, Zoned
                 $this->minute,
                 $this->second,
                 calendar: $this->calendar,
+                weekInfo: $this->weekInfo,
             ),
             TimeUnit::Millisecond => self::fromYd(
                 $this->year,
@@ -249,6 +310,7 @@ final class Moment implements Momented, Date, Time, Zoned
                 $this->second,
                 \intdiv($this->nanoOfSecond, 1_000_000) * 1_000_000, // @phpstan-ignore argument.type
                 calendar: $this->calendar,
+                weekInfo: $this->weekInfo,
             ),
             TimeUnit::Microsecond => self::fromYd(
                 $this->year,
@@ -258,6 +320,7 @@ final class Moment implements Momented, Date, Time, Zoned
                 $this->second,
                 \intdiv($this->nanoOfSecond, 1_000) * 1_000, // @phpstan-ignore argument.type
                 calendar: $this->calendar,
+                weekInfo: $this->weekInfo,
             ),
             TimeUnit::Nanosecond => $this,
         };
@@ -300,7 +363,7 @@ final class Moment implements Momented, Date, Time, Zoned
 
     public function toZonedDateTime(Zone $zone): ZonedDateTime
     {
-        return ZonedDateTime::fromUnixTimestampTuple($this->toUnixTimestampTuple(), $this->calendar)
+        return ZonedDateTime::fromUnixTimestampTuple($this->toUnixTimestampTuple(), $this->calendar, $this->weekInfo)
             ->withZoneSameMoment($zone);
     }
 
@@ -308,6 +371,7 @@ final class Moment implements Momented, Date, Time, Zoned
         int|float $timestamp,
         TimeUnit $unit = TimeUnit::Second,
         ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
     ): self {
         if (\is_float($timestamp)) {
             if (!\is_finite($timestamp)) {
@@ -353,13 +417,26 @@ final class Moment implements Momented, Date, Time, Zoned
         };
         assert($ns >= 0 && $ns <1_000_000_000);
 
-        return new self($tsSecInt, $ns, $calendar ?? GregorianCalendar::getInstance());
+        return new self(
+            $tsSecInt,
+            $ns,
+            calendar: $calendar ?? GregorianCalendar::getInstance(),
+            weekInfo: $weekInfo ?? WeekInfo::fromIso(),
+        );
     }
 
     /** @param array{int, int<0, 999999999>} $timestampTuple */
-    public static function fromUnixTimestampTuple(array $timestampTuple, ?Calendar $calendar = null): self
-    {
-        return new self($timestampTuple[0], $timestampTuple[1], $calendar ?? GregorianCalendar::getInstance());
+    public static function fromUnixTimestampTuple(
+        array $timestampTuple,
+        ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
+    ): self {
+        return new self(
+            $timestampTuple[0],
+            $timestampTuple[1],
+            calendar: $calendar ?? GregorianCalendar::getInstance(),
+            weekInfo: $weekInfo ?? WeekInfo::fromIso(),
+        );
     }
 
     /**
@@ -378,13 +455,14 @@ final class Moment implements Momented, Date, Time, Zoned
         int $second = 0,
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
     ): self {
         $calendar ??= GregorianCalendar::getInstance();
 
         $ts = $calendar->getUnixTimestampByYd($year, $dayOfYear);
         $ts += $hour * 3600 + $minute * 60 + $second;
 
-        return new self($ts, $nanoOfSecond, $calendar);
+        return new self($ts, $nanoOfSecond, $calendar, $weekInfo ?? WeekInfo::fromIso());
     }
 
     /**
@@ -405,13 +483,14 @@ final class Moment implements Momented, Date, Time, Zoned
         int $second = 0,
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
     ): self {
         $calendar ??= GregorianCalendar::getInstance();
 
         $ts = $calendar->getUnixTimestampByYmd($year, $month, $dayOfMonth);
         $ts += $hour * 3600 + $minute * 60 + $second;
 
-        return new self($ts, $nanoOfSecond, $calendar);
+        return new self($ts, $nanoOfSecond, $calendar, $weekInfo ?? WeekInfo::fromIso());
     }
 
     public static function fromZonedDateTime(Date&Time&Zoned $zonedDateTime): self
@@ -421,7 +500,7 @@ final class Moment implements Momented, Date, Time, Zoned
         }
 
         [$s, $ns] = $zonedDateTime->toUnixTimestampTuple();
-        return new self($s, $ns, $zonedDateTime->calendar);
+        return new self($s, $ns, $zonedDateTime->calendar, $zonedDateTime->weekInfo);
     }
 
     public static function fromDateTime(Date $date, ?Time $time = null, ?Zone $zone = null): self
@@ -435,6 +514,7 @@ final class Moment implements Momented, Date, Time, Zoned
                 $time->second ?? 0,
                 $time->nanoOfSecond ?? 0,
                 calendar: $date->calendar,
+                weekInfo: $date->weekInfo,
             );
         }
 

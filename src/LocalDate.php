@@ -27,29 +27,48 @@ final class LocalDate implements Date
         get => $this->calendar->getDayOfWeekByDaysSinceUnixEpoch($this->daysSinceEpoch);
     }
 
+    /** @var int<1,max> */
+    public int $weekOfYear {
+        get => $this->weekInfo->getWeekOfYear($this);
+    }
+
+    public int $yearOfWeek {
+        get => $this->weekInfo->getYearOfWeek($this);
+    }
+
     private function __construct(
         private readonly int $daysSinceEpoch,
         public readonly Calendar $calendar,
+        public readonly WeekInfo $weekInfo,
     ) {}
 
     /**
      * @param Month|int<1,12> $month
      * @param int<1,31> $dayOfMonth
      */
-    public static function fromYmd(int $year, Month|int $month, int $dayOfMonth, ?Calendar $calendar = null): self
-    {
+    public static function fromYmd(
+        int $year,
+        Month|int $month,
+        int $dayOfMonth,
+        ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
+    ): self {
         $calendar     ??= GregorianCalendar::getInstance();
         $daysSinceEpoch = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
-        return new self($daysSinceEpoch, $calendar);
+        return new self($daysSinceEpoch, $calendar, $weekInfo ?? WeekInfo::fromIso());
     }
 
     /**
      * @param int<1,366> $dayOfYear
      */
-    public static function fromYd(int $year, int $dayOfYear, ?Calendar $calendar = null): self
-    {
+    public static function fromYd(
+        int $year,
+        int $dayOfYear,
+        ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
+    ): self {
         $calendar     ??= GregorianCalendar::getInstance();
         $daysSinceEpoch = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
-        return new self($daysSinceEpoch, $calendar);
+        return new self($daysSinceEpoch, $calendar, $weekInfo ?? WeekInfo::fromIso());
     }
 }

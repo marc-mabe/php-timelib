@@ -68,6 +68,15 @@ final class LocalDateTime implements Date, Time
         get => LocalTime::fromHms($this->hour, $this->minute, $this->second);
     }
 
+    /** @var int<1,max> */
+    public int $weekOfYear {
+        get => $this->weekInfo->getWeekOfYear($this);
+    }
+
+    public int $yearOfWeek {
+        get => $this->weekInfo->getYearOfWeek($this);
+    }
+
     /**
      * @param int<0, 999999999> $nanoOfSecond
      */
@@ -75,12 +84,13 @@ final class LocalDateTime implements Date, Time
         private readonly int $tsSec,
         public readonly int $nanoOfSecond,
         public readonly Calendar $calendar,
+        public readonly WeekInfo $weekInfo,
     ) {}
 
     public function add(Duration $duration): self
     {
         $tuple = $duration->addToUnixTimestampTuple([$this->tsSec, $this->nanoOfSecond]);
-        return new self($tuple[0], $tuple[1], $this->calendar);
+        return new self($tuple[0], $tuple[1], $this->calendar, $this->weekInfo);
     }
 
     public function sub(Duration $duration): self
@@ -93,6 +103,6 @@ final class LocalDateTime implements Date, Time
         $ts = $date->calendar->getUnixTimestampByYmd($date->year, $date->month, $date->dayOfMonth);
         $ts += $time->hour * 3600 + $time->minute * 60 + $time->second;
 
-        return new self($ts, $time->nanoOfSecond, $date->calendar);
+        return new self($ts, $time->nanoOfSecond, $date->calendar, $date->weekInfo);
     }
 }

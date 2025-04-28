@@ -15,4 +15,11 @@ interface Date {
     public int $dayOfYear { get; }
 
     public DayOfWeek $dayOfWeek { get; }
+
+    public WeekInfo $weekInfo { get; }
+
+    /** @var int<1,max> */
+    public int $weekOfYear { get; }
+
+    public int $yearOfWeek { get; }
 }
