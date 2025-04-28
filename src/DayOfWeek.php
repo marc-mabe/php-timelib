@@ -32,8 +32,21 @@ enum DayOfWeek:int
         return self::from($this->value === 7 ? 1 : $this->value + 1);
     }
 
-    public function diff(DayOfWeek $other): Period
+    /**
+     * Returns the distance of this day-of-week to another day-of-week in days.
+     *
+     * @return int<-3,3>
+     */
+    public function distance(DayOfWeek $other): int
     {
-        return new Period(days: $other->value - $this->value);
+        $distance = $other->value - $this->value;
+
+        if ($distance > 3) {
+            $distance -= 7;
+        } elseif ($distance < -3) {
+            $distance += 7;
+        }
+
+        return $distance;
     }
 }

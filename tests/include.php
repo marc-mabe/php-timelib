@@ -9,6 +9,7 @@ use time\Moment;
 use time\MonotonicClock;
 use time\StopWatch;
 use time\WallClock;
+use time\WeekInfo;
 use time\Zone;
 use time\ZonedDateTime;
 use time\ZoneInfo;
@@ -84,6 +85,10 @@ function stringifyStopWatch(StopWatch $watch) {
     return $watch::class . "(elapsed: {$elapsedNs}ns, isRunning: {$isRunning})";
 }
 
+function stringifyWeekInfo(WeekInfo $weekDef) {
+    return "WeekInfo({$weekDef->firstDayOfWeek->name}, {$weekDef->minDaysInFirstWeek})";
+}
+
 function stringify(mixed $v) {
     return match (true) {
         is_int($v) => (string)$v,
@@ -103,6 +108,7 @@ function stringify(mixed $v) {
         $v instanceof WallClock => stringifyWallClock($v),
         $v instanceof MonotonicClock => stringifyMonotonicClock($v),
         $v instanceof StopWatch => stringifyStopWatch($v),
+        $v instanceof WeekInfo => stringifyWeekInfo($v),
         is_array($v) && array_is_list($v) => '[' . implode(', ', array_map('stringify', $v)) . ']',
     };
 }
