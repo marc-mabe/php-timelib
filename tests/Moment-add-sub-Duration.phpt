@@ -1,5 +1,5 @@
 --TEST--
-Moment->add() and Moment->sub()
+Moment->add() and Moment->sub() with Duration
 --FILE--
 <?php
 
