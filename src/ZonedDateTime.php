@@ -333,28 +333,6 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar, $weekInfo), $zone);
     }
 
-    public static function fromZonedDateTime(
-        Date&Time&Zoned $zonedDateTime,
-        Disambiguation $disambiguation = Disambiguation::REJECT,
-    ): self {
-        if ($zonedDateTime instanceof self) {
-            return $zonedDateTime;
-        }
-
-        return self::fromYd(
-            $zonedDateTime->zone,
-            $zonedDateTime->year,
-            $zonedDateTime->dayOfYear,
-            $zonedDateTime->hour,
-            $zonedDateTime->minute,
-            $zonedDateTime->second,
-            $zonedDateTime->nanoOfSecond,
-            calendar: $zonedDateTime->calendar,
-            weekInfo: $zonedDateTime->weekInfo,
-            disambiguation: $disambiguation,
-        );
-    }
-
     public static function fromDateTime(
         Zone $zone,
         Date $date,

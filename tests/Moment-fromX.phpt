@@ -141,17 +141,6 @@ echo '    ' . stringify(\time\Moment::fromDateTime($dateUsual, $timeUsual, $zone
 echo "  fromDateTime(" . stringify($dateZero) . ", " . stringify($timeZero) . ", " . stringify($zoneZero) . ")\n";
 echo '    ' . stringify(\time\Moment::fromDateTime($dateZero, $timeZero, $zoneZero)) . "\n";
 
-echo "Moment::fromZonedDateTime\n";
-
-echo "  fromZonedDateTime(" . stringify($zdtUsual) . ")\n";
-echo '    ' . stringify(\time\Moment::fromZonedDateTime($zdtUsual)) . "\n";
-
-echo "  fromZonedDateTime(" . stringify($zdtEpoch) . ")\n";
-echo '    ' . stringify(\time\Moment::fromZonedDateTime($zdtEpoch)) . "\n";
-
-echo "  fromZonedDateTime(" . stringify($zdtZero) . ")\n";
-echo '    ' . stringify(\time\Moment::fromZonedDateTime($zdtZero)) . "\n";
-
 --EXPECT--
 Moment::fromUnixTimestamp
   fromUnixTimestamp(1738599906)
@@ -231,11 +220,4 @@ Moment::fromDateTime
   fromDateTime(LocalDate('Mon 2025-02-03'), LocalTime('16:25:06.987654321'), time\Zone('UTC'))
     Moment('Mon 2025-02-03 16:25:06.987654321', 1738599906, 987654321)
   fromDateTime(LocalDate('Sat 0-01-01'), LocalTime('00:00:00'), time\ZoneOffset('+00:00'))
-    Moment('Sat 0-01-01 00:00:00', -62167219200, 0)
-Moment::fromZonedDateTime
-  fromZonedDateTime(ZonedDateTime('Mon 2025-02-03 16:25:06.987654321 +01:00 [Europe/Berlin]'))
-    Moment('Mon 2025-02-03 15:25:06.987654321', 1738596306, 987654321)
-  fromZonedDateTime(ZonedDateTime('Thu 1970-01-01 00:00:00 +00:00 [UTC]'))
-    Moment('Thu 1970-01-01 00:00:00', 0, 0)
-  fromZonedDateTime(ZonedDateTime('Sat 0-01-01 00:00:00 +00:00 [+00:00]'))
     Moment('Sat 0-01-01 00:00:00', -62167219200, 0)

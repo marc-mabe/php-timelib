@@ -613,16 +613,6 @@ final class Moment implements Momented, Date, Time, Zoned
         return new self($ts, $nanoOfSecond, $calendar, $weekInfo ?? WeekInfo::fromIso());
     }
 
-    public static function fromZonedDateTime(Date&Time&Zoned $zonedDateTime): self
-    {
-        if (!$zonedDateTime instanceof ZonedDateTime) {
-            $zonedDateTime = ZonedDateTime::fromZonedDateTime($zonedDateTime);
-        }
-
-        [$s, $ns] = $zonedDateTime->toUnixTimestampTuple();
-        return new self($s, $ns, $zonedDateTime->calendar, $zonedDateTime->weekInfo);
-    }
-
     public static function fromDateTime(
         Date $date,
         ?Time $time = null,
@@ -642,7 +632,6 @@ final class Moment implements Momented, Date, Time, Zoned
             );
         }
 
-        $zonedDateTime = ZonedDateTime::fromDateTime($zone, $date, $time, disambiguation: $disambiguation);
-        return self::fromZonedDateTime($zonedDateTime);
+        return ZonedDateTime::fromDateTime($zone, $date, $time, disambiguation: $disambiguation)->moment;
     }
 }
