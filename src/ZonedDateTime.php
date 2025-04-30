@@ -90,14 +90,121 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         $this->offset   = $offset;
     }
 
-    public function add(Duration $duration): self
+    public function add(Duration|Period $durationOrPeriod): self
     {
-        return new self($this->moment->add($duration), $this->zone);
+        if ($durationOrPeriod instanceof Duration) {
+            return new self($this->moment->add($durationOrPeriod), $this->zone);
+        }
+
+        $bias   = $durationOrPeriod->isNegative ? -1 : 1;
+        $year   = $this->year + $durationOrPeriod->years * $bias;
+        $month  = $this->month->value + $durationOrPeriod->months * $bias;
+        $day    = $this->dayOfMonth + $durationOrPeriod->days * $bias + $durationOrPeriod->weeks * 7 * $bias;
+        $hour   = $this->hour + $durationOrPeriod->hours * $bias;
+        $minute = $this->minute + $durationOrPeriod->minutes * $bias;
+        $second = $this->second + $durationOrPeriod->seconds * $bias;
+        $ns     = $this->nanoOfSecond
+            + $durationOrPeriod->milliseconds * 1_000_000 * $bias
+            + $durationOrPeriod->microseconds * 1_000 * $bias
+            + $durationOrPeriod->nanoseconds * $bias;
+
+        $year  += \intdiv($month - 1, 12);
+        $month = ($month - 1) % 12;
+        if ($month < 0) {
+            $year--;
+            $month += 12;
+        }
+        $month += 1;
+
+        if ($day >= 1) {
+            while ($day > ($daysInMonth = $this->calendar->getDaysInMonth($year, $month)))  {
+                $day   -= $daysInMonth;
+                $month++;
+                if ($month > 12) {
+                    $month = 1;
+                    $year++;
+                }
+            }
+        } else {
+            do {
+                $month--;
+                if ($month < 1) {
+                    $month = 12;
+                    $year--;
+                }
+
+                $daysInMonth = $this->calendar->getDaysInMonth($year, $month);
+                $day += $daysInMonth;
+            } while ($day < 1);
+        }
+
+        $second += \intdiv($ns, 1_000_000_000);
+        $ns     = $ns % 1_000_000_000;
+        if ($ns < 0) {
+            $second--;
+            $ns += 1_000_000_000;
+        }
+
+        $minute += \intdiv($second, 60);
+        $second = $second % 60;
+        if ($second < 0) {
+            $minute--;
+            $second += 60;
+        }
+
+        $hour += \intdiv($minute, 60);
+        $minute = $minute % 60;
+        if ($minute < 0) {
+            $hour--;
+            $minute += 60;
+        }
+
+        $day += \intdiv($hour, 24);
+        $hour = $hour % 24;
+        if ($hour < 0) {
+            $day--;
+            $hour += 24;
+        }
+
+        if ($day >= 1) {
+            $daysInMonth = $this->calendar->getDaysInMonth($year, $month);
+            if ($day > $daysInMonth) {
+                $day -= $daysInMonth;
+                $month++;
+                if ($month > 12) {
+                    $month = 1;
+                    $year++;
+                }
+            }
+        } else {
+            $month--;
+            if ($month < 1) {
+                $month = 12;
+                $year--;
+            }
+
+            $daysInMonth = $this->calendar->getDaysInMonth($year, $month);
+            $day += $daysInMonth;
+        }
+
+        return self::fromYmd(
+            $this->zone,
+            $year,
+            $month,
+            $day, /** @phpstan-ignore argument.type */
+            $hour,
+            $minute,
+            $second,
+            $ns,
+            calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
+            disambiguation: Disambiguation::COMPATIBLE,
+        );
     }
 
-    public function sub(Duration $duration): self
+    public function sub(Duration|Period $durationOrPeriod): self
     {
-        return new self($this->moment->sub($duration), $this->zone);
+        return $this->add($durationOrPeriod->inverted());
     }
 
     public function withZoneSameMoment(Zone $zone): self
@@ -183,6 +290,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
         ?WeekInfo $weekInfo = null,
+        Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
         $calendar ??= GregorianCalendar::getInstance();
 
@@ -190,7 +298,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         $localTs   = $localDays * 60 * 60 * 24;
         $localTs  += $hour * 3600 + $minute * 60 + $second;
 
-        $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
+        $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
         return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar, $weekInfo), $zone);
     }
@@ -212,6 +320,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
         ?WeekInfo $weekInfo = null,
+        Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
         $calendar ??= GregorianCalendar::getInstance();
 
@@ -219,13 +328,15 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         $localTs   = $localDays * 60 * 60 * 24;
         $localTs  += $hour * 3600 + $minute * 60 + $second;
 
-        $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
+        $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
         return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar, $weekInfo), $zone);
     }
 
-    public static function fromZonedDateTime(Date&Time&Zoned $zonedDateTime): self
-    {
+    public static function fromZonedDateTime(
+        Date&Time&Zoned $zonedDateTime,
+        Disambiguation $disambiguation = Disambiguation::REJECT,
+    ): self {
         if ($zonedDateTime instanceof self) {
             return $zonedDateTime;
         }
@@ -240,45 +351,75 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
             $zonedDateTime->nanoOfSecond,
             calendar: $zonedDateTime->calendar,
             weekInfo: $zonedDateTime->weekInfo,
+            disambiguation: $disambiguation,
         );
     }
 
-    public static function fromDateTime(Zone $zone, Date $date, ?Time $time = null): self
-    {
+    public static function fromDateTime(
+        Zone $zone,
+        Date $date,
+        ?Time $time = null,
+        Disambiguation $disambiguation = Disambiguation::REJECT,
+    ): self {
         $localDays = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
         $localTs   = $localDays * 60 * 60 * 24;
         $localTs  += $time ? $time->hour * 3600 + $time->minute * 60 + $time->second : 0;
 
-        $offset = self::findOffsetByLocalTimestamp($zone, $localTs);
+        $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
         $ns     = $time ? $time->nanoOfSecond : 0;
         return new self(Moment::fromUnixTimestampTuple([$ts, $ns], $date->calendar, $date->weekInfo), $zone);
     }
 
-    private static function findOffsetByLocalTimestamp(Zone $zone, int $localTs): ZoneOffset
-    {
+    private static function findOffsetByLocalTimestamp(
+        Zone $zone,
+        int $localTs,
+        Disambiguation $disambiguation,
+    ): ZoneOffset {
         $offset = $zone->fixedOffset;
         if ($offset) {
             return $offset;
         }
 
+        $maxTs   = $localTs + ZoneOffset::TOTAL_SECONDS_MAX;
+        $maxTran = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$maxTs, 0]));
+        \assert($maxTran !== null);
+        $maxStart = $maxTran->moment->toUnixTimestampTuple()[0] + $maxTran->offset->totalSeconds;
+
         $minTs   = $localTs + ZoneOffset::TOTAL_SECONDS_MIN;
         $minTran = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$minTs, 0]));
         \assert($minTran !== null);
         $minStart = $minTran->moment->toUnixTimestampTuple()[0] + $minTran->offset->totalSeconds;
+        $minEnd   = $maxTran->moment->toUnixTimestampTuple()[0] + $minTran->offset->totalSeconds;
 
-        $maxTs   = $localTs + ZoneOffset::TOTAL_SECONDS_MAX;
-        $maxTran = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$maxTs, 0]));
-        \assert($maxTran !== null);
-
-        if ($minStart <= $localTs) {
-            // NOTE: The local end of the min transition needs to take the max transition time
-            //       together with the min transition offset
-            $minEnd = $maxTran->moment->toUnixTimestampTuple()[0] + $minTran->offset->totalSeconds;
-
-            if ($minEnd > $localTs) {
-                return $minTran->offset;
+        if ($minStart <= $localTs && $minEnd > $localTs) {
+            if ($maxStart <= $localTs) {
+                return match ($disambiguation) {
+                    Disambiguation::EARLIER    => $minTran->offset,
+                    Disambiguation::LATER      => $maxTran->offset,
+                    Disambiguation::COMPATIBLE => $minTran->offset,
+                    Disambiguation::REJECT => throw new \RuntimeException(sprintf(
+                        "Ambiguous date-time '%s' for zone '%s'",
+                        new DateTimeFormatter('Y-m-d H:i:s')->format(Moment::fromUnixTimestampTuple([$localTs, 0])),
+                        $zone->identifier
+                    )),
+                };
             }
+
+            return $minTran->offset;
+        }
+
+        if ($maxStart > $localTs) {
+            return match ($disambiguation) {
+                Disambiguation::EARLIER    => $maxTran->offset,
+                Disambiguation::LATER      => $minTran->offset,
+                Disambiguation::COMPATIBLE => $minTran->offset,
+                Disambiguation::REJECT => throw new \RuntimeException(sprintf(
+                    "Invalid date-time '%s' for zone '%s'",
+                    new DateTimeFormatter('Y-m-d H:i:s')->format(Moment::fromUnixTimestampTuple([$localTs, 0])),
+                    $zone->identifier
+                )),
+            };
         }
 
         return $maxTran->offset;

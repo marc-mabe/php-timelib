@@ -623,8 +623,12 @@ final class Moment implements Momented, Date, Time, Zoned
         return new self($s, $ns, $zonedDateTime->calendar, $zonedDateTime->weekInfo);
     }
 
-    public static function fromDateTime(Date $date, ?Time $time = null, ?Zone $zone = null): self
-    {
+    public static function fromDateTime(
+        Date $date,
+        ?Time $time = null,
+        ?Zone $zone = null,
+        Disambiguation $disambiguation = Disambiguation::REJECT,
+    ): self {
         if ($zone === null) {
             return self::fromYd(
                 $date->year,
@@ -638,7 +642,7 @@ final class Moment implements Momented, Date, Time, Zoned
             );
         }
 
-        $zonedDateTime = ZonedDateTime::fromDateTime($zone, $date, $time);
+        $zonedDateTime = ZonedDateTime::fromDateTime($zone, $date, $time, disambiguation: $disambiguation);
         return self::fromZonedDateTime($zonedDateTime);
     }
 }
