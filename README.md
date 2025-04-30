@@ -130,3 +130,15 @@ The following interfaces are defined:
 * `Zoned`: An object that is adjusted by time zone
 * `Clock`: A clock
 * `Calendar`: An object that represents a calendar system
+
+# References
+
+[1] [PHP Date and Time Related Documentation](https://www.php.net/manual/refs.calendar.php)
+
+[2] [TC39 Temporal Proposal](https://tc39.es/proposal-temporal/)
+
+[3] [Java 8 Date and Time Documentation](https://docs.oracle.com/javase/8/docs/technotes/guides/datetime/index.html)
+
+[4] [Carbon PHP library](https://carbon.nesbot.com/)
+
+[5] [Brick\DateTime PHP library](https://github.com/brick/date-time)
