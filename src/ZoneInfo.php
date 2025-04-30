@@ -38,5 +38,20 @@ abstract class ZoneInfo
         return $transitions->current();
     }
 
-    abstract public function getOffsetAt(Moment $moment): ZoneOffset;
+    /**
+     * Returns a ZoneOffset for the given Moment.
+     *
+     * While `fixedOffset` and `getTransitionAt($moment)` both can be NULL,
+     * this will return a valid offset in all cases as follows:
+     *
+     * - If `fixedOffset` is not NULL              -> return `fixedOffset`
+     * - If `getTransitionAt($moment)` is not NULL -> return the offset of the transition
+     * - Else                                      -> return a zero offset
+     */
+    public function getOffsetAt(Moment $moment): ZoneOffset
+    {
+        return $this->fixedOffset
+            ?? $this->getTransitionAt($moment)->offset
+            ?? new ZoneOffset(totalSeconds: 0);
+    }
 }

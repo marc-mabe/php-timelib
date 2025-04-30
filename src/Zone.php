@@ -105,16 +105,6 @@ class Zone
                 private readonly \DateTimeZone $legacy,
             ) {}
 
-            public function getOffsetAt(Moment $moment): ZoneOffset
-            {
-                return $this->fixedOffset
-                    ?? new ZoneOffset(
-                        \DateTime::createFromTimestamp($moment->toUnixTimestampTuple()[0])
-                            ->setTimezone($this->legacy)
-                            ->getOffset()
-                    );
-            }
-
             public function getTransitions(
                 ?Moment $from = null,
                 ?Moment $until = null,
