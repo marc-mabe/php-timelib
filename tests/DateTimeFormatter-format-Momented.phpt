@@ -15,6 +15,9 @@ $momentedWithZone = new class($moment, $zoneNy) implements time\Momented, time\Z
         public readonly time\Moment $moment,
         public readonly time\Zone $zone,
     ) {}
+
+    public function add(time\Duration|time\Period $durationOrPeriod): self {}
+    public function sub(time\Duration|time\Period $durationOrPeriod): self {}
 };
 
 echo "Formatter without zone:\n";

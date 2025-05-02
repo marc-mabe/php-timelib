@@ -13,17 +13,17 @@ final readonly class Interval
     public const string ISO80000_SIGN_END_EXCLUSIVE = ')';
 
     public function __construct(
-        public Moment $start,
-        public Moment $end,
+        public Momented $start,
+        public Momented $end,
         public Boundary $boundary = Boundary::InclusiveToExclusive,
     ) {}
 
-    public function withStart(Moment $start): self
+    public function withStart(Momented $start): self
     {
         return new self($start, $this->end, $this->boundary);
     }
 
-    public function withEnd(Moment $end): self
+    public function withEnd(Momented $end): self
     {
         return new self($this->start, $end, $this->boundary);
     }
@@ -60,21 +60,19 @@ final readonly class Interval
     {
         if ($other instanceof Momented) {
             $thisInToEx = $this->withBoundaryAdjustedMoment(Boundary::InclusiveToExclusive);
-            $thisStart  = $thisInToEx->start->toUnixTimestampTuple();
-            $thisEnd    = $thisInToEx->end->toUnixTimestampTuple();
-
-            $moment = $other->moment;
-            $tuple  = $moment->toUnixTimestampTuple();
+            $thisStart  = $thisInToEx->start->moment->toUnixTimestampTuple();
+            $thisEnd    = $thisInToEx->end->moment->toUnixTimestampTuple();
+            $tuple      = $other->moment->toUnixTimestampTuple();
 
             return ($thisStart[0] < $tuple[0] || ($thisStart[0] === $tuple[0] && $thisStart[1] <= $tuple[1]))
                 && ($thisEnd[0] > $tuple[0] || ($thisEnd[0] === $tuple[0] && $thisEnd[1] > $tuple[1]));
         }
 
-        $thisStart  = $this->start->toUnixTimestampTuple();
-        $thisEnd    = $this->end->toUnixTimestampTuple();
+        $thisStart  = $this->start->moment->toUnixTimestampTuple();
+        $thisEnd    = $this->end->moment->toUnixTimestampTuple();
         $other      = $other->withBoundaryAdjustedMoment($this->boundary);
-        $otherStart = $other->start->toUnixTimestampTuple();
-        $otherEnd   = $other->end->toUnixTimestampTuple();
+        $otherStart = $other->start->moment->toUnixTimestampTuple();
+        $otherEnd   = $other->end->moment->toUnixTimestampTuple();
 
         return ($thisStart[0] < $otherStart[0] || ($thisStart[0] === $otherStart[0] && $thisStart[1] <= $otherStart[1]))
             && ($thisEnd[0] > $otherEnd[0] || ($thisEnd[0] === $otherEnd[0] && $thisEnd[1] >= $otherEnd[1]));
@@ -114,14 +112,14 @@ final readonly class Interval
 
     public static function fromRelativeStart(
         Duration|Period $start,
-        Moment $end,
+        Momented $end,
         Boundary $boundary = Boundary::InclusiveToExclusive,
     ): self {
         return new self($end->sub($start), $end, $boundary);
     }
 
     public static function fromRelativeEnd(
-        Moment $start,
+        Momented $start,
         Duration|Period $end,
         Boundary $boundary = Boundary::InclusiveToExclusive,
     ): self {
