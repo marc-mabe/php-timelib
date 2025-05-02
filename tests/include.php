@@ -14,6 +14,7 @@ use time\Zone;
 use time\ZonedDateTime;
 use time\ZoneInfo;
 use time\ZoneTransition;
+use time\Interval;
 
 include __DIR__ . '/../vendor/autoload.php';
 
@@ -89,6 +90,10 @@ function stringifyWeekInfo(WeekInfo $weekDef) {
     return "WeekInfo({$weekDef->firstDayOfWeek->name}, {$weekDef->minDaysInFirstWeek})";
 }
 
+function stringifyInterval(Interval $interval) {
+    return "Interval('{$interval->toIso80000()}')";
+}
+
 function stringify(mixed $v) {
     return match (true) {
         is_int($v) => (string)$v,
@@ -109,6 +114,7 @@ function stringify(mixed $v) {
         $v instanceof MonotonicClock => stringifyMonotonicClock($v),
         $v instanceof StopWatch => stringifyStopWatch($v),
         $v instanceof WeekInfo => stringifyWeekInfo($v),
+        $v instanceof Interval => stringifyInterval($v),
         is_array($v) && array_is_list($v) => '[' . implode(', ', array_map('stringify', $v)) . ']',
     };
 }
