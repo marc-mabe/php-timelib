@@ -33,14 +33,13 @@ class DateTimeFormatter
 
         $formatted = '';
         $formatLen = \strlen($this->format);
-        $inEscape  = false;
 
         for ($i = 0; $i < $formatLen; $i++) {
             $chr   = $this->format[$i];
             $token = FormatToken::tryFrom($chr);
 
             if (!$token) {
-                if (!$inEscape && \preg_match('#^[a-z]$#i', $chr)) {
+                if (\preg_match('#^[a-z]$#i', $chr)) {
                     throw new \ValueError("Invalid format '{$this->format}': Unknown token '{$chr}' at {$i}");
                 }
 
@@ -49,13 +48,7 @@ class DateTimeFormatter
             }
 
             if ($token === FormatToken::ESCAPE) {
-                if ($inEscape) {
-                    $inEscape = false;
-                    $formatted .= $chr;
-                } else {
-                    $inEscape = true;
-                }
-
+                $formatted .= $this->format[++$i] ?? '';
                 continue;
             }
 
