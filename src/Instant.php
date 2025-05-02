@@ -112,36 +112,6 @@ final class Instant implements Instanted, Date, Time, Zoned
                 + $durationOrPeriod->microseconds * 1_000 * $bias
                 + $durationOrPeriod->nanoseconds * $bias;
 
-            $year  += \intdiv($month - 1, 12);
-            $month = ($month - 1) % 12;
-            if ($month < 0) {
-                $year--;
-                $month += 12;
-            }
-            $month += 1;
-
-            if ($day >= 1) {
-                while ($day > ($daysInMonth = $this->calendar->getDaysInMonth($year, $month)))  {
-                    $day   -= $daysInMonth;
-                    $month++;
-                    if ($month > 12) {
-                        $month = 1;
-                        $year++;
-                    }
-                }
-            } else {
-                do {
-                    $month--;
-                    if ($month < 1) {
-                        $month = 12;
-                        $year--;
-                    }
-
-                    $daysInMonth = $this->calendar->getDaysInMonth($year, $month);
-                    $day += $daysInMonth;
-                } while ($day < 1);
-            }
-
             $second += \intdiv($ns, 1_000_000_000);
             $ns     = $ns % 1_000_000_000;
             if ($ns < 0) {
@@ -170,10 +140,17 @@ final class Instant implements Instanted, Date, Time, Zoned
                 $hour += 24;
             }
 
+            $year += \intdiv($month - 1, 12);
+            $month = ($month - 1) % 12;
+            if ($month < 0) {
+                $year--;
+                $month += 12;
+            }
+            $month += 1;
+
             if ($day >= 1) {
-                $daysInMonth = $this->calendar->getDaysInMonth($year, $month);
-                if ($day > $daysInMonth) {
-                    $day -= $daysInMonth;
+                while ($day > ($daysInMonth = $this->calendar->getDaysInMonth($year, $month)))  {
+                    $day   -= $daysInMonth;
                     $month++;
                     if ($month > 12) {
                         $month = 1;
@@ -181,16 +158,17 @@ final class Instant implements Instanted, Date, Time, Zoned
                     }
                 }
             } else {
-                $month--;
-                if ($month < 1) {
-                    $month = 12;
-                    $year--;
-                }
+                do {
+                    $month--;
+                    if ($month < 1) {
+                        $month = 12;
+                        $year--;
+                    }
 
-                $daysInMonth = $this->calendar->getDaysInMonth($year, $month);
-                $day += $daysInMonth;
+                    $daysInMonth = $this->calendar->getDaysInMonth($year, $month);
+                    $day += $daysInMonth;
+                } while ($day < 1);
             }
-
 
             return self::fromYmd(
                 $year,

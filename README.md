@@ -18,6 +18,15 @@ Playground for new date and time standard library for PHP.
 
 ## Overview
 
+* Point in time
+* Current time
+* Relative times
+* Formatting and parsing
+* Time ranges
+* Time measurement
+* Time zone and offset
+* Calendar
+
 ### Instant
 
 A class that specifies a current point in time.
