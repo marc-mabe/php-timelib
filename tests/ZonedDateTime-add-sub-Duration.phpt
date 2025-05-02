@@ -1,5 +1,5 @@
 --TEST--
-ZonedDateTime->add() and Moment->sub() with Duration
+ZonedDateTime->add() and Instant->sub() with Duration
 --FILE--
 <?php
 

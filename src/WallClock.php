@@ -46,19 +46,19 @@ final class WallClock implements Clock
         }
     }
 
-    public function takeMoment(): Moment
+    public function takeInstant(): Instant
     {
-        return Moment::fromUnixTimestampTuple(($this->timer)());
+        return Instant::fromUnixTimestampTuple(($this->timer)());
     }
 
     public function takeZonedDateTime(Zone $zone): ZonedDateTime
     {
-        return $this->takeMoment()->toZonedDateTime($zone);
+        return $this->takeInstant()->toZonedDateTime($zone);
     }
 
     public function takeUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $fractions = false): int|float
     {
-        return $this->takeMoment()->toUnixTimestamp($unit, $fractions);
+        return $this->takeInstant()->toUnixTimestamp($unit, $fractions);
     }
 
     /** @return array{int, int<0, 999999999>} */

@@ -1,38 +1,38 @@
 --TEST--
-Moment->toUnixTimestamp() and Moment->toUnixTimestampTuple()
+Instant->toUnixTimestamp() and Instant->toUnixTimestampTuple()
 --FILE--
 <?php
 
 include __DIR__ . '/include.php';
 
-$moments = [
-    time\Moment::fromUnixTimestampTuple([0, 0]),
-    time\Moment::fromUnixTimestampTuple([1, 987654321]),
-    time\Moment::fromUnixTimestampTuple([-1, 987654321]),
-    time\Moment::fromUnixTimestampTuple([PHP_INT_MAX, 987654321]),
-    time\Moment::fromUnixTimestampTuple([PHP_INT_MIN, 987654321]),
-    time\Moment::fromUnixTimestampTuple([PHP_INT_MIN, 0]),
+$instants = [
+    time\Instant::fromUnixTimestampTuple([0, 0]),
+    time\Instant::fromUnixTimestampTuple([1, 987654321]),
+    time\Instant::fromUnixTimestampTuple([-1, 987654321]),
+    time\Instant::fromUnixTimestampTuple([PHP_INT_MAX, 987654321]),
+    time\Instant::fromUnixTimestampTuple([PHP_INT_MIN, 987654321]),
+    time\Instant::fromUnixTimestampTuple([PHP_INT_MIN, 0]),
 ];
 
-foreach ($moments as $moment) {
-    echo stringify($moment) . "\n";
-    echo '  toUnixTimestampTuple(): ' . stringify($moment->toUnixTimestampTuple()) . "\n";
-    echo '  toUnixTimestamp(): ' . stringify($moment->toUnixTimestamp()) . "\n";
-    echo '  toUnixTimestamp(unit: TimeUnit::Second, fractions: true): ' . stringify($moment->toUnixTimestamp(unit: time\TimeUnit::Second, fractions: true)) . "\n";
-    echo '  toUnixTimestamp(unit: TimeUnit::Minute, fractions: false): ' . stringify($moment->toUnixTimestamp(unit: time\TimeUnit::Minute, fractions: false)) . "\n";
-    echo '  toUnixTimestamp(unit: TimeUnit::Minute, fractions: true): ' . stringify($moment->toUnixTimestamp(unit: time\TimeUnit::Minute, fractions: true)) . "\n";
-    echo '  toUnixTimestamp(unit: TimeUnit::Hour, fractions: false): ' . stringify($moment->toUnixTimestamp(unit: time\TimeUnit::Hour, fractions: false)) . "\n";
-    echo '  toUnixTimestamp(unit: TimeUnit::Hour, fractions: true): ' . stringify($moment->toUnixTimestamp(unit: time\TimeUnit::Hour, fractions: true)) . "\n";
-    echo '  toUnixTimestamp(unit: TimeUnit::Millisecond, fractions: false): ' . stringify($moment->toUnixTimestamp(unit: time\TimeUnit::Millisecond, fractions: false)) . "\n";
-    echo '  toUnixTimestamp(unit: TimeUnit::Millisecond, fractions: true): ' . stringify($moment->toUnixTimestamp(unit: time\TimeUnit::Millisecond, fractions: true)) . "\n";
-    echo '  toUnixTimestamp(unit: TimeUnit::Microsecond, fractions: false): ' . stringify($moment->toUnixTimestamp(unit: time\TimeUnit::Microsecond, fractions: false)) . "\n";
-    echo '  toUnixTimestamp(unit: TimeUnit::Microsecond, fractions: true): ' . stringify($moment->toUnixTimestamp(unit: time\TimeUnit::Microsecond, fractions: true)) . "\n";
-    echo '  toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: false): ' . stringify($moment->toUnixTimestamp(unit: time\TimeUnit::Nanosecond, fractions: false)) . "\n";
-    echo '  toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: true): ' . stringify($moment->toUnixTimestamp(unit: time\TimeUnit::Nanosecond, fractions: true)) . "\n";
+foreach ($instants as $instant) {
+    echo stringify($instant) . "\n";
+    echo '  toUnixTimestampTuple(): ' . stringify($instant->toUnixTimestampTuple()) . "\n";
+    echo '  toUnixTimestamp(): ' . stringify($instant->toUnixTimestamp()) . "\n";
+    echo '  toUnixTimestamp(unit: TimeUnit::Second, fractions: true): ' . stringify($instant->toUnixTimestamp(unit: time\TimeUnit::Second, fractions: true)) . "\n";
+    echo '  toUnixTimestamp(unit: TimeUnit::Minute, fractions: false): ' . stringify($instant->toUnixTimestamp(unit: time\TimeUnit::Minute, fractions: false)) . "\n";
+    echo '  toUnixTimestamp(unit: TimeUnit::Minute, fractions: true): ' . stringify($instant->toUnixTimestamp(unit: time\TimeUnit::Minute, fractions: true)) . "\n";
+    echo '  toUnixTimestamp(unit: TimeUnit::Hour, fractions: false): ' . stringify($instant->toUnixTimestamp(unit: time\TimeUnit::Hour, fractions: false)) . "\n";
+    echo '  toUnixTimestamp(unit: TimeUnit::Hour, fractions: true): ' . stringify($instant->toUnixTimestamp(unit: time\TimeUnit::Hour, fractions: true)) . "\n";
+    echo '  toUnixTimestamp(unit: TimeUnit::Millisecond, fractions: false): ' . stringify($instant->toUnixTimestamp(unit: time\TimeUnit::Millisecond, fractions: false)) . "\n";
+    echo '  toUnixTimestamp(unit: TimeUnit::Millisecond, fractions: true): ' . stringify($instant->toUnixTimestamp(unit: time\TimeUnit::Millisecond, fractions: true)) . "\n";
+    echo '  toUnixTimestamp(unit: TimeUnit::Microsecond, fractions: false): ' . stringify($instant->toUnixTimestamp(unit: time\TimeUnit::Microsecond, fractions: false)) . "\n";
+    echo '  toUnixTimestamp(unit: TimeUnit::Microsecond, fractions: true): ' . stringify($instant->toUnixTimestamp(unit: time\TimeUnit::Microsecond, fractions: true)) . "\n";
+    echo '  toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: false): ' . stringify($instant->toUnixTimestamp(unit: time\TimeUnit::Nanosecond, fractions: false)) . "\n";
+    echo '  toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: true): ' . stringify($instant->toUnixTimestamp(unit: time\TimeUnit::Nanosecond, fractions: true)) . "\n";
 }
 
 --EXPECT--
-Moment('Thu 1970-01-01 00:00:00', 0, 0)
+Instant('Thu 1970-01-01 00:00:00', 0, 0)
   toUnixTimestampTuple(): [0, 0]
   toUnixTimestamp(): 0
   toUnixTimestamp(unit: TimeUnit::Second, fractions: true): 0
@@ -46,7 +46,7 @@ Moment('Thu 1970-01-01 00:00:00', 0, 0)
   toUnixTimestamp(unit: TimeUnit::Microsecond, fractions: true): 0
   toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: false): 0
   toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: true): 0
-Moment('Thu 1970-01-01 00:00:01.987654321', 1, 987654321)
+Instant('Thu 1970-01-01 00:00:01.987654321', 1, 987654321)
   toUnixTimestampTuple(): [1, 987654321]
   toUnixTimestamp(): 1
   toUnixTimestamp(unit: TimeUnit::Second, fractions: true): 1.987654321
@@ -60,7 +60,7 @@ Moment('Thu 1970-01-01 00:00:01.987654321', 1, 987654321)
   toUnixTimestamp(unit: TimeUnit::Microsecond, fractions: true): 1987654.321
   toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: false): 1987654321
   toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: true): 1987654321
-Moment('Wed 1969-12-31 23:59:59.987654321', -1, 987654321)
+Instant('Wed 1969-12-31 23:59:59.987654321', -1, 987654321)
   toUnixTimestampTuple(): [-1, 987654321]
   toUnixTimestamp(): -1
   toUnixTimestamp(unit: TimeUnit::Second, fractions: true): -0.012345679000000054
@@ -74,7 +74,7 @@ Moment('Wed 1969-12-31 23:59:59.987654321', -1, 987654321)
   toUnixTimestamp(unit: TimeUnit::Microsecond, fractions: true): -12345.679000000004
   toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: false): -12345679
   toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: true): -12345679
-Moment('Sun 292277026596-12-04 15:30:07.987654321', 9223372036854775807, 987654321)
+Instant('Sun 292277026596-12-04 15:30:07.987654321', 9223372036854775807, 987654321)
   toUnixTimestampTuple(): [9223372036854775807, 987654321]
   toUnixTimestamp(): 9223372036854775807
   toUnixTimestamp(unit: TimeUnit::Second, fractions: true): 9.223372036854776E+18
@@ -88,7 +88,7 @@ Moment('Sun 292277026596-12-04 15:30:07.987654321', 9223372036854775807, 9876543
   toUnixTimestamp(unit: TimeUnit::Microsecond, fractions: true): 9.223372036854776E+24
   toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: false): 9.223372036854776E+27
   toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: true): 9.223372036854776E+27
-Moment('Sun -292277022657-01-27 08:29:52.987654321', -9223372036854775808, 987654321)
+Instant('Sun -292277022657-01-27 08:29:52.987654321', -9223372036854775808, 987654321)
   toUnixTimestampTuple(): [-9223372036854775808, 987654321]
   toUnixTimestamp(): -9223372036854775808
   toUnixTimestamp(unit: TimeUnit::Second, fractions: true): -9.223372036854776E+18
@@ -102,7 +102,7 @@ Moment('Sun -292277022657-01-27 08:29:52.987654321', -9223372036854775808, 98765
   toUnixTimestamp(unit: TimeUnit::Microsecond, fractions: true): -9.223372036854776E+24
   toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: false): -9.223372036854776E+27
   toUnixTimestamp(unit: TimeUnit::Nanosecond, fractions: true): -9.223372036854776E+27
-Moment('Sun -292277022657-01-27 08:29:52', -9223372036854775808, 0)
+Instant('Sun -292277022657-01-27 08:29:52', -9223372036854775808, 0)
   toUnixTimestampTuple(): [-9223372036854775808, 0]
   toUnixTimestamp(): -9223372036854775808
   toUnixTimestamp(unit: TimeUnit::Second, fractions: true): -9223372036854775808

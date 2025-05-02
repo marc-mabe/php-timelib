@@ -2,7 +2,7 @@
 
 namespace time;
 
-final class ZonedDateTime implements Momented, Date, Time, Zoned
+final class ZonedDateTime implements Instanted, Date, Time, Zoned
 {
     public Calendar $calendar {
         get => $this->adjusted->calendar;
@@ -41,15 +41,15 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
     }
 
     public int $milliOfSecond {
-        get => $this->moment->milliOfSecond;
+        get => $this->instant->milliOfSecond;
     }
 
     public int $microOfSecond {
-        get => $this->moment->microOfSecond;
+        get => $this->instant->microOfSecond;
     }
 
     public int $nanoOfSecond {
-        get => $this->moment->nanoOfSecond;
+        get => $this->instant->nanoOfSecond;
     }
 
     public LocalDateTime $local {
@@ -65,7 +65,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
     }
 
     public WeekInfo $weekInfo {
-        get => $this->moment->weekInfo;
+        get => $this->instant->weekInfo;
     }
 
     /** @var int<1,max> */
@@ -79,21 +79,21 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
 
     public readonly ZoneOffset $offset;
 
-    private readonly Moment $adjusted;
+    private readonly Instant $adjusted;
 
     private function __construct(
-        public readonly Moment $moment,
+        public readonly Instant $instant,
         public readonly Zone $zone,
     ) {
-        $offset         = $zone->getOffsetAt($moment);
-        $this->adjusted = $this->moment->add($offset->toDuration());
+        $offset         = $zone->getOffsetAt($instant);
+        $this->adjusted = $this->instant->add($offset->toDuration());
         $this->offset   = $offset;
     }
 
     public function add(Duration|Period $durationOrPeriod): self
     {
         if ($durationOrPeriod instanceof Duration) {
-            return new self($this->moment->add($durationOrPeriod), $this->zone);
+            return new self($this->instant->add($durationOrPeriod), $this->zone);
         }
 
         $dt = $this->adjusted->add($durationOrPeriod);
@@ -105,9 +105,9 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         return $this->add($durationOrPeriod->inverted());
     }
 
-    public function withZoneSameMoment(Zone $zone): self
+    public function withZoneSameInstant(Zone $zone): self
     {
-        return new self($this->moment, $zone);
+        return new self($this->instant, $zone);
     }
 
     public function withZoneSameLocal(Zone $zone): self
@@ -119,14 +119,14 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
     {
         return $this->calendar === $calendar
             ? $this
-            : new self($this->moment->withCalendar($calendar), $this->zone);
+            : new self($this->instant->withCalendar($calendar), $this->zone);
     }
 
     public function withWeekInfo(WeekInfo $weekInfo): self
     {
         return $this->weekInfo === $weekInfo
             ? $this
-            : new self($this->moment->withWeekInfo($weekInfo), $this->zone);
+            : new self($this->instant->withWeekInfo($weekInfo), $this->zone);
     }
 
     /**
@@ -136,13 +136,13 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
      */
     public function toUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $fractions = false): int|float
     {
-        return $this->moment->toUnixTimestamp($unit, $fractions);
+        return $this->instant->toUnixTimestamp($unit, $fractions);
     }
 
     /** @return array{int, int<0, 999999999>} */
     public function toUnixTimestampTuple(): array
     {
-        return $this->moment->toUnixTimestampTuple();
+        return $this->instant->toUnixTimestampTuple();
     }
 
     public static function fromUnixTimestamp(
@@ -152,7 +152,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         ?WeekInfo $weekInfo = null,
     ): self {
         return new self(
-            Moment::fromUnixTimestamp($timestamp, $unit, $calendar, $weekInfo),
+            Instant::fromUnixTimestamp($timestamp, $unit, $calendar, $weekInfo),
             new ZoneOffset(totalSeconds: 0),
         );
     }
@@ -164,7 +164,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         ?WeekInfo $weekInfo = null,
     ): self {
         return new self(
-            Moment::fromUnixTimestampTuple($timestampTuple, $calendar, $weekInfo),
+            Instant::fromUnixTimestampTuple($timestampTuple, $calendar, $weekInfo),
             new ZoneOffset(totalSeconds: 0),
         );
     }
@@ -198,7 +198,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
 
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
-        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar, $weekInfo), $zone);
+        return new self(Instant::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar, $weekInfo), $zone);
     }
 
     /**
@@ -228,7 +228,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
 
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
-        return new self(Moment::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar, $weekInfo), $zone);
+        return new self(Instant::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar, $weekInfo), $zone);
     }
 
     public static function fromDateTime(
@@ -244,7 +244,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
         $ns     = $time ? $time->nanoOfSecond : 0;
-        return new self(Moment::fromUnixTimestampTuple([$ts, $ns], $date->calendar, $date->weekInfo), $zone);
+        return new self(Instant::fromUnixTimestampTuple([$ts, $ns], $date->calendar, $date->weekInfo), $zone);
     }
 
     private static function findOffsetByLocalTimestamp(
@@ -258,15 +258,15 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
         }
 
         $maxTs   = $localTs + ZoneOffset::TOTAL_SECONDS_MAX;
-        $maxTran = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$maxTs, 0]));
+        $maxTran = $zone->info->getTransitionAt(Instant::fromUnixTimestampTuple([$maxTs, 0]));
         \assert($maxTran !== null);
-        $maxStart = $maxTran->moment->toUnixTimestampTuple()[0] + $maxTran->offset->totalSeconds;
+        $maxStart = $maxTran->instant->toUnixTimestampTuple()[0] + $maxTran->offset->totalSeconds;
 
         $minTs   = $localTs + ZoneOffset::TOTAL_SECONDS_MIN;
-        $minTran = $zone->info->getTransitionAt(Moment::fromUnixTimestampTuple([$minTs, 0]));
+        $minTran = $zone->info->getTransitionAt(Instant::fromUnixTimestampTuple([$minTs, 0]));
         \assert($minTran !== null);
-        $minStart = $minTran->moment->toUnixTimestampTuple()[0] + $minTran->offset->totalSeconds;
-        $minEnd   = $maxTran->moment->toUnixTimestampTuple()[0] + $minTran->offset->totalSeconds;
+        $minStart = $minTran->instant->toUnixTimestampTuple()[0] + $minTran->offset->totalSeconds;
+        $minEnd   = $maxTran->instant->toUnixTimestampTuple()[0] + $minTran->offset->totalSeconds;
 
         if ($minStart <= $localTs && $minEnd > $localTs) {
             if ($maxStart <= $localTs) {
@@ -276,7 +276,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
                     Disambiguation::COMPATIBLE => $minTran->offset,
                     Disambiguation::REJECT => throw new \RuntimeException(sprintf(
                         "Ambiguous date-time '%s' for zone '%s'",
-                        new DateTimeFormatter('Y-m-d H:i:s')->format(Moment::fromUnixTimestampTuple([$localTs, 0])),
+                        new DateTimeFormatter('Y-m-d H:i:s')->format(Instant::fromUnixTimestampTuple([$localTs, 0])),
                         $zone->identifier
                     )),
                 };
@@ -292,7 +292,7 @@ final class ZonedDateTime implements Momented, Date, Time, Zoned
                 Disambiguation::COMPATIBLE => $minTran->offset,
                 Disambiguation::REJECT => throw new \RuntimeException(sprintf(
                     "Invalid date-time '%s' for zone '%s'",
-                    new DateTimeFormatter('Y-m-d H:i:s')->format(Moment::fromUnixTimestampTuple([$localTs, 0])),
+                    new DateTimeFormatter('Y-m-d H:i:s')->format(Instant::fromUnixTimestampTuple([$localTs, 0])),
                     $zone->identifier
                 )),
             };

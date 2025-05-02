@@ -7,23 +7,23 @@ include __DIR__ . '/include.php';
 
 $intervals = [
     new time\Interval(
-        time\Moment::fromYmd(2000, 1, 1),
-        time\Moment::fromYmd(2000, 1, 2),
+        time\Instant::fromYmd(2000, 1, 1),
+        time\Instant::fromYmd(2000, 1, 2),
         time\Boundary::InclusiveToExclusive,
     ),
     new time\Interval(
-        time\Moment::fromYmd(2000, 1, 1),
-        time\Moment::fromYmd(2000, 1, 2),
+        time\Instant::fromYmd(2000, 1, 1),
+        time\Instant::fromYmd(2000, 1, 2),
         time\Boundary::InclusiveToInclusive,
     ),
     new time\Interval(
-        time\Moment::fromYmd(2000, 1, 1),
-        time\Moment::fromYmd(2000, 1, 2),
+        time\Instant::fromYmd(2000, 1, 1),
+        time\Instant::fromYmd(2000, 1, 2),
         time\Boundary::ExclusiveToExclusive,
     ),
     new time\Interval(
-        time\Moment::fromYmd(2000, 1, 1),
-        time\Moment::fromYmd(2000, 1, 2),
+        time\Instant::fromYmd(2000, 1, 1),
+        time\Instant::fromYmd(2000, 1, 2),
         time\Boundary::ExclusiveToInclusive,
     ),
 ];

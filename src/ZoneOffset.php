@@ -41,15 +41,15 @@ final class ZoneOffset extends Zone implements \Stringable
             }
 
             public function getTransitions(
-                ?Moment $from = null,
-                ?Moment $until = null,
+                ?Instant $from = null,
+                ?Instant $until = null,
                 ?int $limit = null,
                 bool $reverse = false,
             ): \Iterator {
                 return new \ArrayIterator();
             }
 
-            public function getOffsetAt(Moment $moment): ZoneOffset
+            public function getOffsetAt(Instant $instant): ZoneOffset
             {
                 return $this->fixedOffset;
             }

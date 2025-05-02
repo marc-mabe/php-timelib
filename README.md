@@ -18,7 +18,7 @@ Playground for new date and time standard library for PHP.
 
 ## Overview
 
-### Moment
+### Instant
 
 A class that specifies a current point in time.
 It's based on unix timestamp with nanosecond adjustment,
@@ -34,19 +34,19 @@ It does **not** represent a point in time
 as the used information might be ambiguous.
 
 #### Examples
-* **New-Year's-Eve**: is at a specific date+time
-  but happens on multiple moments on the earth
+* **New-Year's-Eve**: is at a specific local date+time no matter time zone.
+  It happens at different instants for different locations on the earth.
   -> `LocalDateTime`
 * **Day of birth**: A specific date in your passport but on the edge
   you might have a different age on different locations on the earth
   -> `LocalDate`
 * **Midnight**: A specific time without any date information,
-  which also happens on different moments on the earth
+  which also happens on different instants on the earth
   -> `LocalTime`
 
 ### ZonedDateTime
 
-Represents a specific moment at a specific time zone.
+Represents a specific instant at a specific time zone.
 
 ### Zone
 
@@ -76,18 +76,22 @@ is not defined by this class.
 
 ### ZoneTransition
 
-A representation of a single zone transition with the exact moment
+A representation of a single zone transition with the exact instant
 when the transition happened/happens and the zone offset that has been / will be applied. 
 
 ### Duration
 
 A relative duration of time with fixed definition
-and does not need to handle time zone on applying. 
+and does not need to handle time zone on applying.
 
 ### Period
 
 A relative time including dates
 that needs to handle time zone on applying.
+
+### Interval
+
+An Interval defines a time range of two points-in-time.
 
 ### DateUnit / TimeUnit / Month / DayOfWeek (enum)
 
@@ -101,7 +105,7 @@ For formatting (and parsing) dates and times.
 
 An abstraction of the system wall clock.
 
-Represents the current moment synchronized with external clock.
+Represents the current instant synchronized with external clock.
 
 ### MonotonicClock 
 
@@ -123,8 +127,8 @@ without wall clock initializer by default.
 ### Interfaces
 
 The following interfaces are defined:
-* `Momented`: Something that represents a specific point-in-time
-  via a `moment` property providing a `Moment` object.
+* `Instanted`: Something that represents a specific point-in-time
+  via a `instant` property providing an `Instant` object.
 * `Date`: An object that represents a date
 * `Time`: An object that represents a time
 * `Zoned`: An object that is adjusted by time zone

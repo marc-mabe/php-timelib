@@ -5,7 +5,7 @@ use time\Period;
 use time\LocalDate;
 use time\LocalDateTime;
 use time\LocalTime;
-use time\Moment;
+use time\Instant;
 use time\MonotonicClock;
 use time\StopWatch;
 use time\WallClock;
@@ -22,10 +22,10 @@ function stringifyEnum(UnitEnum $enum) {
     return $enum::class . "::" . $enum->name;
 }
 
-function stringifyMoment(Moment $moment) {
+function stringifyInstant(Instant $instant) {
     $fmt   = new time\DateTimeFormatter('D Y-m-d H:i:sf');
-    $tuple = $moment->toUnixTimestampTuple();
-    return "Moment('{$fmt->format($moment)}', {$tuple[0]}, {$tuple[1]})";
+    $tuple = $instant->toUnixTimestampTuple();
+    return "Instant('{$fmt->format($instant)}', {$tuple[0]}, {$tuple[1]})";
 }
 
 function stringifyLocalDate(LocalDate $date) {
@@ -59,8 +59,8 @@ function stringifyZoneInfo(ZoneInfo $zoneInfo) {
 
 function stringifyZoneTransition(ZoneTransition $transition) {
     $offset = stringify($transition->offset);
-    $moment = stringify($transition->moment);
-    return "ZoneTransition(offset={$offset}, moment={$moment})";
+    $instant = stringify($transition->instant);
+    return "ZoneTransition(offset={$offset}, instant={$instant})";
 }
 
 function stringifyDuration(Duration $duration) {
@@ -100,7 +100,7 @@ function stringify(mixed $v) {
         $v === null,
         is_scalar($v) => var_export($v, true),
         $v instanceof UnitEnum => stringifyEnum($v),
-        $v instanceof Moment => stringifyMoment($v),
+        $v instanceof Instant => stringifyInstant($v),
         $v instanceof LocalDate => stringifyLocalDate($v),
         $v instanceof LocalTime => stringifyLocalTime($v),
         $v instanceof LocalDateTime => stringifyLocalDateTime($v),

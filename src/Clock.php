@@ -6,7 +6,7 @@ interface Clock
 {
     public Duration $resolution { get; }
 
-    public function takeMoment(): Moment;
+    public function takeInstant(): Instant;
 
     public function takeZonedDateTime(Zone $zone): ZonedDateTime;
 

@@ -13,27 +13,27 @@ final readonly class Interval
     public const string ISO80000_SIGN_END_EXCLUSIVE = ')';
 
     public function __construct(
-        public Momented $start,
-        public Momented $end,
+        public Instanted $start,
+        public Instanted $end,
         public Boundary $boundary = Boundary::InclusiveToExclusive,
     ) {}
 
-    public function withStart(Momented $start): self
+    public function withStart(Instanted $start): self
     {
         return new self($start, $this->end, $this->boundary);
     }
 
-    public function withEnd(Momented $end): self
+    public function withEnd(Instanted $end): self
     {
         return new self($this->start, $end, $this->boundary);
     }
 
-    public function withBoundarySameMoment(Boundary $boundary): self
+    public function withBoundarySameInstant(Boundary $boundary): self
     {
         return new self($this->start, $this->end, $boundary);
     }
 
-    public function withBoundaryAdjustedMoment(Boundary $boundary): self
+    public function withBoundaryAdjustedInstant(Boundary $boundary): self
     {
         if ($this->boundary === $boundary) {
             return $this;
@@ -56,23 +56,23 @@ final readonly class Interval
         return new self($start, $end, $boundary);
     }
 
-    public function contains(self|Momented $other): bool
+    public function contains(self|Instanted $other): bool
     {
-        if ($other instanceof Momented) {
-            $thisInToEx = $this->withBoundaryAdjustedMoment(Boundary::InclusiveToExclusive);
-            $thisStart  = $thisInToEx->start->moment->toUnixTimestampTuple();
-            $thisEnd    = $thisInToEx->end->moment->toUnixTimestampTuple();
-            $tuple      = $other->moment->toUnixTimestampTuple();
+        if ($other instanceof Instanted) {
+            $thisInToEx = $this->withBoundaryAdjustedInstant(Boundary::InclusiveToExclusive);
+            $thisStart  = $thisInToEx->start->instant->toUnixTimestampTuple();
+            $thisEnd    = $thisInToEx->end->instant->toUnixTimestampTuple();
+            $tuple      = $other->instant->toUnixTimestampTuple();
 
             return ($thisStart[0] < $tuple[0] || ($thisStart[0] === $tuple[0] && $thisStart[1] <= $tuple[1]))
                 && ($thisEnd[0] > $tuple[0] || ($thisEnd[0] === $tuple[0] && $thisEnd[1] > $tuple[1]));
         }
 
-        $thisStart  = $this->start->moment->toUnixTimestampTuple();
-        $thisEnd    = $this->end->moment->toUnixTimestampTuple();
-        $other      = $other->withBoundaryAdjustedMoment($this->boundary);
-        $otherStart = $other->start->moment->toUnixTimestampTuple();
-        $otherEnd   = $other->end->moment->toUnixTimestampTuple();
+        $thisStart  = $this->start->instant->toUnixTimestampTuple();
+        $thisEnd    = $this->end->instant->toUnixTimestampTuple();
+        $other      = $other->withBoundaryAdjustedInstant($this->boundary);
+        $otherStart = $other->start->instant->toUnixTimestampTuple();
+        $otherEnd   = $other->end->instant->toUnixTimestampTuple();
 
         return ($thisStart[0] < $otherStart[0] || ($thisStart[0] === $otherStart[0] && $thisStart[1] <= $otherStart[1]))
             && ($thisEnd[0] > $otherEnd[0] || ($thisEnd[0] === $otherEnd[0] && $thisEnd[1] >= $otherEnd[1]));
@@ -89,7 +89,7 @@ final readonly class Interval
      */
     public function toIso8601(string $separator = '/'): string
     {
-        $inToEx = $this->withBoundaryAdjustedMoment(Boundary::InclusiveToExclusive);
+        $inToEx = $this->withBoundaryAdjustedInstant(Boundary::InclusiveToExclusive);
         $fmt = new DateTimeFormatter('Y-m-d\\TH:i:sfp');
 
         $iso = $fmt->format($inToEx->start);
@@ -112,14 +112,14 @@ final readonly class Interval
 
     public static function fromRelativeStart(
         Duration|Period $start,
-        Momented $end,
+        Instanted $end,
         Boundary $boundary = Boundary::InclusiveToExclusive,
     ): self {
         return new self($end->sub($start), $end, $boundary);
     }
 
     public static function fromRelativeEnd(
-        Momented $start,
+        Instanted $start,
         Duration|Period $end,
         Boundary $boundary = Boundary::InclusiveToExclusive,
     ): self {

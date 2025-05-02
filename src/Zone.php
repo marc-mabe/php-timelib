@@ -29,9 +29,9 @@ class Zone
         return $this->identifier;
     }
 
-    public function getOffsetAt(Moment $moment): ZoneOffset
+    public function getOffsetAt(Instant $instant): ZoneOffset
     {
-        return $this->info->getOffsetAt($moment);
+        return $this->info->getOffsetAt($instant);
     }
 
     public static function fromIdentifier(string $identifier): self
@@ -106,8 +106,8 @@ class Zone
             ) {}
 
             public function getTransitions(
-                ?Moment $from = null,
-                ?Moment $until = null,
+                ?Instant $from = null,
+                ?Instant $until = null,
                 ?int $limit = null,
             ): \Iterator {
                 // There will never be a transition for zones with a fixed offset
@@ -178,7 +178,7 @@ class Zone
 
                 foreach ($reverse ? \array_reverse($transitions) : $transitions as $transition) {
                     yield new ZoneTransition(
-                        Moment::fromUnixTimestampTuple([$transition['ts'], 0]),
+                        Instant::fromUnixTimestampTuple([$transition['ts'], 0]),
                         new ZoneOffset(totalSeconds: $transition['offset']),
                     );
                 }

@@ -2,9 +2,9 @@
 
 namespace time;
 
-final class Moment implements Momented, Date, Time, Zoned
+final class Instant implements Instanted, Date, Time, Zoned
 {
-    public readonly Moment $moment;
+    public readonly Instant $instant;
 
     public int $year {
         get => $this->calendar->getYmdByUnixTimestamp($this->tsSec)[0];
@@ -94,7 +94,7 @@ final class Moment implements Momented, Date, Time, Zoned
         public readonly Calendar $calendar,
         public readonly WeekInfo $weekInfo,
     ) {
-        $this->moment = $this;
+        $this->instant = $this;
     }
 
     public function add(Duration|Period $durationOrPeriod): self
@@ -484,7 +484,7 @@ final class Moment implements Momented, Date, Time, Zoned
     public function toZonedDateTime(Zone $zone): ZonedDateTime
     {
         return ZonedDateTime::fromUnixTimestampTuple($this->toUnixTimestampTuple(), $this->calendar, $this->weekInfo)
-            ->withZoneSameMoment($zone);
+            ->withZoneSameInstant($zone);
     }
 
     public static function fromUnixTimestamp(
@@ -632,6 +632,6 @@ final class Moment implements Momented, Date, Time, Zoned
             );
         }
 
-        return ZonedDateTime::fromDateTime($zone, $date, $time, disambiguation: $disambiguation)->moment;
+        return ZonedDateTime::fromDateTime($zone, $date, $time, disambiguation: $disambiguation)->instant;
     }
 }
