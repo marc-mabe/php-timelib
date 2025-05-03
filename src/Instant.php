@@ -6,22 +6,25 @@ final class Instant implements Instanted, Date, Time, Zoned
 {
     public readonly Instant $instant;
 
+    /** @var null|array{int, Month, int<1,31>}  */
+    private ?array $ymd = null;
+
     public int $year {
-        get => $this->calendar->getYmdByUnixTimestamp($this->tsSec)[0];
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec))[0];
     }
 
     public Month $month {
-        get => $this->calendar->getYmdByUnixTimestamp($this->tsSec)[1];
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec))[1];
     }
 
     public int $dayOfMonth {
-        get => $this->calendar->getYmdByUnixTimestamp($this->tsSec)[2];
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec))[2];
     }
 
     public int $dayOfYear {
         get {
-            $date = $this->calendar->getYmdByUnixTimestamp($this->tsSec);
-            return $this->calendar->getDayOfYearByYmd($date[0], $date[1], $date[2]);
+            $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec);
+            return $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
         }
     }
 
