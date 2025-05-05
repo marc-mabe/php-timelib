@@ -118,12 +118,30 @@ class Zone
                 if (!$from && !$until) {
                     $untilTs = \time();
                     $fromTs  = $untilTs - 60 * 60 * 24 * 365; // ~1year
+
+                    // integer underflow
+                    // @phpstan-ignore function.impossibleType
+                    if (\is_float($fromTs)) {
+                        $fromTs = PHP_INT_MIN;
+                    }
                 } elseif (!$from) {
                     $untilTs = $until->toUnixTimestampTuple()[0];
                     $fromTs  = $untilTs - 60 * 60 * 24 * 365; // ~1year
+
+                    // integer underflow
+                    // @phpstan-ignore function.impossibleType
+                    if (\is_float($fromTs)) {
+                        $fromTs = PHP_INT_MIN;
+                    }
                 } elseif (!$until) {
                     $fromTs  = $from->toUnixTimestampTuple()[0];
                     $untilTs = $fromTs + 60 * 60 * 24 * 365; // ~1year
+
+                    // integer overflow
+                    // @phpstan-ignore function.impossibleType
+                    if (\is_float($untilTs)) {
+                        $untilTs = PHP_INT_MAX;
+                    }
                 } else {
                     $fromTs  = $from->toUnixTimestampTuple()[0];
                     $untilTs = $until->toUnixTimestampTuple()[0];
@@ -167,6 +185,7 @@ class Zone
                     );
 
                 $transitions = $getTransitions($fromTs, $untilTs);
+                // var_dump($transitions);
 
                 if ($limit !== null) {
                     if ($limit < 0) {
