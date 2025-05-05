@@ -267,18 +267,10 @@ class DateTimeFormatter
         }
 
         if ($zone && $dateTimeZone instanceof Date && $dateTimeZone instanceof Time) {
-            // TODO: Don't use legacy interface
-            $z = $dateTimeZone->dayOfYear - 1;
-            $i = \str_pad((string)$dateTimeZone->minute, 2, '0', STR_PAD_LEFT);
-            $s = \str_pad((string)$dateTimeZone->second, 2, '0', STR_PAD_LEFT);
-            $legacy = \DateTimeImmutable::createFromFormat(
-                'Y-z G:i:s',
-                "{$dateTimeZone->year}-{$z} {$dateTimeZone->hour}:{$i}:{$s}",
-                new \DateTimeZone($zone->identifier),
-            );
-            assert($legacy !== false);
+            $zdt  = ZonedDateTime::fromDateTime($zone, $dateTimeZone, $dateTimeZone);
+            $abbr = ZoneAbbreviation::findAbbreviation($zone, $zdt->offset);
 
-            return $legacy->format('T');
+            return $abbr ?? 'GMT' . $this->formatOffset(FormatToken::OffsetWithoutColon, $zdt);
         }
 
         // Fallback to fixed offset if possible
