@@ -117,7 +117,7 @@ class Zone
 
                 if (!$from && !$until) {
                     $untilTs = \time();
-                    $fromTs  = $untilTs - 60 * 60 * 24 * 365; // ~1year
+                    $fromTs  = $untilTs - 60 * 60 * 24 * 365 * 100; // ~100 years
 
                     // integer underflow
                     // @phpstan-ignore function.impossibleType
@@ -126,7 +126,7 @@ class Zone
                     }
                 } elseif (!$from) {
                     $untilTs = $until->toUnixTimestampTuple()[0];
-                    $fromTs  = $untilTs - 60 * 60 * 24 * 365; // ~1year
+                    $fromTs  = $untilTs - 60 * 60 * 24 * 365 * 100; // ~100 years
 
                     // integer underflow
                     // @phpstan-ignore function.impossibleType
@@ -135,7 +135,7 @@ class Zone
                     }
                 } elseif (!$until) {
                     $fromTs  = $from->toUnixTimestampTuple()[0];
-                    $untilTs = $fromTs + 60 * 60 * 24 * 365; // ~1year
+                    $untilTs = $fromTs + 60 * 60 * 24 * 365 * 100; // ~100 years
 
                     // integer overflow
                     // @phpstan-ignore function.impossibleType
@@ -147,13 +147,17 @@ class Zone
                     $untilTs = $until->toUnixTimestampTuple()[0];
                 }
 
-                $reverse = $fromTs > $untilTs;
+                $reverse = false;
+                if ($fromTs > $untilTs) {
+                    $reverse = true;
+                    [$fromTs, $untilTs] = [$untilTs, $fromTs];
+                }
 
                 // Workaround bug GH-18051
                 // With "timestamp_begin" set to the exact timestamp of a transition,
                 // the transition might be reported twice.
-                $getTransitions = function (int $from, int $to): array {
-                    $transitions = $this->legacy->getTransitions($from, $to);
+                $getTransitions = function (int $fromTs, int $untilTs): array {
+                    $transitions = $this->legacy->getTransitions($fromTs, $untilTs);
 
                     if (\count($transitions) >= 2 && $transitions[0]['ts'] === $transitions[1]['ts']) {
                         \array_shift($transitions);
@@ -162,30 +166,24 @@ class Zone
                     return $transitions;
                 };
 
-                $getTransitions = $reverse
-                    ? ($untilTs === \PHP_INT_MIN
-                        ? static function (int $to, int $from) use ($getTransitions) {
-                            return $getTransitions($from, $to - 1);
-                        }
-                        : static function (int $to, int $from) use ($getTransitions) {
-                            $transitions = $getTransitions($from - 1, $to - 1);
-                            \array_shift($transitions);
-                            return $transitions;
-                        }
-                    )
-                    : ($fromTs === \PHP_INT_MIN
-                        ? static function (int $from, int $to) use ($getTransitions) {
-                            return $getTransitions($from, $to - 1);
-                        }
-                        : static function (int $from, int $to) use ($getTransitions) {
-                            $transitions = $getTransitions($from - 1, $to - 1);
-                            \array_shift($transitions);
-                            return $transitions;
-                        }
-                    );
+                // Workaround DateTimeZone->getTransitions() resets the first transition to $fromTs
+                // but we need the real transition timestamp
+                $getTransitions = static function (int $fromTs, int $untilTs) use ($getTransitions): array {
+                    $allTrans = $getTransitions($fromTs - 60 * 60 * 24 * 365, $untilTs);
+
+                    if (\count($allTrans) === 1 && $allTrans[0]['ts'] === $fromTs - 60 * 60 * 24 * 365) {
+                        $allTrans = $getTransitions(PHP_INT_MIN, $untilTs);
+                    }
+
+                    $filterTrans = \array_filter($allTrans, static fn($t) => $t['ts'] >= $fromTs);
+                    return $filterTrans ?: ($allTrans ? [$allTrans[\array_key_last($allTrans)]] : []);
+                };
 
                 $transitions = $getTransitions($fromTs, $untilTs);
-                // var_dump($transitions);
+
+                if ($reverse) {
+                    $transitions = \array_reverse($transitions);
+                }
 
                 if ($limit !== null) {
                     if ($limit < 0) {
@@ -195,7 +193,7 @@ class Zone
                     }
                 }
 
-                foreach ($reverse ? \array_reverse($transitions) : $transitions as $transition) {
+                foreach ($transitions as $transition) {
                     yield new ZoneTransition(
                         Instant::fromUnixTimestampTuple([$transition['ts'], 0]),
                         new ZoneOffset(totalSeconds: $transition['offset']),
