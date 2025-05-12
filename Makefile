@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-PROJECT := php-time-stdlib
+PROJECT := php-timelib
 
 .PHONY: help
 help:
@@ -14,6 +14,10 @@ build-php-8.4:
 .PHONY: composer-install-php-8.4
 composer-install-php-8.4:
 	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' composer install
+
+.PHONY: composer-update-php-8.4
+composer-update-php-8.4:
+	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' composer update
 
 .PHONY: test-php-8.4
 test-php-8.4:

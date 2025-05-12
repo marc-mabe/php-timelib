@@ -32,12 +32,14 @@ final class MonotonicClock implements Clock
 
         // Setup timer including resulting modifier
         if ($timeModifier->isZero) {
-            /** @phpstan-ignore assign.propertyType */
-            $this->timer = \hrtime(...);
+            /** @var \Closure(): array{int, int<0,999999999>} $hrTimer */
+            $hrTimer = \hrtime(...); // @phpstan-ignore varTag.nativeType
+            $this->timer = $hrTimer;
         } else {
             $this->timer = static function () use ($timeModifier) {
-                /** @phpstan-ignore argument.type */
-                return $timeModifier->addToUnixTimestampTuple(\hrtime());
+                /** @var array{int, int<0,999999999>} $hrtime */
+                $hrtime = \hrtime();
+                return $timeModifier->addToUnixTimestampTuple($hrtime);
             };
         }
     }

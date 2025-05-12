@@ -1,5 +1,4 @@
 parameters:
     paths:
-        - ./src
+        - ./polyfill
     level: max
-    inferPrivatePropertyTypeFromConstructor: true

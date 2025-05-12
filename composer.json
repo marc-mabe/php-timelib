@@ -1,6 +1,6 @@
 {
-  "name": "marc-mabe/php-time-stdlib",
-  "description": "Playground for new date and time standard library for PHP",
+  "name": "marc-mabe/php-timelib",
+  "description": "Playground for new date and time library for PHP",
   "type": "library",
   "minimum-stability": "stable",
   "prefer-stable": true,
@@ -9,8 +9,8 @@
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.59.3",
-    "phpstan/phpstan": "^2.1.5",
-    "phpunit/phpunit": "10.5.20"
+    "phpstan/phpstan": "^2.1.14",
+    "phpunit/phpunit": "12.1.0"
   },
   "config": {
     "optimize-autoloader": true,
@@ -21,7 +21,7 @@
   },
   "autoload": {
     "psr-4": {
-      "time\\": "src/"
+      "time\\": "polyfill/"
     }
   },
   "autoload-dev": {

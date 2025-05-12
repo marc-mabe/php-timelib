@@ -20,11 +20,12 @@ final class WallClock implements Clock
             // \microtime() function is only available on operating systems
             // that support the gettimeofday() system call.
             if (\function_exists('microtime')) {
-                /** @phpstan-ignore assign.propertyType */
-                self::$globalTimer = static function () {
+                /** @var \Closure(): array{int, int<0,999999999>} $timer */
+                $timer = static function () {
                     [$us, $s] = \explode(' ', \microtime(), 2);
                     return [(int)$s, (int)\substr($us, 2, -2) * 1_000];
                 };
+                self::$globalTimer           = $timer;
                 self::$globalTimerResolution = new Duration(microseconds: 1);
             } else {
                 self::$globalTimer = static function () {
