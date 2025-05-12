@@ -101,9 +101,31 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             );
         }
 
-        // FIXME: Don't use adjusted instant
-        $dt = $this->adjusted->add($durationOrPeriod);
-        return self::fromDateTime($this->zone, $dt, $dt, disambiguation: Disambiguation::COMPATIBLE);
+        $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]);
+        $ymdHms = $durationOrPeriod->addToYmd(
+            $this->ymd[0],
+            $this->ymd[1],
+            $this->ymd[2],
+            $this->hour,
+            $this->minute,
+            $this->second,
+            $this->nanoOfSecond,
+            calendar: $this->calendar,
+        );
+
+        return self::fromYmd(
+            $this->zone,
+            $ymdHms[0],
+            $ymdHms[1],
+            $ymdHms[2],
+            $ymdHms[3],
+            $ymdHms[4],
+            $ymdHms[5],
+            $ymdHms[6],
+            calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
+            disambiguation: Disambiguation::COMPATIBLE,
+        );
     }
 
     public function sub(Duration|Period $durationOrPeriod): self

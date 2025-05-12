@@ -113,7 +113,7 @@ final class Instant implements Instanted, Date, Time, Zoned
             $calendar = GregorianCalendar::getInstance();
             $this->ymd ??= $calendar->getYmdByUnixTimestamp($this->tsSec);
 
-            $ymdHisNs = $durationOrPeriod->addToYmd(
+            $ymdHms = $durationOrPeriod->addToYmd(
                 $this->ymd[0],
                 $this->ymd[1],
                 $this->ymd[2],
@@ -125,13 +125,13 @@ final class Instant implements Instanted, Date, Time, Zoned
             );
 
             return self::fromYmd(
-                $ymdHisNs[0],
-                $ymdHisNs[1],
-                $ymdHisNs[2],
-                $ymdHisNs[3],
-                $ymdHisNs[4],
-                $ymdHisNs[5],
-                $ymdHisNs[6],
+                $ymdHms[0],
+                $ymdHms[1],
+                $ymdHms[2],
+                $ymdHms[3],
+                $ymdHms[4],
+                $ymdHms[5],
+                $ymdHms[6],
             );
         }
 

@@ -500,14 +500,14 @@ final class Period {
 
     /**
      * @param int $year
-     * @param Month|int $month
-     * @param int $dayOfMonth
-     * @param int $hour
-     * @param int $minute
-     * @param int $second
-     * @param int $nanoOfSecond
+     * @param Month|int<1,12> $month
+     * @param int<1,31> $dayOfMonth
+     * @param int<0,23> $hour
+     * @param int<0,59> $minute
+     * @param int<0,59> $second
+     * @param int<0,999999999> $nanoOfSecond
      * @param Calendar|null $calendar
-     * @return array{int, int<1,12>, int<1,31>, int<1,23>, int<1,59>, int<1,59>, int<1,999999999>}
+     * @return array{int, int<1,12>, int<1,31>, int<0,23>, int<0,59>, int<0,59>, int<0,999999999>}
      */
     public function addToYmd(
         int $year,
@@ -518,7 +518,7 @@ final class Period {
         int $second = 0,
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
-    ): self {
+    ): array {
         $calendar ??= GregorianCalendar::getInstance();
 
         $bias   = $this->isNegative ? -1 : 1;
@@ -592,6 +592,7 @@ final class Period {
                 $day += $daysInMonth;
             } while ($day < 1);
         }
+        \assert($day >= 1 && $day <= 31);
 
         return [
             $year,
