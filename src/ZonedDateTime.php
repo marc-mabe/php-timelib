@@ -156,7 +156,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
 
     public function withZoneSameLocal(Zone $zone): self
     {
-        return self::fromDateTime($zone, $this->date, $this->time);
+        return self::fromDateTime($this, $this, zone: $zone);
     }
 
     public function withCalendar(Calendar $calendar): self
@@ -310,15 +310,16 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     }
 
     public static function fromDateTime(
-        Zone $zone,
         Date $date,
         ?Time $time = null,
+        ?Zone $zone = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
         $localDays = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
         $localTs   = $localDays * 60 * 60 * 24;
         $localTs  += $time ? $time->hour * 3600 + $time->minute * 60 + $time->second : 0;
 
+        $zone   ??= new ZoneOffset(0);
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
         $ns     = $time ? $time->nanoOfSecond : 0;

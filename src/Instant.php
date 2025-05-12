@@ -451,9 +451,9 @@ final class Instant implements Instanted, Date, Time, Zoned
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
         return ZonedDateTime::fromDateTime(
-            $zone ?? new ZoneOffset(0),
             $date,
             $time,
+            zone: $zone,
             disambiguation: $disambiguation,
         )->instant;
     }

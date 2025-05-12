@@ -267,7 +267,7 @@ class DateTimeFormatter
         }
 
         if ($zone && $dateTimeZone instanceof Date && $dateTimeZone instanceof Time) {
-            $zdt  = ZonedDateTime::fromDateTime($zone, $dateTimeZone, $dateTimeZone);
+            $zdt  = ZonedDateTime::fromDateTime($dateTimeZone, $dateTimeZone, zone: $zone);
             $abbr = ZoneAbbreviation::findAbbreviation($zone, $zdt->offset);
 
             return $abbr ?? 'GMT' . $this->formatOffset(FormatToken::OffsetWithoutColon, $zdt);

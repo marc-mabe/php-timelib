@@ -16,9 +16,9 @@ $timeUsual  = \time\LocalTime::fromHms(16, 25, 6, 987654321);
 $dtZero     = \time\LocalDateTime::fromDateTime($dateZero, $timeZero);
 $dtEpoch    = \time\LocalDateTime::fromDateTime($dateEpoch, $timeZero);
 $dtUsual    = \time\LocalDateTime::fromDateTime($dateUsual, $timeUsual);
-$zdtZero    = \time\ZonedDateTime::fromDateTime($zoneZero, $dateZero, $timeZero);
-$zdtEpoch   = \time\ZonedDateTime::fromDateTime($zoneUtc, $dateEpoch, $timeZero);
-$zdtUsual   = \time\ZonedDateTime::fromDateTime($zoneBerlin, $dateUsual, $timeUsual);
+$zdtZero    = \time\ZonedDateTime::fromDateTime($dateZero, $timeZero, zone: $zoneZero);
+$zdtEpoch   = \time\ZonedDateTime::fromDateTime($dateEpoch, $timeZero, zone: $zoneUtc);
+$zdtUsual   = \time\ZonedDateTime::fromDateTime($dateUsual, $timeUsual, zone: $zoneBerlin);
 
 echo "Instant::fromUnixTimestamp\n";
 
