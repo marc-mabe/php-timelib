@@ -6,30 +6,35 @@ final class Instant implements Instanted, Date, Time, Zoned
 {
     public readonly Instant $instant;
 
+    public Calendar $calendar {
+        get => GregorianCalendar::getInstance();
+    }
+
     /** @var null|array{int, Month, int<1,31>}  */
     private ?array $ymd = null;
 
     public int $year {
-        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec))[0];
+        get => ($this->ymd ??= GregorianCalendar::getInstance()->getYmdByUnixTimestamp($this->tsSec))[0];
     }
 
     public Month $month {
-        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec))[1];
+        get => ($this->ymd ??= GregorianCalendar::getInstance()->getYmdByUnixTimestamp($this->tsSec))[1];
     }
 
     public int $dayOfMonth {
-        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec))[2];
+        get => ($this->ymd ??= GregorianCalendar::getInstance()->getYmdByUnixTimestamp($this->tsSec))[2];
     }
 
     public int $dayOfYear {
         get {
-            $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec);
-            return $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
+            $calendar = GregorianCalendar::getInstance();
+            $this->ymd ??= $calendar->getYmdByUnixTimestamp($this->tsSec);
+            return $calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
         }
     }
 
     public DayOfWeek $dayOfWeek {
-        get => $this->calendar->getDayOfWeekByUnixTimestamp($this->tsSec);
+        get => GregorianCalendar::getInstance()->getDayOfWeekByUnixTimestamp($this->tsSec);
     }
 
     public int $hour {
@@ -70,7 +75,7 @@ final class Instant implements Instanted, Date, Time, Zoned
     }
 
     public LocalDate $date {
-        get => LocalDate::fromYd($this->year, $this->dayOfYear, calendar: $this->calendar);
+        get => LocalDate::fromYd($this->year, $this->dayOfYear, calendar: GregorianCalendar::getInstance());
     }
 
     public LocalTime $time {
@@ -81,21 +86,23 @@ final class Instant implements Instanted, Date, Time, Zoned
         get => $this->zone ??= new ZoneOffset(0);
     }
 
+    public WeekInfo $weekInfo {
+        get => WeekInfo::fromIso();
+    }
+
     /** @var int<1,max> */
     public int $weekOfYear {
-        get => $this->weekInfo->getWeekOfYear($this);
+        get => WeekInfo::fromIso()->getWeekOfYear($this);
     }
 
     public int $yearOfWeek {
-        get => $this->weekInfo->getYearOfWeek($this);
+        get => WeekInfo::fromIso()->getYearOfWeek($this);
     }
 
     /** @param int<0, 999999999> $nanoOfSecond */
     private function __construct(
         private readonly int $tsSec,
         public readonly int $nanoOfSecond,
-        public readonly Calendar $calendar,
-        public readonly WeekInfo $weekInfo,
     ) {
         $this->instant = $this;
     }
@@ -106,7 +113,9 @@ final class Instant implements Instanted, Date, Time, Zoned
             $bias   = $durationOrPeriod->isNegative ? -1 : 1;
             $year   = $this->year + $durationOrPeriod->years * $bias;
             $month  = $this->month->value + $durationOrPeriod->months * $bias;
-            $day    = $this->dayOfMonth + $durationOrPeriod->days * $bias + $durationOrPeriod->weeks * 7 * $bias;
+            $day    = $this->dayOfMonth
+                + $durationOrPeriod->days * $bias
+                + $durationOrPeriod->weeks * 7 * $bias;
             $hour   = $this->hour + $durationOrPeriod->hours * $bias;
             $minute = $this->minute + $durationOrPeriod->minutes * $bias;
             $second = $this->second + $durationOrPeriod->seconds * $bias;
@@ -181,18 +190,11 @@ final class Instant implements Instanted, Date, Time, Zoned
                 $minute,
                 $second,
                 $ns,
-                calendar: $this->calendar,
-                weekInfo: $this->weekInfo,
             );
         }
 
         $tuple = $durationOrPeriod->addToUnixTimestampTuple([$this->tsSec, $this->nanoOfSecond]);
-        return new self(
-            $tuple[0],
-            $tuple[1],
-            calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
-        );
+        return new self($tuple[0], $tuple[1]);
     }
 
     public function sub(Duration|Period $durationOrPeriod): self
@@ -210,8 +212,6 @@ final class Instant implements Instanted, Date, Time, Zoned
             $this->minute,
             $this->second,
             $this->nanoOfSecond,
-            calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
         );
     }
 
@@ -226,8 +226,6 @@ final class Instant implements Instanted, Date, Time, Zoned
             $this->minute,
             $this->second,
             $this->nanoOfSecond,
-            calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
         );
     }
 
@@ -242,8 +240,6 @@ final class Instant implements Instanted, Date, Time, Zoned
             $this->minute,
             $this->second,
             $this->nanoOfSecond,
-            calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
         );
     }
 
@@ -257,8 +253,6 @@ final class Instant implements Instanted, Date, Time, Zoned
             $this->minute,
             $this->second,
             $this->nanoOfSecond,
-            calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
         );
     }
 
@@ -273,8 +267,6 @@ final class Instant implements Instanted, Date, Time, Zoned
             $this->minute,
             $this->second,
             $this->nanoOfSecond,
-            calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
         );
     }
 
@@ -289,8 +281,6 @@ final class Instant implements Instanted, Date, Time, Zoned
             $minute,
             $this->second,
             $this->nanoOfSecond,
-            calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
         );
     }
 
@@ -305,104 +295,36 @@ final class Instant implements Instanted, Date, Time, Zoned
             $this->minute,
             $second,
             $this->nanoOfSecond,
-            calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
         );
     }
 
     /** @param int<0, 999> $milliOfSecond */
     public function withMilliOfSecond(int $milliOfSecond): self
     {
-        return new self(
-            $this->tsSec,
-            $milliOfSecond * 1_000_000,
-            calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
-        );
+        return new self($this->tsSec, $milliOfSecond * 1_000_000);
     }
 
     /** @param int<0, 999999> $microOfSecond */
     public function withMicroOfSecond(int $microOfSecond): self
     {
-        return new self(
-            $this->tsSec,
-            $microOfSecond * 1_000,
-            calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
-        );
+        return new self($this->tsSec, $microOfSecond * 1_000);
     }
 
     /** @param int<0, 999999999> $nanoOfSecond */
     public function withNanoOfSecond(int $nanoOfSecond): self
     {
-        return new self(
-            $this->tsSec,
-            $nanoOfSecond,
-            calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
-        );
-    }
-
-    public function withCalendar(Calendar $calendar): self
-    {
-        return $this->calendar === $calendar
-            ? $this
-            : new self($this->tsSec, $this->nanoOfSecond, $calendar, $this->weekInfo);
-    }
-
-    public function withWeekInfo(WeekInfo $weekInfo): self
-    {
-        return $this->weekInfo === $weekInfo
-            ? $this
-            : new self($this->tsSec, $this->nanoOfSecond, $this->calendar, $weekInfo);
+        return new self($this->tsSec, $nanoOfSecond);
     }
 
     public function truncatedTo(DateUnit|TimeUnit $unit): self
     {
         return match ($unit) {
-            DateUnit::Year => self::fromYd(
-                $this->year,
-                1,
-                calendar: $this->calendar,
-                weekInfo: $this->weekInfo,
-            ),
-            DateUnit::Month => self::fromYmd(
-                $this->year,
-                $this->month,
-                1,
-                calendar: $this->calendar,
-                weekInfo: $this->weekInfo,
-            ),
-            DateUnit::Day => self::fromYd(
-                $this->year,
-                $this->dayOfYear,
-                calendar: $this->calendar,
-                weekInfo: $this->weekInfo,
-            ),
-            TimeUnit::Hour => self::fromYd(
-                $this->year,
-                $this->dayOfYear,
-                $this->hour,
-                calendar: $this->calendar,
-                weekInfo: $this->weekInfo,
-            ),
-            TimeUnit::Minute => self::fromYd(
-                $this->year,
-                $this->dayOfYear,
-                $this->hour,
-                $this->minute,
-                calendar: $this->calendar,
-                weekInfo: $this->weekInfo,
-            ),
-            TimeUnit::Second => self::fromYd(
-                $this->year,
-                $this->dayOfYear,
-                $this->hour,
-                $this->minute,
-                $this->second,
-                calendar: $this->calendar,
-                weekInfo: $this->weekInfo,
-            ),
+            DateUnit::Year => self::fromYd($this->year, 1),
+            DateUnit::Month => self::fromYmd($this->year, $this->month, 1),
+            DateUnit::Day => self::fromYd($this->year, $this->dayOfYear),
+            TimeUnit::Hour => self::fromYd($this->year, $this->dayOfYear, $this->hour),
+            TimeUnit::Minute => self::fromYd($this->year, $this->dayOfYear, $this->hour, $this->minute),
+            TimeUnit::Second => self::fromYd($this->year, $this->dayOfYear, $this->hour, $this->minute, $this->second),
             TimeUnit::Millisecond => self::fromYd(
                 $this->year,
                 $this->dayOfYear,
@@ -410,8 +332,6 @@ final class Instant implements Instanted, Date, Time, Zoned
                 $this->minute,
                 $this->second,
                 \intdiv($this->nanoOfSecond, 1_000_000) * 1_000_000, // @phpstan-ignore argument.type
-                calendar: $this->calendar,
-                weekInfo: $this->weekInfo,
             ),
             TimeUnit::Microsecond => self::fromYd(
                 $this->year,
@@ -420,8 +340,6 @@ final class Instant implements Instanted, Date, Time, Zoned
                 $this->minute,
                 $this->second,
                 \intdiv($this->nanoOfSecond, 1_000) * 1_000, // @phpstan-ignore argument.type
-                calendar: $this->calendar,
-                weekInfo: $this->weekInfo,
             ),
             TimeUnit::Nanosecond => $this,
         };
@@ -462,17 +380,22 @@ final class Instant implements Instanted, Date, Time, Zoned
         return [$this->tsSec, $this->nanoOfSecond];
     }
 
-    public function toZonedDateTime(Zone $zone): ZonedDateTime
-    {
-        return ZonedDateTime::fromUnixTimestampTuple($this->toUnixTimestampTuple(), $this->calendar, $this->weekInfo)
-            ->withZoneSameInstant($zone);
+    public function toZonedDateTime(
+        ?Zone $zone = null,
+        ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
+    ): ZonedDateTime {
+        return ZonedDateTime::fromInstant(
+            $this,
+            zone: $zone ?? new ZoneOffset(0),
+            calendar: $calendar ?? GregorianCalendar::getInstance(),
+            weekInfo: $weekInfo ?? WeekInfo::fromIso(),
+        );
     }
 
     public static function fromUnixTimestamp(
         int|float $timestamp,
         TimeUnit $unit = TimeUnit::Second,
-        ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
     ): self {
         if (\is_float($timestamp)) {
             if (!\is_finite($timestamp)) {
@@ -518,26 +441,13 @@ final class Instant implements Instanted, Date, Time, Zoned
         };
         assert($ns >= 0 && $ns <1_000_000_000);
 
-        return new self(
-            $tsSecInt,
-            $ns,
-            calendar: $calendar ?? GregorianCalendar::getInstance(),
-            weekInfo: $weekInfo ?? WeekInfo::fromIso(),
-        );
+        return new self($tsSecInt, $ns);
     }
 
     /** @param array{int, int<0, 999999999>} $timestampTuple */
-    public static function fromUnixTimestampTuple(
-        array $timestampTuple,
-        ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
-    ): self {
-        return new self(
-            $timestampTuple[0],
-            $timestampTuple[1],
-            calendar: $calendar ?? GregorianCalendar::getInstance(),
-            weekInfo: $weekInfo ?? WeekInfo::fromIso(),
-        );
+    public static function fromUnixTimestampTuple(array $timestampTuple): self
+    {
+        return new self($timestampTuple[0], $timestampTuple[1]);
     }
 
     /**
@@ -556,14 +466,13 @@ final class Instant implements Instanted, Date, Time, Zoned
         int $second = 0,
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
     ): self {
-        $calendar ??= GregorianCalendar::getInstance();
+        $calendar = $calendar ?? GregorianCalendar::getInstance();
 
         $ts = $calendar->getUnixTimestampByYd($year, $dayOfYear);
         $ts += $hour * 3600 + $minute * 60 + $second;
 
-        return new self($ts, $nanoOfSecond, $calendar, $weekInfo ?? WeekInfo::fromIso());
+        return new self($ts, $nanoOfSecond);
     }
 
     /**
@@ -584,14 +493,13 @@ final class Instant implements Instanted, Date, Time, Zoned
         int $second = 0,
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
     ): self {
         $calendar ??= GregorianCalendar::getInstance();
 
         $ts = $calendar->getUnixTimestampByYmd($year, $month, $dayOfMonth);
         $ts += $hour * 3600 + $minute * 60 + $second;
 
-        return new self($ts, $nanoOfSecond, $calendar, $weekInfo ?? WeekInfo::fromIso());
+        return new self($ts, $nanoOfSecond);
     }
 
     public static function fromDateTime(
@@ -600,19 +508,11 @@ final class Instant implements Instanted, Date, Time, Zoned
         ?Zone $zone = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
-        if ($zone === null) {
-            return self::fromYd(
-                $date->year,
-                $date->dayOfYear,
-                $time->hour ?? 0,
-                $time->minute ?? 0,
-                $time->second ?? 0,
-                $time->nanoOfSecond ?? 0,
-                calendar: $date->calendar,
-                weekInfo: $date->weekInfo,
-            );
-        }
-
-        return ZonedDateTime::fromDateTime($zone, $date, $time, disambiguation: $disambiguation)->instant;
+        return ZonedDateTime::fromDateTime(
+            $zone ?? new ZoneOffset(0),
+            $date,
+            $time,
+            disambiguation: $disambiguation,
+        )->instant;
     }
 }

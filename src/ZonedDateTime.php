@@ -4,28 +4,30 @@ namespace time;
 
 final class ZonedDateTime implements Instanted, Date, Time, Zoned
 {
-    public Calendar $calendar {
-        get => $this->adjusted->calendar;
-    }
+    /** @var null|array{int, Month, int<1,31>}  */
+    private ?array $ymd = null;
 
     public int $year {
-        get => $this->adjusted->year;
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]))[0];
     }
 
     public Month $month {
-        get => $this->adjusted->month;
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]))[1];
     }
 
     public int $dayOfMonth {
-        get => $this->adjusted->dayOfMonth;
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]))[2];
     }
 
     public int $dayOfYear {
-        get => $this->adjusted->dayOfYear;
+        get {
+            $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]);
+            return $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
+        }
     }
 
     public DayOfWeek $dayOfWeek {
-        get => $this->adjusted->dayOfWeek;
+        get => $this->calendar->getDayOfWeekByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]);
     }
 
     public int $hour {
@@ -41,15 +43,15 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     }
 
     public int $milliOfSecond {
-        get => $this->instant->milliOfSecond;
+        get => $this->adjusted->milliOfSecond;
     }
 
     public int $microOfSecond {
-        get => $this->instant->microOfSecond;
+        get => $this->adjusted->microOfSecond;
     }
 
     public int $nanoOfSecond {
-        get => $this->instant->nanoOfSecond;
+        get => $this->adjusted->nanoOfSecond;
     }
 
     public LocalDateTime $local {
@@ -57,15 +59,11 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     }
 
     public LocalDate $date {
-        get => LocalDate::fromYd($this->year, $this->dayOfYear, calendar: $this->calendar);
+        get => LocalDate::fromYd($this->year, $this->dayOfYear, calendar: $this->calendar, weekInfo:  $this->weekInfo);
     }
 
     public LocalTime $time {
         get => LocalTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
-    }
-
-    public WeekInfo $weekInfo {
-        get => $this->instant->weekInfo;
     }
 
     /** @var int<1,max> */
@@ -84,6 +82,8 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     private function __construct(
         public readonly Instant $instant,
         public readonly Zone $zone,
+        public readonly Calendar $calendar,
+        public readonly WeekInfo $weekInfo,
     ) {
         $offset         = $zone->getOffsetAt($instant);
         $this->adjusted = $this->instant->add($offset->toDuration());
@@ -93,9 +93,15 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     public function add(Duration|Period $durationOrPeriod): self
     {
         if ($durationOrPeriod instanceof Duration) {
-            return new self($this->instant->add($durationOrPeriod), $this->zone);
+            return new self(
+                $this->instant->add($durationOrPeriod),
+                $this->zone,
+                calendar: $this->calendar,
+                weekInfo: $this->weekInfo,
+            );
         }
 
+        // FIXME: Don't use adjusted instant
         $dt = $this->adjusted->add($durationOrPeriod);
         return self::fromDateTime($this->zone, $dt, $dt, disambiguation: Disambiguation::COMPATIBLE);
     }
@@ -107,7 +113,12 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
 
     public function withZoneSameInstant(Zone $zone): self
     {
-        return new self($this->instant, $zone);
+        return new self(
+            $this->instant,
+            $zone,
+            calendar: $this->calendar,
+            weekInfo: $this->weekInfo,
+        );
     }
 
     public function withZoneSameLocal(Zone $zone): self
@@ -117,16 +128,22 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
 
     public function withCalendar(Calendar $calendar): self
     {
-        return $this->calendar === $calendar
-            ? $this
-            : new self($this->instant->withCalendar($calendar), $this->zone);
+        return $this->calendar === $calendar ? $this : new self(
+            $this->instant,
+            $this->zone,
+            calendar: $calendar,
+            weekInfo: $this->weekInfo,
+        );
     }
 
     public function withWeekInfo(WeekInfo $weekInfo): self
     {
-        return $this->weekInfo === $weekInfo
-            ? $this
-            : new self($this->instant->withWeekInfo($weekInfo), $this->zone);
+        return $this->weekInfo === $weekInfo ? $this : new self(
+            $this->instant,
+            $this->zone,
+            calendar: $this->calendar,
+            weekInfo: $weekInfo,
+        );
     }
 
     /**
@@ -145,15 +162,30 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         return $this->instant->toUnixTimestampTuple();
     }
 
+    public static function fromInstant(
+        Instant $instant,
+        ?Zone $zone = null,
+        ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
+    ): self {
+        return new self(
+            $instant,
+            zone: $zone ?? $instant->zone,
+            calendar: $calendar ?? $instant->calendar,
+            weekInfo: $weekInfo ?? $instant->weekInfo,
+        );
+    }
+
     public static function fromUnixTimestamp(
         int|float $timestamp,
         TimeUnit $unit = TimeUnit::Second,
         ?Calendar $calendar = null,
         ?WeekInfo $weekInfo = null,
     ): self {
-        return new self(
-            Instant::fromUnixTimestamp($timestamp, $unit, $calendar, $weekInfo),
-            new ZoneOffset(totalSeconds: 0),
+        return self::fromInstant(
+            Instant::fromUnixTimestamp($timestamp, $unit),
+            calendar: $calendar,
+            weekInfo: $weekInfo,
         );
     }
 
@@ -163,9 +195,10 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         ?Calendar $calendar = null,
         ?WeekInfo $weekInfo = null,
     ): self {
-        return new self(
-            Instant::fromUnixTimestampTuple($timestampTuple, $calendar, $weekInfo),
-            new ZoneOffset(totalSeconds: 0),
+        return self::fromInstant(
+            Instant::fromUnixTimestampTuple($timestampTuple),
+            calendar: $calendar,
+            weekInfo: $weekInfo,
         );
     }
 
@@ -198,7 +231,13 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
 
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
-        return new self(Instant::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar, $weekInfo), $zone);
+
+        return self::fromInstant(
+            Instant::fromUnixTimestampTuple([$ts, $nanoOfSecond]),
+            zone: $zone,
+            calendar: $calendar,
+            weekInfo: $weekInfo,
+        );
     }
 
     /**
@@ -228,7 +267,13 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
 
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
-        return new self(Instant::fromUnixTimestampTuple([$ts, $nanoOfSecond], $calendar, $weekInfo), $zone);
+
+        return self::fromInstant(
+            Instant::fromUnixTimestampTuple([$ts, $nanoOfSecond]),
+            zone: $zone,
+            calendar: $calendar,
+            weekInfo: $weekInfo,
+        );
     }
 
     public static function fromDateTime(
@@ -244,7 +289,13 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
         $ns     = $time ? $time->nanoOfSecond : 0;
-        return new self(Instant::fromUnixTimestampTuple([$ts, $ns], $date->calendar, $date->weekInfo), $zone);
+
+        return self::fromInstant(
+            Instant::fromUnixTimestampTuple([$ts, $ns]),
+            zone: $zone,
+            calendar: $date->calendar,
+            weekInfo: $date->weekInfo,
+        );
     }
 
     private static function findOffsetByLocalTimestamp(
