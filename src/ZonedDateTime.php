@@ -8,51 +8,62 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     private ?array $ymd = null;
 
     public int $year {
-        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]))[0];
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec))[0];
     }
 
     public Month $month {
-        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]))[1];
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec))[1];
     }
 
     public int $dayOfMonth {
-        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]))[2];
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec))[2];
     }
 
     public int $dayOfYear {
         get {
-            $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]);
+            $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec);
             return $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
         }
     }
 
     public DayOfWeek $dayOfWeek {
-        get => $this->calendar->getDayOfWeekByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]);
+        get => $this->calendar->getDayOfWeekByUnixTimestamp($this->adjustedSec);
     }
 
     public int $hour {
-        get => $this->adjusted->hour;
+        get {
+            $remainder = $this->adjustedSec % 86400;
+            $remainder += ($remainder < 0) * 86400;
+            return \intdiv($remainder, 3600);
+        }
     }
 
     public int $minute {
-        get => $this->adjusted->minute;
+        get {
+            $remainder = $this->adjustedSec % 86400;
+            $remainder += ($remainder < 0) * 86400;
+            $hours = \intdiv($remainder, 3600);
+            return \intdiv($remainder - $hours * 3600, 60);
+        }
     }
 
     public int $second {
-        get => $this->adjusted->second;
+        get {
+            $remainder = $this->adjustedSec % 86400;
+            $remainder += ($remainder < 0) * 86400;
+            return $remainder % 60;
+        }
     }
 
     public int $milliOfSecond {
-        get => $this->adjusted->milliOfSecond;
+        get => \intdiv($this->nanoOfSecond, 1_000_000);
     }
 
     public int $microOfSecond {
-        get => $this->adjusted->microOfSecond;
+        get => \intdiv($this->nanoOfSecond, 1_000);
     }
 
-    public int $nanoOfSecond {
-        get => $this->adjusted->nanoOfSecond;
-    }
+    public readonly int $nanoOfSecond;
 
     public LocalDateTime $local {
         get => LocalDateTime::fromDateTime($this->date, $this->time);
@@ -77,7 +88,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
 
     public readonly ZoneOffset $offset;
 
-    private readonly Instant $adjusted;
+    private readonly int $adjustedSec;
 
     private function __construct(
         public readonly Instant $instant,
@@ -85,9 +96,9 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         public readonly Calendar $calendar,
         public readonly WeekInfo $weekInfo,
     ) {
-        $offset         = $zone->getOffsetAt($instant);
-        $this->adjusted = $this->instant->add($offset->toDuration());
-        $this->offset   = $offset;
+        [$s, $this->nanoOfSecond] = $instant->toUnixTimestampTuple();
+        $this->offset             = $zone->getOffsetAt($instant);
+        $this->adjustedSec        = $s + $this->offset->totalSeconds;
     }
 
     public function add(Duration|Period $durationOrPeriod): self
@@ -101,7 +112,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             );
         }
 
-        $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjusted->toUnixTimestampTuple()[0]);
+        $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec);
         $ymdHms = $durationOrPeriod->addToYmd(
             $this->ymd[0],
             $this->ymd[1],
@@ -152,7 +163,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     {
         return $this->calendar === $calendar ? $this : new self(
             $this->instant,
-            $this->zone,
+            zone: $this->zone,
             calendar: $calendar,
             weekInfo: $this->weekInfo,
         );
@@ -162,7 +173,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     {
         return $this->weekInfo === $weekInfo ? $this : new self(
             $this->instant,
-            $this->zone,
+            zone: $this->zone,
             calendar: $this->calendar,
             weekInfo: $weekInfo,
         );
