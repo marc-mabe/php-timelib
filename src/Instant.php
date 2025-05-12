@@ -110,86 +110,28 @@ final class Instant implements Instanted, Date, Time, Zoned
     public function add(Duration|Period $durationOrPeriod): self
     {
         if ($durationOrPeriod instanceof Period) {
-            $bias   = $durationOrPeriod->isNegative ? -1 : 1;
-            $year   = $this->year + $durationOrPeriod->years * $bias;
-            $month  = $this->month->value + $durationOrPeriod->months * $bias;
-            $day    = $this->dayOfMonth
-                + $durationOrPeriod->days * $bias
-                + $durationOrPeriod->weeks * 7 * $bias;
-            $hour   = $this->hour + $durationOrPeriod->hours * $bias;
-            $minute = $this->minute + $durationOrPeriod->minutes * $bias;
-            $second = $this->second + $durationOrPeriod->seconds * $bias;
-            $ns     = $this->nanoOfSecond
-                + $durationOrPeriod->milliseconds * 1_000_000 * $bias
-                + $durationOrPeriod->microseconds * 1_000 * $bias
-                + $durationOrPeriod->nanoseconds * $bias;
+            $calendar = GregorianCalendar::getInstance();
+            $this->ymd ??= $calendar->getYmdByUnixTimestamp($this->tsSec);
 
-            $second += \intdiv($ns, 1_000_000_000);
-            $ns     = $ns % 1_000_000_000;
-            if ($ns < 0) {
-                $second--;
-                $ns += 1_000_000_000;
-            }
-
-            $minute += \intdiv($second, 60);
-            $second = $second % 60;
-            if ($second < 0) {
-                $minute--;
-                $second += 60;
-            }
-
-            $hour += \intdiv($minute, 60);
-            $minute = $minute % 60;
-            if ($minute < 0) {
-                $hour--;
-                $minute += 60;
-            }
-
-            $day += \intdiv($hour, 24);
-            $hour = $hour % 24;
-            if ($hour < 0) {
-                $day--;
-                $hour += 24;
-            }
-
-            $year += \intdiv($month - 1, 12);
-            $month = ($month - 1) % 12;
-            if ($month < 0) {
-                $year--;
-                $month += 12;
-            }
-            $month += 1;
-
-            if ($day >= 1) {
-                while ($day > ($daysInMonth = $this->calendar->getDaysInMonth($year, $month)))  {
-                    $day   -= $daysInMonth;
-                    $month++;
-                    if ($month > 12) {
-                        $month = 1;
-                        $year++;
-                    }
-                }
-            } else {
-                do {
-                    $month--;
-                    if ($month < 1) {
-                        $month = 12;
-                        $year--;
-                    }
-
-                    $daysInMonth = $this->calendar->getDaysInMonth($year, $month);
-                    $day += $daysInMonth;
-                } while ($day < 1);
-            }
+            $ymdHisNs = $durationOrPeriod->addToYmd(
+                $this->ymd[0],
+                $this->ymd[1],
+                $this->ymd[2],
+                $this->hour,
+                $this->minute,
+                $this->second,
+                $this->nanoOfSecond,
+                calendar: $calendar,
+            );
 
             return self::fromYmd(
-                $year,
-                $month,
-                $day, /** @phpstan-ignore argument.type */
-                $hour,
-                $minute,
-                $second,
-                $ns,
+                $ymdHisNs[0],
+                $ymdHisNs[1],
+                $ymdHisNs[2],
+                $ymdHisNs[3],
+                $ymdHisNs[4],
+                $ymdHisNs[5],
+                $ymdHisNs[6],
             );
         }
 

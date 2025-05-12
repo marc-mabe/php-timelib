@@ -498,6 +498,112 @@ final class Period {
         return $this->isNegative ? '-P' . $dateTimeIso : 'P' . $dateTimeIso;
     }
 
+    /**
+     * @param int $year
+     * @param Month|int $month
+     * @param int $dayOfMonth
+     * @param int $hour
+     * @param int $minute
+     * @param int $second
+     * @param int $nanoOfSecond
+     * @param Calendar|null $calendar
+     * @return array{int, int<1,12>, int<1,31>, int<1,23>, int<1,59>, int<1,59>, int<1,999999999>}
+     */
+    public function addToYmd(
+        int $year,
+        Month|int $month,
+        int $dayOfMonth,
+        int $hour = 0,
+        int $minute = 0,
+        int $second = 0,
+        int $nanoOfSecond = 0,
+        ?Calendar $calendar = null,
+    ): self {
+        $calendar ??= GregorianCalendar::getInstance();
+
+        $bias   = $this->isNegative ? -1 : 1;
+        $year   = $year + $this->years * $bias;
+        $month  = ($month instanceof Month ? $month->value : $month) + $this->months * $bias;
+        $day    = $dayOfMonth
+            + $this->days * $bias
+            + $this->weeks * 7 * $bias;
+        $hour   = $hour + $this->hours * $bias;
+        $minute = $minute + $this->minutes * $bias;
+        $second = $second + $this->seconds * $bias;
+        $ns     = $nanoOfSecond
+            + $this->milliseconds * 1_000_000 * $bias
+            + $this->microseconds * 1_000 * $bias
+            + $this->nanoseconds * $bias;
+
+        $second += \intdiv($ns, 1_000_000_000);
+        $ns     = $ns % 1_000_000_000;
+        if ($ns < 0) {
+            $second--;
+            $ns += 1_000_000_000;
+        }
+
+        $minute += \intdiv($second, 60);
+        $second = $second % 60;
+        if ($second < 0) {
+            $minute--;
+            $second += 60;
+        }
+
+        $hour += \intdiv($minute, 60);
+        $minute = $minute % 60;
+        if ($minute < 0) {
+            $hour--;
+            $minute += 60;
+        }
+
+        $day += \intdiv($hour, 24);
+        $hour = $hour % 24;
+        if ($hour < 0) {
+            $day--;
+            $hour += 24;
+        }
+
+        $year += \intdiv($month - 1, 12);
+        $month = ($month - 1) % 12;
+        if ($month < 0) {
+            $year--;
+            $month += 12;
+        }
+        $month += 1;
+
+        if ($day >= 1) {
+            while ($day > ($daysInMonth = $calendar->getDaysInMonth($year, $month)))  {
+                $day   -= $daysInMonth;
+                $month++;
+                if ($month > 12) {
+                    $month = 1;
+                    $year++;
+                }
+            }
+        } else {
+            do {
+                $month--;
+                if ($month < 1) {
+                    $month = 12;
+                    $year--;
+                }
+
+                $daysInMonth = $calendar->getDaysInMonth($year, $month);
+                $day += $daysInMonth;
+            } while ($day < 1);
+        }
+
+        return [
+            $year,
+            $month,
+            $day,
+            $hour,
+            $minute,
+            $second,
+            $ns,
+        ];
+    }
+
     public static function fromTime(Time $time): self
     {
         return new self(
