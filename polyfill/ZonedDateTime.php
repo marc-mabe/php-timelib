@@ -70,7 +70,10 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     }
 
     public LocalDate $date {
-        get => LocalDate::fromYd($this->year, $this->dayOfYear, calendar: $this->calendar, weekInfo:  $this->weekInfo);
+        get {
+            $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec);
+            return LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar, weekInfo:  $this->weekInfo);
+        }
     }
 
     public LocalTime $time {
@@ -125,7 +128,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         );
 
         return self::fromYmd(
-            $this->zone,
             $ymdHms[0],
             $ymdHms[1],
             $ymdHms[2],
@@ -133,6 +135,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             $ymdHms[4],
             $ymdHms[5],
             $ymdHms[6],
+            zone: $this->zone,
             calendar: $this->calendar,
             weekInfo: $this->weekInfo,
             disambiguation: Disambiguation::COMPATIBLE,
@@ -244,7 +247,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
      * @param int<0, 999999999> $nanoOfSecond
      */
     public static function fromYmd(
-        Zone $zone,
         int $year,
         Month|int $month,
         int $dayOfMonth,
@@ -252,25 +254,31 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         int $minute = 0,
         int $second = 0,
         int $nanoOfSecond = 0,
+        ?Zone $zone = null,
         ?Calendar $calendar = null,
         ?WeekInfo $weekInfo = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
         $calendar ??= GregorianCalendar::getInstance();
 
+        $month     = $month instanceof Month ? $month : Month::from($month);
         $localDays = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
         $localTs   = $localDays * 60 * 60 * 24;
         $localTs  += $hour * 3600 + $minute * 60 + $second;
 
+        $zone   ??= new ZoneOffset(0);
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
 
-        return self::fromInstant(
+        $zdt = self::fromInstant(
             Instant::fromUnixTimestampTuple([$ts, $nanoOfSecond]),
             zone: $zone,
             calendar: $calendar,
             weekInfo: $weekInfo,
         );
+        $zdt->ymd = [$year, $month, $dayOfMonth];
+
+        return $zdt;
     }
 
     /**
@@ -281,13 +289,13 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
      * @param int<0, 999999999> $nanoOfSecond
      */
     public static function fromYd(
-        Zone $zone,
         int $year,
         int $dayOfYear,
         int $hour = 0,
         int $minute = 0,
         int $second = 0,
         int $nanoOfSecond = 0,
+        ?Zone $zone = null,
         ?Calendar $calendar = null,
         ?WeekInfo $weekInfo = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
@@ -298,6 +306,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         $localTs   = $localDays * 60 * 60 * 24;
         $localTs  += $hour * 3600 + $minute * 60 + $second;
 
+        $zone   ??= new ZoneOffset(0);
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
 
@@ -324,12 +333,15 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         $ts     = $localTs - $offset->totalSeconds;
         $ns     = $time ? $time->nanoOfSecond : 0;
 
-        return self::fromInstant(
+        $zdt = self::fromInstant(
             Instant::fromUnixTimestampTuple([$ts, $ns]),
             zone: $zone,
             calendar: $date->calendar,
             weekInfo: $date->weekInfo,
         );
+        $zdt->ymd = [$date->year, $date->month, $date->dayOfMonth];
+
+        return $zdt;
     }
 
     private static function findOffsetByLocalTimestamp(

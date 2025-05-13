@@ -8,6 +8,6 @@ interface Instanted
         get;
     }
 
-    public function add(Duration|Period $durationOrPeriod): Instanted;
-    public function sub(Duration|Period $durationOrPeriod): Instanted;
+    public function add(Duration|Period $durationOrPeriod): self;
+    public function sub(Duration|Period $durationOrPeriod): self;
 }

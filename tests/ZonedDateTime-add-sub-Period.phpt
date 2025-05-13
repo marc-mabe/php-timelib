@@ -9,7 +9,7 @@ $bln = time\Zone::fromIdentifier('Europe/Berlin');
 $p1m = new time\Period(minutes: 1);
 $p1d = new time\Period(days: 1);
 $p1ns = new time\Period(nanoseconds: 1);
-$zdt = time\ZonedDateTime::fromYmd($bln, 2000, 3, 26, 1, 59, 59, 987654321);
+$zdt = time\ZonedDateTime::fromYmd(2000, 3, 26, 1, 59, 59, 987654321, zone: $bln);
 
 echo stringify($zdt) . "\n"
     . ' add(' . stringify($p1m) . ') = ' . stringify($zdt->add($p1m)) . "\n";
@@ -17,15 +17,15 @@ echo stringify($zdt) . "\n"
 echo stringify($zdt) . "\n"
     . ' add(' . stringify($p1d) . ') = ' . stringify($zdt->add($p1d)) . "\n";
 
-$zdt = time\ZonedDateTime::fromYmd($bln, 2000, 3, 27, 1, 59, 59, 999999999);
+$zdt = time\ZonedDateTime::fromYmd(2000, 3, 27, 1, 59, 59, 999999999, zone: $bln);
 echo stringify($zdt) . "\n"
     . ' sub(' . stringify($p1d) . ') = ' . stringify($zdt->sub($p1d)) . "\n";
 
-$zdt = time\ZonedDateTime::fromYmd($bln, 2000, 3, 27, 2);
+$zdt = time\ZonedDateTime::fromYmd(2000, 3, 27, 2, zone: $bln);
 echo stringify($zdt) . "\n"
     . ' sub(' . stringify($p1d) . ') = ' . stringify($zdt->sub($p1d)) . "\n";
 
-$zdt = time\ZonedDateTime::fromYmd($bln, 2000, 1, 1);
+$zdt = time\ZonedDateTime::fromYmd(2000, 1, 1, zone: $bln);
 echo stringify($zdt) . "\n"
     . ' sub(' . stringify($p1ns) . ') = ' . stringify($zdt->sub($p1ns)) . "\n";
 

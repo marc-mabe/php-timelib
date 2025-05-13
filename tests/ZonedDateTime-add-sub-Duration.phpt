@@ -11,7 +11,7 @@ $zonedDateTimes = [
     time\ZonedDateTime::fromUnixTimestampTuple([0, 0]),
     time\ZonedDateTime::fromUnixTimestampTuple([123, 456]),
     time\ZonedDateTime::fromUnixTimestampTuple([-123, 456]),
-    time\ZonedDateTime::fromYmd($tzBln, 2000, 3, 26, 1, 59, 59, 987654321),
+    time\ZonedDateTime::fromYmd(2000, 3, 26, 1, 59, 59, 987654321, zone: $tzBln),
 ];
 
 $durations = [

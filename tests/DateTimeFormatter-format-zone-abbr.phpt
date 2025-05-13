@@ -14,19 +14,19 @@ $berlin = time\Zone::fromIdentifier('Europe/Berlin');
 $london = time\Zone::fromIdentifier('Europe/London');
 //var_dump($london->info->getTransitionAt(time\Instant::fromUnixTimestampTuple([PHP_INT_MIN,0])));
 
-$dt  = time\ZonedDateTime::fromYmd($berlin, 2000, 1, 1);
+$dt  = time\ZonedDateTime::fromYmd(2000, 1, 1, zone: $berlin);
 echo stringify($dt) . ' = ' . $fmt->format($dt) . "\n";
 
-$dt  = time\ZonedDateTime::fromYmd($berlin, 2000, 7, 1);
+$dt  = time\ZonedDateTime::fromYmd(2000, 7, 1, zone: $berlin);
 echo stringify($dt) . ' = ' . $fmt->format($dt) . "\n";
 
-$dt  = time\ZonedDateTime::fromYmd($london, 1970, 1, 1);
+$dt  = time\ZonedDateTime::fromYmd(1970, 1, 1, zone: $london);
 echo stringify($dt) . ' = ' . $fmt->format($dt) . "\n";
 
-$dt  = time\ZonedDateTime::fromYmd($london, 2000, 1, 1);
+$dt  = time\ZonedDateTime::fromYmd(2000, 1, 1, zone: $london);
 echo stringify($dt) . ' = ' . $fmt->format($dt) . "\n";
 
-$dt  = time\ZonedDateTime::fromYmd($london, 2000, 7, 1);
+$dt  = time\ZonedDateTime::fromYmd(2000, 7, 1, zone: $london);
 echo stringify($dt) . ' = ' . $fmt->format($dt) . "\n";
 
 --EXPECT--

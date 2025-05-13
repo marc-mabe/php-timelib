@@ -4,22 +4,25 @@ namespace time;
 
 final class LocalDateTime implements Date, Time
 {
+    /** @var null|array{int, Month, int<1,31>}  */
+    private ?array $ymd = null;
+
     public int $year {
-        get => $this->calendar->getYmdByUnixTimestamp($this->tsSec)[0];
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec))[0];
     }
 
     public Month $month {
-        get => $this->calendar->getYmdByUnixTimestamp($this->tsSec)[1];
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec))[1];
     }
 
     public int $dayOfMonth {
-        get => $this->calendar->getYmdByUnixTimestamp($this->tsSec)[2];
+        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec))[2];
     }
 
     public int $dayOfYear  {
         get {
-            $date = $this->calendar->getYmdByUnixTimestamp($this->tsSec);
-            return $this->calendar->getDayOfYearByYmd($date[0], $date[1], $date[2]);
+            $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec);
+            return $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
         }
     }
 
@@ -61,7 +64,10 @@ final class LocalDateTime implements Date, Time
     }
 
     public LocalDate $date {
-        get => LocalDate::fromYd($this->year, $this->dayOfYear, calendar: $this->calendar);
+        get {
+            $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec);
+            return LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar);
+        }
     }
 
     public LocalTime $time {
@@ -87,15 +93,41 @@ final class LocalDateTime implements Date, Time
         public readonly WeekInfo $weekInfo,
     ) {}
 
-    public function add(Duration $duration): self
+    public function add(Duration|Period $durationOrPeriod): self
     {
-        $tuple = $duration->addToUnixTimestampTuple([$this->tsSec, $this->nanoOfSecond]);
+        if ($durationOrPeriod instanceof Period) {
+            $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec);
+
+            $ymdHms = $durationOrPeriod->addToYmd(
+                $this->ymd[0],
+                $this->ymd[1],
+                $this->ymd[2],
+                $this->hour,
+                $this->minute,
+                $this->second,
+                $this->nanoOfSecond,
+                calendar: $this->calendar,
+            );
+            return self::fromYmd(
+                $ymdHms[0],
+                $ymdHms[1],
+                $ymdHms[2],
+                $ymdHms[3],
+                $ymdHms[4],
+                $ymdHms[5],
+                $ymdHms[6],
+                calendar: $this->calendar,
+                weekInfo: $this->weekInfo,
+            );
+        }
+
+        $tuple = $durationOrPeriod->addToUnixTimestampTuple([$this->tsSec, $this->nanoOfSecond]);
         return new self($tuple[0], $tuple[1], $this->calendar, $this->weekInfo);
     }
 
-    public function sub(Duration $duration): self
+    public function sub(Duration|Period $durationOrPeriod): self
     {
-        return $this->add($duration->inverted());
+        return $this->add($durationOrPeriod->inverted());
     }
 
     public function withCalendar(Calendar $calendar): self
@@ -112,11 +144,71 @@ final class LocalDateTime implements Date, Time
             : new self($this->tsSec, $this->nanoOfSecond, $this->calendar, $weekInfo);
     }
 
+    /**
+     * @param Month|int<1, 12> $month
+     * @param int<1, 31> $dayOfMonth
+     * @param int<0, 23> $hour
+     * @param int<0, 59> $minute
+     * @param int<0, 59> $second
+     * @param int<0, 999999999> $nanoOfSecond
+     * @return self
+     */
+    public static function fromYmd(
+        int $year,
+        Month|int $month,
+        int $dayOfMonth,
+        int $hour = 0,
+        int $minute = 0,
+        int $second = 0,
+        int $nanoOfSecond = 0,
+        ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
+    ): self {
+        $calendar ??= GregorianCalendar::getInstance();
+        $month = $month instanceof Month ? $month : Month::from($month);
+
+        $ts = $calendar->getUnixTimestampByYmd($year, $month, $dayOfMonth);
+        $ts += $hour * 3600 + $minute * 60 + $second;
+
+        $ldt = new self($ts, $nanoOfSecond, calendar: $calendar, weekInfo: $weekInfo ?? WeekInfo::fromIso());
+        $ldt->ymd = [$year, $month, $dayOfMonth];
+
+        return $ldt;
+    }
+
+    /**
+     * @param int<1, 366> $dayOfYear
+     * @param int<0, 23> $hour
+     * @param int<0, 59> $minute
+     * @param int<0, 59> $second
+     * @param int<0, 999999999> $nanoOfSecond
+     */
+    public static function fromYd(
+        int $year,
+        int $dayOfYear,
+        int $hour = 0,
+        int $minute = 0,
+        int $second = 0,
+        int $nanoOfSecond = 0,
+        ?Calendar $calendar = null,
+        ?WeekInfo $weekInfo = null,
+    ): self {
+        $calendar ??= GregorianCalendar::getInstance();
+
+        $ts = $calendar->getUnixTimestampByYd($year, $dayOfYear);
+        $ts += $hour * 3600 + $minute * 60 + $second;
+
+        return new self($ts, $nanoOfSecond, calendar: $calendar, weekInfo: $weekInfo ?? WeekInfo::fromIso());
+    }
+
     public static function fromDateTime(Date $date, Time $time): self
     {
         $ts = $date->calendar->getUnixTimestampByYmd($date->year, $date->month, $date->dayOfMonth);
         $ts += $time->hour * 3600 + $time->minute * 60 + $time->second;
 
-        return new self($ts, $time->nanoOfSecond, $date->calendar, $date->weekInfo);
+        $ldt = new self($ts, $time->nanoOfSecond, $date->calendar, $date->weekInfo);
+        $ldt->ymd = [$date->year, $date->month, $date->dayOfMonth];
+
+        return $ldt;
     }
 }

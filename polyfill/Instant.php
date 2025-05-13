@@ -75,7 +75,11 @@ final class Instant implements Instanted, Date, Time, Zoned
     }
 
     public LocalDate $date {
-        get => LocalDate::fromYd($this->year, $this->dayOfYear, calendar: GregorianCalendar::getInstance());
+        get {
+            $calendar = GregorianCalendar::getInstance();
+            $this->ymd ??= $calendar->getYmdByUnixTimestamp($this->tsSec);
+            return LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $calendar);
+        }
     }
 
     public LocalTime $time {
@@ -261,23 +265,25 @@ final class Instant implements Instanted, Date, Time, Zoned
     public function truncatedTo(DateUnit|TimeUnit $unit): self
     {
         return match ($unit) {
-            DateUnit::Year => self::fromYd($this->year, 1),
+            DateUnit::Year => self::fromYmd($this->year, Month::January, 1),
             DateUnit::Month => self::fromYmd($this->year, $this->month, 1),
-            DateUnit::Day => self::fromYd($this->year, $this->dayOfYear),
-            TimeUnit::Hour => self::fromYd($this->year, $this->dayOfYear, $this->hour),
-            TimeUnit::Minute => self::fromYd($this->year, $this->dayOfYear, $this->hour, $this->minute),
-            TimeUnit::Second => self::fromYd($this->year, $this->dayOfYear, $this->hour, $this->minute, $this->second),
-            TimeUnit::Millisecond => self::fromYd(
+            DateUnit::Day => self::fromYmd($this->year, $this->month, $this->dayOfMonth),
+            TimeUnit::Hour => self::fromYmd($this->year, $this->month, $this->dayOfMonth, $this->hour),
+            TimeUnit::Minute => self::fromYmd($this->year, $this->month, $this->dayOfMonth, $this->hour, $this->minute),
+            TimeUnit::Second => self::fromYmd($this->year, $this->month, $this->dayOfMonth, $this->hour, $this->minute, $this->second),
+            TimeUnit::Millisecond => self::fromYmd(
                 $this->year,
-                $this->dayOfYear,
+                $this->month,
+                $this->dayOfMonth,
                 $this->hour,
                 $this->minute,
                 $this->second,
                 \intdiv($this->nanoOfSecond, 1_000_000) * 1_000_000, // @phpstan-ignore argument.type
             ),
-            TimeUnit::Microsecond => self::fromYd(
+            TimeUnit::Microsecond => self::fromYmd(
                 $this->year,
-                $this->dayOfYear,
+                $this->month,
+                $this->dayOfMonth,
                 $this->hour,
                 $this->minute,
                 $this->second,
