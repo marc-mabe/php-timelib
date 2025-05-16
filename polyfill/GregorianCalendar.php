@@ -240,4 +240,46 @@ final class GregorianCalendar implements Calendar
 
         return $this->getDayOfWeekByDaysSinceUnixEpoch($days);
     }
+
+    /**
+     * @param int $year
+     * @param int $month
+     * @param int $dayOfMonth
+     * @return array{int, int<1,12>, int<1,31>}
+     */
+    public function normalize(int $year, int $month, int $dayOfMonth): array
+    {
+        $year += \intdiv($month - 1, 12);
+        $month = ($month - 1) % 12;
+        if ($month < 0) {
+            $year--;
+            $month += 12;
+        }
+        $month += 1;
+
+        if ($dayOfMonth >= 1) {
+            while ($dayOfMonth > ($daysInMonth = $this->getDaysInMonth($year, $month)))  {
+                $dayOfMonth -= $daysInMonth;
+                $month++;
+                if ($month > 12) {
+                    $month = 1;
+                    $year++;
+                }
+            }
+        } else {
+            do {
+                $month--;
+                if ($month < 1) {
+                    $year--;
+                    $month = 12;
+                }
+
+                $daysInMonth = $this->getDaysInMonth($year, $month);
+                $dayOfMonth += $daysInMonth;
+            } while ($dayOfMonth < 1);
+        }
+        \assert($dayOfMonth >= 1 && $dayOfMonth <= 31); // @phpstan-ignore smallerOrEqual.alwaysTrue
+
+        return [$year, $month, $dayOfMonth];
+    }
 }

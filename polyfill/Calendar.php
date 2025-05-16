@@ -94,4 +94,14 @@ interface Calendar
      * @return DayOfWeek
      */
     public function getDayOfWeekByUnixTimestamp(int $ts): DayOfWeek;
+
+    /**
+     * Normalizes the given calendar date field values.
+     *
+     * @param int $year
+     * @param int $month
+     * @param int $dayOfMonth
+     * @return array{int, int<1,99>, int<1,31>}
+     */
+    public function normalize(int $year, int $month, int $dayOfMonth): array;
 }

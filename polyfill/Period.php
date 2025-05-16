@@ -563,42 +563,9 @@ final class Period {
             $hour += 24;
         }
 
-        while ($month > $calendar->getMonthsInYear($year)) {
-            $month -= $calendar->getMonthsInYear($year);
-            $year++;
-        }
-        while ($month <= 0) {
-            $year--;
-            $month += $calendar->getMonthsInYear($year);
-        }
-
-        if ($day >= 1) {
-            while ($day > ($daysInMonth = $calendar->getDaysInMonth($year, $month)))  {
-                $day   -= $daysInMonth;
-                $month++;
-                if ($month > $calendar->getMonthsInYear($year)) {
-                    $month = 1;
-                    $year++;
-                }
-            }
-        } else {
-            do {
-                $month--;
-                if ($month < 1) {
-                    $year--;
-                    $month = $calendar->getMonthsInYear($year);
-                }
-
-                $daysInMonth = $calendar->getDaysInMonth($year, $month);
-                $day += $daysInMonth;
-            } while ($day < 1);
-        }
-        \assert($day >= 1 && $day <= 31);
-
+        $ymd = $calendar->normalize($year, $month, $day);
         return [
-            $year,
-            $month,
-            $day,
+            ...$ymd,
             $hour,
             $minute,
             $second,
