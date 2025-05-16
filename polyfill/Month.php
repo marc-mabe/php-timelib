@@ -31,8 +31,22 @@ enum Month:int
         return self::from($this->value === 12 ? 1 : $this->value + 1);
     }
 
-    public function diff(Month $other): Period
+    /**
+     * Returns the distance of this month to another month in months.
+     *
+     * @return int<-5,6>
+     */
+    public function distance(Month $other): int
     {
-        return new Period(months: $other->value - $this->value);
+        $distance = $other->value - $this->value;
+
+        if ($distance > 6) {
+            $distance -= 12;
+        } elseif ($distance <= -6) {
+            $distance += 12;
+        }
+
+        \assert($distance >= -5 && $distance <= 6);
+        return $distance;
     }
 }
