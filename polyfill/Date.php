@@ -6,7 +6,9 @@ interface Date {
     public Calendar $calendar { get; }
 
     public int $year { get; }
-    public Month $month { get; }
+
+    /** @var int<1,99> $month */
+    public int $month { get; }
 
     /** @var int<1,31> $dayOfMonth */
     public int $dayOfMonth { get; }

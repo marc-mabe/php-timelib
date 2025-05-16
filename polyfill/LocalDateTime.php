@@ -4,14 +4,14 @@ namespace time;
 
 final class LocalDateTime implements Date, Time
 {
-    /** @var null|array{int, Month, int<1,31>}  */
+    /** @var null|array{int, int<1,99>, int<1,31>}  */
     private ?array $ymd = null;
 
     public int $year {
         get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec))[0];
     }
 
-    public Month $month {
+    public int $month {
         get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->tsSec))[1];
     }
 
@@ -145,7 +145,7 @@ final class LocalDateTime implements Date, Time
     }
 
     /**
-     * @param Month|int<1, 12> $month
+     * @param int<1, 99> $month
      * @param int<1, 31> $dayOfMonth
      * @param int<0, 23> $hour
      * @param int<0, 59> $minute
@@ -155,7 +155,7 @@ final class LocalDateTime implements Date, Time
      */
     public static function fromYmd(
         int $year,
-        Month|int $month,
+        int $month,
         int $dayOfMonth,
         int $hour = 0,
         int $minute = 0,
@@ -165,7 +165,6 @@ final class LocalDateTime implements Date, Time
         ?WeekInfo $weekInfo = null,
     ): self {
         $calendar ??= GregorianCalendar::getInstance();
-        $month = $month instanceof Month ? $month : Month::from($month);
 
         $ts = $calendar->getUnixTimestampByYmd($year, $month, $dayOfMonth);
         $ts += $hour * 3600 + $minute * 60 + $second;

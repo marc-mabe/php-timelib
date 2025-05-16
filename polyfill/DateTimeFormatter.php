@@ -76,16 +76,16 @@ class DateTimeFormatter
 
             // Month
             FormatToken::Month => $dateTimeZone instanceof Date
-                ? (string)$dateTimeZone->month->value
+                ? (string)$dateTimeZone->month
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::MonthWithLeadingZeros => $dateTimeZone instanceof Date
-                ? \str_pad((string)$dateTimeZone->month->value, 2, '0', STR_PAD_LEFT)
+                ? \str_pad((string)$dateTimeZone->month, 2, '0', STR_PAD_LEFT)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::MonthName => $dateTimeZone instanceof Date
-                ? $dateTimeZone->month->name
+                ? $dateTimeZone->calendar->getNameOfMonth($dateTimeZone->month)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::MonthAbbreviation => $dateTimeZone instanceof Date
-                ? $dateTimeZone->month->getAbbreviation()
+                ? $dateTimeZone->calendar->getAbbreviationOfMonth($dateTimeZone->month)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::DaysInMonth => $dateTimeZone instanceof Date
                 ? (string)$dateTimeZone->calendar->getDaysInMonth($dateTimeZone->year, $dateTimeZone->month)

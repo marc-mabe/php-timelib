@@ -500,18 +500,18 @@ final class Period {
 
     /**
      * @param int $year
-     * @param Month|int<1,12> $month
+     * @param int<1,99> $month
      * @param int<1,31> $dayOfMonth
      * @param int<0,23> $hour
      * @param int<0,59> $minute
      * @param int<0,59> $second
      * @param int<0,999999999> $nanoOfSecond
      * @param Calendar|null $calendar
-     * @return array{int, int<1,12>, int<1,31>, int<0,23>, int<0,59>, int<0,59>, int<0,999999999>}
+     * @return array{int, int<1,99>, int<1,31>, int<0,23>, int<0,59>, int<0,59>, int<0,999999999>}
      */
     public function addToYmd(
         int $year,
-        Month|int $month,
+        int $month,
         int $dayOfMonth,
         int $hour = 0,
         int $minute = 0,
@@ -523,7 +523,7 @@ final class Period {
 
         $bias   = $this->isNegative ? -1 : 1;
         $year   = $year + $this->years * $bias;
-        $month  = ($month instanceof Month ? $month->value : $month) + $this->months * $bias;
+        $month  = $month + $this->months * $bias;
         $day    = $dayOfMonth
             + $this->days * $bias
             + $this->weeks * 7 * $bias;
@@ -563,19 +563,20 @@ final class Period {
             $hour += 24;
         }
 
-        $year += \intdiv($month - 1, 12);
-        $month = ($month - 1) % 12;
-        if ($month < 0) {
-            $year--;
-            $month += 12;
+        while ($month > $calendar->getMonthsInYear($year)) {
+            $month -= $calendar->getMonthsInYear($year);
+            $year++;
         }
-        $month += 1;
+        while ($month <= 0) {
+            $year--;
+            $month += $calendar->getMonthsInYear($year);
+        }
 
         if ($day >= 1) {
             while ($day > ($daysInMonth = $calendar->getDaysInMonth($year, $month)))  {
                 $day   -= $daysInMonth;
                 $month++;
-                if ($month > 12) {
+                if ($month > $calendar->getMonthsInYear($year)) {
                     $month = 1;
                     $year++;
                 }
@@ -584,8 +585,8 @@ final class Period {
             do {
                 $month--;
                 if ($month < 1) {
-                    $month = 12;
                     $year--;
+                    $month = $calendar->getMonthsInYear($year);
                 }
 
                 $daysInMonth = $calendar->getDaysInMonth($year, $month);

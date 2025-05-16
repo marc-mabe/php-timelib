@@ -8,7 +8,7 @@ include __DIR__ . '/include.php';
 $utc  = time\Zone::fromIdentifier('UTC');
 $bln  = time\Zone::fromIdentifier('Europe/Berlin');
 
-$date = time\LocalDate::fromYmd(2000, time\Month::October, 29);
+$date = time\LocalDate::fromYmd(2000, 10, 29);
 $time = time\LocalTime::fromHms(2, 30, 3, 123456);
 
 echo "ZonedDateTime::fromDateTime(" . stringify($date) . ", " . stringify($time) . ", " . stringify($utc) . ")\n";
@@ -30,19 +30,19 @@ try {
     echo $e::class . ': ' . $e->getMessage() . "\n";
 }
 
-$date = time\LocalDate::fromYmd(2000, time\Month::October, 29);
+$date = time\LocalDate::fromYmd(2000, 10, 29);
 $time = time\LocalTime::fromHms(1, 59, 59);
 
 echo "ZonedDateTime::fromDateTime(" . stringify($date) . ", " . stringify($time) . ", " . stringify($bln) . ")\n";
 echo stringify(time\ZonedDateTime::fromDateTime($date, $time, $bln)) . "\n";
 
-$date = time\LocalDate::fromYmd(2000, time\Month::October, 29);
+$date = time\LocalDate::fromYmd(2000, 10, 29);
 $time = time\LocalTime::fromHms(3, 0, 0);
 
 echo "ZonedDateTime::fromDateTime(" . stringify($date) . ", " . stringify($time) . ", " . stringify($bln) . ")\n";
 echo stringify(time\ZonedDateTime::fromDateTime($date, $time, $bln)) . "\n";
 
-$date = time\LocalDate::fromYmd(2000, time\Month::October, 29);
+$date = time\LocalDate::fromYmd(2000, 10, 29);
 $time = time\LocalTime::fromHms(2, 30, 3, 123456);
 $date = $time = time\LocalDateTime::fromDateTime($date, $time);
 

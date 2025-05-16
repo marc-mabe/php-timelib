@@ -8,7 +8,7 @@ final class LocalDate implements Date
         get => $this->calendar->getYmdByDaysSinceUnixEpoch($this->daysSinceEpoch)[0];
     }
 
-    public Month $month {
+    public int $month {
         get => $this->calendar->getYmdByDaysSinceUnixEpoch($this->daysSinceEpoch)[1];
     }
 
@@ -57,12 +57,12 @@ final class LocalDate implements Date
     }
 
     /**
-     * @param Month|int<1,12> $month
+     * @param int<1,99> $month
      * @param int<1,31> $dayOfMonth
      */
     public static function fromYmd(
         int $year,
-        Month|int $month,
+        int $month,
         int $dayOfMonth,
         ?Calendar $calendar = null,
         ?WeekInfo $weekInfo = null,

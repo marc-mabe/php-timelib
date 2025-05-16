@@ -4,14 +4,14 @@ namespace time;
 
 final class ZonedDateTime implements Instanted, Date, Time, Zoned
 {
-    /** @var null|array{int, Month, int<1,31>}  */
+    /** @var null|array{int, int<1,99>, int<1,31>}  */
     private ?array $ymd = null;
 
     public int $year {
         get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec))[0];
     }
 
-    public Month $month {
+    public int $month {
         get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec))[1];
     }
 
@@ -239,7 +239,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     }
 
     /**
-     * @param Month|int<1, 12> $month
+     * @param int<1, 99> $month
      * @param int<1, 31> $dayOfMonth
      * @param int<0, 23> $hour
      * @param int<0, 59> $minute
@@ -248,7 +248,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
      */
     public static function fromYmd(
         int $year,
-        Month|int $month,
+        int $month,
         int $dayOfMonth,
         int $hour = 0,
         int $minute = 0,
@@ -261,7 +261,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     ): self {
         $calendar ??= GregorianCalendar::getInstance();
 
-        $month     = $month instanceof Month ? $month : Month::from($month);
         $localDays = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
         $localTs   = $localDays * 60 * 60 * 24;
         $localTs  += $hour * 3600 + $minute * 60 + $second;

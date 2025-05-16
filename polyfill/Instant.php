@@ -10,14 +10,15 @@ final class Instant implements Instanted, Date, Time, Zoned
         get => GregorianCalendar::getInstance();
     }
 
-    /** @var null|array{int, Month, int<1,31>}  */
+    /** @var null|array{int, int<1,12>, int<1,31>}  */
     private ?array $ymd = null;
 
     public int $year {
         get => ($this->ymd ??= GregorianCalendar::getInstance()->getYmdByUnixTimestamp($this->tsSec))[0];
     }
 
-    public Month $month {
+    /** @var int<1,12> */
+    public int $month {
         get => ($this->ymd ??= GregorianCalendar::getInstance()->getYmdByUnixTimestamp($this->tsSec))[1];
     }
 
@@ -161,8 +162,8 @@ final class Instant implements Instanted, Date, Time, Zoned
         );
     }
 
-    /** @param Month|int<1, 12> $month */
-    public function withMonth(Month|int $month): self
+    /** @param int<1, 12> $month */
+    public function withMonth(int $month): self
     {
         return self::fromYmd(
             $this->year,
@@ -265,7 +266,7 @@ final class Instant implements Instanted, Date, Time, Zoned
     public function truncatedTo(DateUnit|TimeUnit $unit): self
     {
         return match ($unit) {
-            DateUnit::Year => self::fromYmd($this->year, Month::January, 1),
+            DateUnit::Year => self::fromYmd($this->year, 1, 1),
             DateUnit::Month => self::fromYmd($this->year, $this->month, 1),
             DateUnit::Day => self::fromYmd($this->year, $this->month, $this->dayOfMonth),
             TimeUnit::Hour => self::fromYmd($this->year, $this->month, $this->dayOfMonth, $this->hour),
@@ -424,7 +425,7 @@ final class Instant implements Instanted, Date, Time, Zoned
     }
 
     /**
-     * @param Month|int<1, 12> $month
+     * @param int<1, 99> $month
      * @param int<1, 31> $dayOfMonth
      * @param int<0, 23> $hour
      * @param int<0, 59> $minute
@@ -434,7 +435,7 @@ final class Instant implements Instanted, Date, Time, Zoned
      */
     public static function fromYmd(
         int $year,
-        Month|int $month,
+        int $month,
         int $dayOfMonth,
         int $hour = 0,
         int $minute = 0,
