@@ -82,10 +82,10 @@ class DateTimeFormatter
                 ? \str_pad((string)$dateTimeZone->month, 2, '0', STR_PAD_LEFT)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::MonthName => $dateTimeZone instanceof Date
-                ? $dateTimeZone->calendar->getNameOfMonth($dateTimeZone->month)
+                ? $dateTimeZone->calendar->getNameOfMonth($dateTimeZone->year, $dateTimeZone->month)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::MonthAbbreviation => $dateTimeZone instanceof Date
-                ? $dateTimeZone->calendar->getAbbreviationOfMonth($dateTimeZone->month)
+                ? $dateTimeZone->calendar->getAbbreviationOfMonth($dateTimeZone->year, $dateTimeZone->month)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::DaysInMonth => $dateTimeZone instanceof Date
                 ? (string)$dateTimeZone->calendar->getDaysInMonth($dateTimeZone->year, $dateTimeZone->month)

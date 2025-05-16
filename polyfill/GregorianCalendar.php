@@ -69,7 +69,7 @@ final class GregorianCalendar implements Calendar
     }
 
     /** @param int<1,12> $month */
-    public function getNameOfMonth(int $month): string
+    public function getNameOfMonth(int $year, int $month): string
     {
         return match ($month) {
             1 => 'January',
@@ -88,9 +88,9 @@ final class GregorianCalendar implements Calendar
     }
 
     /** @param int<1,12> $month */
-    public function getAbbreviationOfMonth(int $month): string
+    public function getAbbreviationOfMonth(int $year, int $month): string
     {
-        return \substr($this->getNameOfMonth($month), 0, 3);
+        return \substr($this->getNameOfMonth($year, $month), 0, 3);
     }
 
     /**

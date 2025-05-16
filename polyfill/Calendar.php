@@ -18,13 +18,13 @@ interface Calendar
      * @param int<1,99> $month
      * @return non-empty-string
      */
-    public function getNameOfMonth(int $month): string;
+    public function getNameOfMonth(int $year, int $month): string;
 
     /**
      * @param int<1,99> $month
      * @return non-empty-string
      */
-    public function getAbbreviationOfMonth(int $month): string;
+    public function getAbbreviationOfMonth(int $year, int $month): string;
 
     /**
      * Calculates the year, month and day of month from the given number of days since unix epoch.
