@@ -15,6 +15,7 @@ use time\ZonedDateTime;
 use time\ZoneInfo;
 use time\ZoneTransition;
 use time\Interval;
+use time\RepeatingInterval;
 
 include __DIR__ . '/../vendor/autoload.php';
 
@@ -94,6 +95,10 @@ function stringifyInterval(Interval $interval) {
     return "Interval('{$interval->toIso80000()}')";
 }
 
+function stringifyRepeatingInterval(RepeatingInterval $interval) {
+    return "RepeatingInterval('{$interval->toIso8601()}')";
+}
+
 function stringify(mixed $v) {
     return match (true) {
         is_int($v) => (string)$v,
@@ -115,6 +120,7 @@ function stringify(mixed $v) {
         $v instanceof StopWatch => stringifyStopWatch($v),
         $v instanceof WeekInfo => stringifyWeekInfo($v),
         $v instanceof Interval => stringifyInterval($v),
+        $v instanceof RepeatingInterval => stringifyRepeatingInterval($v),
         is_array($v) && array_is_list($v) => '[' . implode(', ', array_map('stringify', $v)) . ']',
     };
 }
