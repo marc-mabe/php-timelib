@@ -12,7 +12,5 @@ ENV COMPOSER_HTACCESS_PROTECT=0
 ENV COMPOSER_CACHE_DIR=/.composer
 
 # install PHP extensions
-#RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS linux-headers \
-#  && pecl install xdebug \
-#  && docker-php-ext-enable xdebug \
-#  && apk del --no-cache .build-deps
+RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS linux-headers \
+    && docker-php-ext-install calendar && docker-php-ext-enable calendar

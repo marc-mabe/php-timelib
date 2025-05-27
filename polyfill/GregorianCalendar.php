@@ -22,6 +22,8 @@ final class GregorianCalendar implements Calendar
     private const int HINNANT_DAYS_PER_ERA = self::HINNANT_YEARS_PER_ERA * self::DAYS_PER_YEAR_COMMON
         + self::HINNANT_LEAP_YEARS_PER_ERA;
 
+    private const int JULIAN_DAY_OFFSET = 32045;
+
     /**
      * Number of days between Hinnant epoch (0000-03-01) and unix epoch (1970-01-01)
      */
@@ -281,5 +283,88 @@ final class GregorianCalendar implements Calendar
         \assert($dayOfMonth >= 1 && $dayOfMonth <= 31); // @phpstan-ignore smallerOrEqual.alwaysTrue
 
         return [$year, $month, $dayOfMonth];
+    }
+
+    /**
+     * Converts a julian day number into a date [year, month, dayOfMonth].
+     *
+     * @param float|int<1,max> $julianDay
+     * @return array{int, int<1,12>, int<1,31>}
+     */
+    public function getYmdFromJdn(int|float $julianDay): array
+    {
+        $daysPer5Month = 153;
+        $daysPer4Years = 1461;
+        $julianDay = (int)$julianDay;
+
+        if ($julianDay > (PHP_INT_MAX - 4 * self::JULIAN_DAY_OFFSET) / 4) {
+            throw new \InvalidArgumentException(
+                'Julian day must be lower than or equal to ' . ((PHP_INT_MAX - 4 * self::JULIAN_DAY_OFFSET) / 4)
+            );
+        }
+
+        $temp = ($julianDay + self::JULIAN_DAY_OFFSET) * 4 - 1;
+        if ($temp < 0 || \intdiv($temp, self::HINNANT_DAYS_PER_ERA) > PHP_INT_MAX) {
+            throw new \InvalidArgumentException('Not sure if this is correct'); // TODO
+        }
+
+        $century = \intdiv($temp, self::HINNANT_DAYS_PER_ERA);
+
+        // Calculate the year and day of year (1 <= dayOfYear <= 366)
+        $temp = \intdiv($temp % self::HINNANT_DAYS_PER_ERA, 4) * 4 + 3;
+
+        if ($century > (\intdiv(PHP_INT_MAX, 100) - \intdiv($temp, $daysPer4Years))) {
+            throw new \InvalidArgumentException('Not sure if this is correct'); // TODO
+        }
+
+        $year = ($century * 100) + \intdiv($temp, $daysPer4Years) - 4800;
+        $dayOfYear = \intdiv(($temp % $daysPer4Years), 4) + 1;
+
+        /* Calculate the month and day of month. */
+        $temp = $dayOfYear * 5 - 3;
+        $month = \intdiv($temp, $daysPer5Month);
+        $dom = \intdiv(($temp % $daysPer5Month), 5) + 1;
+
+        // Convert to the normal beginning of the year
+        if ($month < 10) {
+            $month += 3;
+        } else {
+            $year += 1;
+            $month -= 9;
+        }
+
+        \assert($month >= 1 && $month <= 12);
+        \assert($dom >= 1 && $dom <= 31);
+        return [$year, $month, $dom];
+    }
+
+    /**
+     * Converts the date [year, month, dayOfMonth] into a julian day number.
+     *
+     * @param int<-4714,max> $year
+     * @param int<1,12> $month
+     * @param int<1,31> $dayOfMonth
+     */
+    public function getJdnFromYmd(int $year, int $month, int $dayOfMonth): int
+    {
+        $daysPer5Month = 153;
+        $daysPer4Years = 1461;
+
+        // Make year always a positive number
+        $year = $year + 4800;
+
+        // Adjust the start of the year
+        if ($month > 2) {
+            $month = $month - 3;
+        } else {
+            $month = $month + 9;
+            $year--;
+        }
+
+        return \intdiv((\intdiv($year, 100) * self::HINNANT_DAYS_PER_ERA), 4)
+            + \intdiv((($year % 100) * $daysPer4Years), 4)
+            + \intdiv(($month * $daysPer5Month + 2), 5)
+            + $dayOfMonth
+            - self::JULIAN_DAY_OFFSET;
     }
 }
