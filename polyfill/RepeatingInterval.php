@@ -4,6 +4,7 @@ namespace time;
 
 use Traversable;
 
+/** @implements \IteratorAggregate<int, Instanted> */
 final class RepeatingInterval implements \IteratorAggregate
 {
     public ?Instanted $end  {
@@ -31,9 +32,9 @@ final class RepeatingInterval implements \IteratorAggregate
 
     /** @param null|int<0,max> $repetitions */
     public function __construct(
-        public readonly ?int $repetitions,
         public readonly Instanted $start,
         public readonly Duration|Period $durationOrPeriod,
+        public readonly ?int $repetitions,
     ) {}
 
     public function getIterator(): Traversable
