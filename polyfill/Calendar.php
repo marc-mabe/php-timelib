@@ -34,45 +34,21 @@ interface Calendar
     public function getYmdByDaysSinceUnixEpoch(int $days): array;
 
     /**
-     * Calculates the year, month and day of month from the given unix timestamp (in seconds).
-     *
-     * @return array{int, int<1,99>, int<1, 31>}
-     */
-    public function getYmdByUnixTimestamp(int $ts): array;
-
-    /**
      * Calculates the number of days since 1970-01-01 for the given year, month and day of month.
      *
      * @param int $year
      * @param int<1,99> $month
-     * @param int<1, 31> $dayOfMonth
+     * @param int<1,31> $dayOfMonth
      * @return int
      */
     public function getDaysSinceUnixEpochByYmd(int $year, int $month, int $dayOfMonth): int;
 
     /**
-     * Calculates the number of seconds since 1970-01-01 00:00:00 UTC for the given year, month and day of month.
-     *
      * @param int $year
-     * @param int<1,99> $month
-     * @param int<1, 31> $dayOfMonth
-     * @return int
-     */
-    public function getUnixTimestampByYmd(int $year, int $month, int $dayOfMonth): int;
-
-    /**
-     * @param int $year
-     * @param int<1, 366> $dayOfYear
+     * @param int<1,366> $dayOfYear
      * @return int
      */
     public function getDaysSinceUnixEpochByYd(int $year, int $dayOfYear): int;
-
-    /**
-     * @param int $year
-     * @param int<1, 366> $dayOfYear
-     * @return int
-     */
-    public function getUnixTimestampByYd(int $year, int $dayOfYear): int;
 
     /**
      * @param int<1,99> $month
@@ -89,11 +65,19 @@ interface Calendar
     public function getDayOfWeekByDaysSinceUnixEpoch(int $days): DayOfWeek;
 
     /**
-     * Calculates the day of week from the given unix timestamp (in seconds).
+     * Converts a julian day number into a date [year, month, dayOfMonth].
      *
-     * @return DayOfWeek
+     * @return array{int, int<1,99>, int<1,31>}
      */
-    public function getDayOfWeekByUnixTimestamp(int $ts): DayOfWeek;
+    public function getYmdByJdn(int|float $julianDay): array;
+
+    /**
+     * Converts the date [year, month, dayOfMonth] into a julian day number.
+     *
+     * @param int<1,99> $month
+     * @param int<1,31> $dayOfMonth
+     */
+    public function getJdnByYmd(int $year, int $month, int $dayOfMonth): int;
 
     /**
      * Normalizes the given calendar date field values.

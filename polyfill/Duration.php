@@ -34,14 +34,14 @@ final class Duration
         get => \intdiv($this->totalSeconds, 60);
     }
 
-    /** @var int<0, 59> */
+    /** @var int<0,59> */
     public int $minutesOfHour {
         get => \abs($this->totalMinutes % 60);
     }
 
     public int $totalSeconds;
 
-    /** @var int<0, 59> */
+    /** @var int<0,59> */
     public int $secondsOfMinute {
         get => \abs($this->totalSeconds % 60);
     }
@@ -50,7 +50,7 @@ final class Duration
         get => \intdiv($this->nanosOfSecond, 1_000_000) + ($this->totalSeconds * 1_000);
     }
 
-    /** @var int<0, 999> */
+    /** @var int<0,999> */
     public int $millisOfSecond {
         /** @phpstan-ignore return.type */
         get => \intdiv($this->nanosOfSecond, 1_000_000);
@@ -60,7 +60,7 @@ final class Duration
         get => \intdiv($this->nanosOfSecond, 1_000) + ($this->totalSeconds * 1_000_000);
     }
 
-    /** @var int<0, 999999> */
+    /** @var int<0,999999> */
     public int $microsOfSecond {
         /** @phpstan-ignore return.type */
         get => \intdiv($this->nanosOfSecond, 1_000);
@@ -70,7 +70,7 @@ final class Duration
         get => $this->nanosOfSecond + ($this->totalSeconds * 1_000_000_000);
     }
 
-    /** @var int<0, 999999999> */
+    /** @var int<0,999999999> */
     public int $nanosOfSecond;
 
     public function __construct(

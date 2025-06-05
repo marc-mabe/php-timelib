@@ -4,30 +4,44 @@ namespace time;
 
 final class ZonedDateTime implements Instanted, Date, Time, Zoned
 {
-    /** @var null|array{int, int<1,99>, int<1,31>}  */
-    private ?array $ymd = null;
+    private const int SECONDS_PER_DAY = 24 * 3600;
 
-    public int $year {
-        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec))[0];
-    }
-
-    public int $month {
-        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec))[1];
-    }
-
-    public int $dayOfMonth {
-        get => ($this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec))[2];
-    }
-
-    public int $dayOfYear {
+    /** @var array{int, int<1,99>, int<1,31>}  */
+    private array $ymd {
         get {
-            $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec);
-            return $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
+            if (!isset($this->ymd)) {
+                $days = \intdiv($this->adjustedSec, self::SECONDS_PER_DAY);
+                $days -= (int)(($this->adjustedSec % self::SECONDS_PER_DAY) < 0);
+                $this->ymd = $this->calendar->getYmdByDaysSinceUnixEpoch($days);
+            }
+
+            return $this->ymd;
         }
     }
 
+    public int $year {
+        get => $this->ymd[0];
+    }
+
+    public int $month {
+        get => $this->ymd[1];
+    }
+
+    public int $dayOfMonth {
+        get => $this->ymd[2];
+    }
+
+    public int $dayOfYear {
+        get => $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
+    }
+
     public DayOfWeek $dayOfWeek {
-        get => $this->calendar->getDayOfWeekByUnixTimestamp($this->adjustedSec);
+        get {
+            $days = \intdiv($this->adjustedSec, self::SECONDS_PER_DAY);
+            $days -= (int)(($this->adjustedSec % self::SECONDS_PER_DAY) < 0);
+
+            return $this->calendar->getDayOfWeekByDaysSinceUnixEpoch($days);
+        }
     }
 
     public int $hour {
@@ -70,10 +84,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     }
 
     public LocalDate $date {
-        get {
-            $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec);
-            return LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar, weekInfo:  $this->weekInfo);
-        }
+        get => LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar, weekInfo:  $this->weekInfo);
     }
 
     public LocalTime $time {
@@ -115,7 +126,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             );
         }
 
-        $this->ymd ??= $this->calendar->getYmdByUnixTimestamp($this->adjustedSec);
         $ymdHms = $durationOrPeriod->addToYmd(
             $this->ymd[0],
             $this->ymd[1],
@@ -192,7 +202,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         return $this->instant->toUnixTimestamp($unit, $fractions);
     }
 
-    /** @return array{int, int<0, 999999999>} */
+    /** @return array{int, int<0,999999999>} */
     public function toUnixTimestampTuple(): array
     {
         return $this->instant->toUnixTimestampTuple();
@@ -225,7 +235,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         );
     }
 
-    /** @param array{int, int<0, 999999999>} $timestampTuple */
+    /** @param array{int, int<0,999999999>} $timestampTuple */
     public static function fromUnixTimestampTuple(
         array $timestampTuple,
         ?Calendar $calendar = null,
@@ -239,12 +249,12 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     }
 
     /**
-     * @param int<1, 99> $month
-     * @param int<1, 31> $dayOfMonth
-     * @param int<0, 23> $hour
-     * @param int<0, 59> $minute
-     * @param int<0, 59> $second
-     * @param int<0, 999999999> $nanoOfSecond
+     * @param int<1,99> $month
+     * @param int<1,31> $dayOfMonth
+     * @param int<0,23> $hour
+     * @param int<0,59> $minute
+     * @param int<0,59> $second
+     * @param int<0,999999999> $nanoOfSecond
      */
     public static function fromYmd(
         int $year,
@@ -281,11 +291,11 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     }
 
     /**
-     * @param int<1, 366> $dayOfYear
-     * @param int<0, 23> $hour
-     * @param int<0, 59> $minute
-     * @param int<0, 59> $second
-     * @param int<0, 999999999> $nanoOfSecond
+     * @param int<1,366> $dayOfYear
+     * @param int<0,23> $hour
+     * @param int<0,59> $minute
+     * @param int<0,59> $second
+     * @param int<0,999999999> $nanoOfSecond
      */
     public static function fromYd(
         int $year,

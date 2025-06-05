@@ -5,32 +5,32 @@ GregorianCalendar: Julian day number conversion
 
 include __DIR__ . '/include.php';
 
-$gcal = time\GregorianCalendar::getInstance();
+$cal = time\GregorianCalendar::getInstance();
 
-$ymd = $gcal->getYmdFromJdn(0);
+$ymd = $cal->getYmdByJdn(0);
 echo "0 (Nov 24th 4714 B.C.) -> {$ymd[0]}-{$ymd[1]}-{$ymd[2]}\n";
-echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$gcal->getJdnFromYmd(...$ymd)}\n";
+echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$cal->getJdnByYmd(...$ymd)}\n";
 
-$ymd = $gcal->getYmdFromJdn(1);
+$ymd = $cal->getYmdByJdn(1);
 echo "1 (Nov 25th 4714 B.C.) -> {$ymd[0]}-{$ymd[1]}-{$ymd[2]}\n";
-echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$gcal->getJdnFromYmd(...$ymd)}\n";
+echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$cal->getJdnByYmd(...$ymd)}\n";
 
-$ymd = $gcal->getYmdFromJdn(1721425);
+$ymd = $cal->getYmdByJdn(1721425);
 echo "1721425 (Dec 31st 0001 B.C.) -> {$ymd[0]}-{$ymd[1]}-{$ymd[2]}\n";
-echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$gcal->getJdnFromYmd(...$ymd)}\n";
+echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$cal->getJdnByYmd(...$ymd)}\n";
 
-$ymd = $gcal->getYmdFromJdn(1721426);
+$ymd = $cal->getYmdByJdn(1721426);
 echo "1721426 (Jan 1st 0001 A.C.) -> {$ymd[0]}-{$ymd[1]}-{$ymd[2]}\n";
-echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$gcal->getJdnFromYmd(...$ymd)}\n";
+echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$cal->getJdnByYmd(...$ymd)}\n";
 
-$ymd = $gcal->getYmdFromJdn(2460822);
+$ymd = $cal->getYmdByJdn(2460822);
 echo "2460822 (May 26st 2025 A.C.) -> {$ymd[0]}-{$ymd[1]}-{$ymd[2]}\n";
-echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$gcal->getJdnFromYmd(...$ymd)}\n";
+echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$cal->getJdnByYmd(...$ymd)}\n";
 
 // 31^2-1
-$ymd = $gcal->getYmdFromJdn(2147483647);
+$ymd = $cal->getYmdByJdn(2147483647);
 echo "2147483647 (Jun 3rd 5874898 A.C.) -> {$ymd[0]}-{$ymd[1]}-{$ymd[2]}\n";
-echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$gcal->getJdnFromYmd(...$ymd)}\n";
+echo "{$ymd[0]}-{$ymd[1]}-{$ymd[2]} -> {$cal->getJdnByYmd(...$ymd)}\n";
 
 --EXPECT--
 0 (Nov 24th 4714 B.C.) -> -4713-11-24

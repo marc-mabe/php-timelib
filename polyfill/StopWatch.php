@@ -4,7 +4,7 @@ namespace time;
 
 class StopWatch
 {
-    /** @var null|array{int, int<0, 999999999>}  */
+    /** @var null|array{int, int<0,999999999>}  */
     private ?array $startedAt = null;
 
     /** Elapsed nano seconds of previous runs */

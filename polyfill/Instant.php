@@ -4,38 +4,51 @@ namespace time;
 
 final class Instant implements Instanted, Date, Time, Zoned
 {
+    public const int SECONDS_PER_DAY = 24 * 3600;
+
     public readonly Instant $instant;
 
-    public Calendar $calendar {
+    public GregorianCalendar $calendar {
         get => GregorianCalendar::getInstance();
     }
 
-    /** @var null|array{int, int<1,12>, int<1,31>}  */
-    private ?array $ymd = null;
+    /** @var array{int, int<1,12>, int<1,31>}  */
+    private array $ymd {
+        get {
+            if (!isset($this->ymd)) {
+                $days = \intdiv($this->tsSec, self::SECONDS_PER_DAY);
+                $days -= (int)(($this->tsSec % self::SECONDS_PER_DAY) < 0);
+                $this->ymd = $this->calendar->getYmdByDaysSinceUnixEpoch($days);
+            }
+
+            return $this->ymd;
+        }
+    }
 
     public int $year {
-        get => ($this->ymd ??= GregorianCalendar::getInstance()->getYmdByUnixTimestamp($this->tsSec))[0];
+        get => $this->ymd[0];
     }
 
     /** @var int<1,12> */
     public int $month {
-        get => ($this->ymd ??= GregorianCalendar::getInstance()->getYmdByUnixTimestamp($this->tsSec))[1];
+        get => $this->ymd[1];
     }
 
     public int $dayOfMonth {
-        get => ($this->ymd ??= GregorianCalendar::getInstance()->getYmdByUnixTimestamp($this->tsSec))[2];
+        get => $this->ymd[2];
     }
 
     public int $dayOfYear {
-        get {
-            $calendar = GregorianCalendar::getInstance();
-            $this->ymd ??= $calendar->getYmdByUnixTimestamp($this->tsSec);
-            return $calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
-        }
+        get => $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
     }
 
     public DayOfWeek $dayOfWeek {
-        get => GregorianCalendar::getInstance()->getDayOfWeekByUnixTimestamp($this->tsSec);
+        get {
+            $days = \intdiv($this->tsSec, self::SECONDS_PER_DAY);
+            $days -= (int)(($this->tsSec % self::SECONDS_PER_DAY) < 0);
+
+            return $this->calendar->getDayOfWeekByDaysSinceUnixEpoch($days);
+        }
     }
 
     public int $hour {
@@ -76,11 +89,7 @@ final class Instant implements Instanted, Date, Time, Zoned
     }
 
     public LocalDate $date {
-        get {
-            $calendar = GregorianCalendar::getInstance();
-            $this->ymd ??= $calendar->getYmdByUnixTimestamp($this->tsSec);
-            return LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $calendar);
-        }
+        get => LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar);
     }
 
     public LocalTime $time {
@@ -104,7 +113,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         get => WeekInfo::fromIso()->getYearOfWeek($this);
     }
 
-    /** @param int<0, 999999999> $nanoOfSecond */
+    /** @param int<0,999999999> $nanoOfSecond */
     private function __construct(
         private readonly int $tsSec,
         public readonly int $nanoOfSecond,
@@ -115,9 +124,6 @@ final class Instant implements Instanted, Date, Time, Zoned
     public function add(Duration|Period $durationOrPeriod): self
     {
         if ($durationOrPeriod instanceof Period) {
-            $calendar = GregorianCalendar::getInstance();
-            $this->ymd ??= $calendar->getYmdByUnixTimestamp($this->tsSec);
-
             $ymdHms = $durationOrPeriod->addToYmd(
                 $this->ymd[0],
                 $this->ymd[1],
@@ -126,7 +132,7 @@ final class Instant implements Instanted, Date, Time, Zoned
                 $this->minute,
                 $this->second,
                 $this->nanoOfSecond,
-                calendar: $calendar,
+                calendar: $this->calendar,
             );
 
             return self::fromYmd(
@@ -162,7 +168,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         );
     }
 
-    /** @param int<1, 12> $month */
+    /** @param int<1,12> $month */
     public function withMonth(int $month): self
     {
         return self::fromYmd(
@@ -176,7 +182,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         );
     }
 
-    /** @param int<1, 31> $dayOfMonth */
+    /** @param int<1,31> $dayOfMonth */
     public function withDayOfMonth(int $dayOfMonth): self
     {
         return self::fromYmd(
@@ -190,7 +196,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         );
     }
 
-    /** @param int<1, 366> $dayOfYear */
+    /** @param int<1,366> $dayOfYear */
     public function withDayOfYear(int $dayOfYear): self
     {
         return self::fromYd(
@@ -203,7 +209,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         );
     }
 
-    /** @param int<0, 23> $hour */
+    /** @param int<0,23> $hour */
     public function withHour(int $hour): self
     {
         return self::fromYmd(
@@ -217,7 +223,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         );
     }
 
-    /** @param int<0, 59> $minute */
+    /** @param int<0,59> $minute */
     public function withMinute(int $minute): self
     {
         return self::fromYmd(
@@ -231,7 +237,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         );
     }
 
-    /** @param int<0, 59> $second */
+    /** @param int<0,59> $second */
     public function withSecond(int $second): self
     {
         return self::fromYmd(
@@ -245,19 +251,19 @@ final class Instant implements Instanted, Date, Time, Zoned
         );
     }
 
-    /** @param int<0, 999> $milliOfSecond */
+    /** @param int<0,999> $milliOfSecond */
     public function withMilliOfSecond(int $milliOfSecond): self
     {
         return new self($this->tsSec, $milliOfSecond * 1_000_000);
     }
 
-    /** @param int<0, 999999> $microOfSecond */
+    /** @param int<0,999999> $microOfSecond */
     public function withMicroOfSecond(int $microOfSecond): self
     {
         return new self($this->tsSec, $microOfSecond * 1_000);
     }
 
-    /** @param int<0, 999999999> $nanoOfSecond */
+    /** @param int<0,999999999> $nanoOfSecond */
     public function withNanoOfSecond(int $nanoOfSecond): self
     {
         return new self($this->tsSec, $nanoOfSecond);
@@ -324,7 +330,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         };
     }
 
-    /** @return array{int, int<0, 999999999>} */
+    /** @return array{int, int<0,999999999>} */
     public function toUnixTimestampTuple(): array {
         return [$this->tsSec, $this->nanoOfSecond];
     }
@@ -393,18 +399,18 @@ final class Instant implements Instanted, Date, Time, Zoned
         return new self($tsSecInt, $ns);
     }
 
-    /** @param array{int, int<0, 999999999>} $timestampTuple */
+    /** @param array{int, int<0,999999999>} $timestampTuple */
     public static function fromUnixTimestampTuple(array $timestampTuple): self
     {
         return new self($timestampTuple[0], $timestampTuple[1]);
     }
 
     /**
-     * @param int<1, 366> $dayOfYear
-     * @param int<0, 23> $hour
-     * @param int<0, 59> $minute
-     * @param int<0, 59> $second
-     * @param int<0, 999999999> $nanoOfSecond
+     * @param int<1,366> $dayOfYear
+     * @param int<0,23> $hour
+     * @param int<0,59> $minute
+     * @param int<0,59> $second
+     * @param int<0,999999999> $nanoOfSecond
      * @return self
      */
     public static function fromYd(
@@ -418,19 +424,19 @@ final class Instant implements Instanted, Date, Time, Zoned
     ): self {
         $calendar = $calendar ?? GregorianCalendar::getInstance();
 
-        $ts = $calendar->getUnixTimestampByYd($year, $dayOfYear);
+        $ts = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear) * self::SECONDS_PER_DAY;
         $ts += $hour * 3600 + $minute * 60 + $second;
 
         return new self($ts, $nanoOfSecond);
     }
 
     /**
-     * @param int<1, 99> $month
-     * @param int<1, 31> $dayOfMonth
-     * @param int<0, 23> $hour
-     * @param int<0, 59> $minute
-     * @param int<0, 59> $second
-     * @param int<0, 999999999> $nanoOfSecond
+     * @param int<1,99> $month
+     * @param int<1,31> $dayOfMonth
+     * @param int<0,23> $hour
+     * @param int<0,59> $minute
+     * @param int<0,59> $second
+     * @param int<0,999999999> $nanoOfSecond
      * @return self
      */
     public static function fromYmd(
@@ -445,7 +451,7 @@ final class Instant implements Instanted, Date, Time, Zoned
     ): self {
         $calendar ??= GregorianCalendar::getInstance();
 
-        $ts = $calendar->getUnixTimestampByYmd($year, $month, $dayOfMonth);
+        $ts = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth) * self::SECONDS_PER_DAY;
         $ts += $hour * 3600 + $minute * 60 + $second;
 
         return new self($ts, $nanoOfSecond);

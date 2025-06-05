@@ -24,8 +24,8 @@ final class LocalTime implements Time {
     }
 
     /**
-     * @param int<0, 86399> $secondsSinceMidnight
-     * @param int<0, 999999999> $nanoOfSecond
+     * @param int<0,86399> $secondsSinceMidnight
+     * @param int<0,999999999> $nanoOfSecond
      */
     private function __construct(
         private readonly int $secondsSinceMidnight,
@@ -33,10 +33,10 @@ final class LocalTime implements Time {
     ) {}
 
     /**
-     * @param int<0, 23> $hour
-     * @param int<0, 59> $minute
-     * @param int<0, 59> $second
-     * @param int<0, 999999999> $nanoOfSecond
+     * @param int<0,23> $hour
+     * @param int<0,59> $minute
+     * @param int<0,59> $second
+     * @param int<0,999999999> $nanoOfSecond
      */
     public static function fromHms(
         int $hour,

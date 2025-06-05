@@ -4,7 +4,7 @@ namespace time;
 
 final class WallClock implements Clock
 {
-    /** @var \Closure(): array{int, int<0, 999999999>} */
+    /** @var \Closure(): array{int, int<0,999999999>} */
     private static \Closure $globalTimer;
     private static Duration $globalTimerResolution;
 
@@ -65,7 +65,7 @@ final class WallClock implements Clock
         return $this->takeInstant()->toUnixTimestamp($unit, $fractions);
     }
 
-    /** @return array{int, int<0, 999999999>} */
+    /** @return array{int, int<0,999999999>} */
     public function takeUnixTimestampTuple(): array
     {
         return ($this->timer)();

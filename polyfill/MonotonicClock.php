@@ -62,7 +62,7 @@ final class MonotonicClock implements Clock
         return $this->takeInstant()->toUnixTimestamp($unit, $fractions);
     }
 
-    /** @return array{int, int<0, 999999999>} */
+    /** @return array{int, int<0,999999999>} */
     public function takeUnixTimestampTuple(): array
     {
         return ($this->timer)();
