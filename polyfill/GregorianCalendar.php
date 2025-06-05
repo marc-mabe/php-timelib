@@ -232,7 +232,7 @@ final class GregorianCalendar implements Calendar
         $dow = $dow - 3;                    // -3 (Thu) - 3 (Wed)
         $dow = $dow <= 0 ? $dow + 7 : $dow; //  1 (Mon) - 7 (Sun)
 
-        return DayOfWeek::from($dow);
+        return DayOfWeek::fromIsoNumber($dow);
     }
 
     public function getDayOfWeekByUnixTimestamp(int $ts): DayOfWeek

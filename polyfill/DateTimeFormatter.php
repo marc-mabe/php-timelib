@@ -207,8 +207,8 @@ class DateTimeFormatter
         return (string)match ($token) {
             FormatToken::DayOfWeekName => $dayOfWeek->name,
             FormatToken::DayOfWeekName3Letter => \substr($dayOfWeek->name, 0, 3),
-            FormatToken::DayOfWeekNumber => $dayOfWeek->value === 7 ? 0 : $dayOfWeek->value,
-            FormatToken::DayOfWeekNumberIso => $dayOfWeek->value,
+            FormatToken::DayOfWeekNumber => $dayOfWeek->getIsoNumber() === 7 ? 0 : $dayOfWeek->getIsoNumber(),
+            FormatToken::DayOfWeekNumberIso => $dayOfWeek->getIsoNumber(),
             default => throw new \LogicException("Unhandled token '{$token->value}'"),
         };
     }
