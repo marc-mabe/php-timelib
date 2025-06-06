@@ -23,37 +23,29 @@ final class LocalDate implements Date
         }
     }
 
-    public DayOfWeek $dayOfWeek {
+    public int $dayOfWeek {
         get => $this->calendar->getDayOfWeekByDaysSinceUnixEpoch($this->daysSinceEpoch);
     }
 
     /** @var int<1,max> */
     public int $weekOfYear {
-        get => $this->weekInfo->getWeekOfYear($this);
+        get => $this->calendar->getWeekOfYearByYmd($this->year, $this->month, $this->dayOfMonth);
     }
 
     public int $yearOfWeek {
-        get => $this->weekInfo->getYearOfWeek($this);
+        get => $this->calendar->getYearOfWeekByYmd($this->year, $this->month, $this->dayOfMonth);
     }
 
     private function __construct(
         private readonly int $daysSinceEpoch,
         public readonly Calendar $calendar,
-        public readonly WeekInfo $weekInfo,
     ) {}
 
     public function withCalendar(Calendar $calendar): self
     {
         return $this->calendar === $calendar
             ? $this
-            : new self($this->daysSinceEpoch, $calendar, $this->weekInfo);
-    }
-
-    public function withWeekInfo(WeekInfo $weekInfo): self
-    {
-        return $this->weekInfo === $weekInfo
-            ? $this
-            : new self($this->daysSinceEpoch, $this->calendar, $weekInfo);
+            : new self($this->daysSinceEpoch, $calendar);
     }
 
     /**
@@ -65,11 +57,10 @@ final class LocalDate implements Date
         int $month,
         int $dayOfMonth,
         ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
     ): self {
-        $calendar     ??= GregorianCalendar::getInstance();
+        $calendar     ??= new GregorianCalendar();
         $daysSinceEpoch = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
-        return new self($daysSinceEpoch, $calendar, $weekInfo ?? WeekInfo::fromIso());
+        return new self($daysSinceEpoch, $calendar);
     }
 
     /**
@@ -79,10 +70,9 @@ final class LocalDate implements Date
         int $year,
         int $dayOfYear,
         ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
     ): self {
-        $calendar     ??= GregorianCalendar::getInstance();
+        $calendar     ??= new GregorianCalendar();
         $daysSinceEpoch = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
-        return new self($daysSinceEpoch, $calendar, $weekInfo ?? WeekInfo::fromIso());
+        return new self($daysSinceEpoch, $calendar);
     }
 }

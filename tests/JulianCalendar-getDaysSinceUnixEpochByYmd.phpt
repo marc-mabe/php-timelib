@@ -5,7 +5,7 @@ JulianCalendar->getDaysSinceUnixEpochByYmd()
 
 include __DIR__ . '/include.php';
 
-$cal = time\JulianCalendar::getInstance();
+$cal = new time\JulianCalendar();
 
 $list = [
     [1, 1, 2],

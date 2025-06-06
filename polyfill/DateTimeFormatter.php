@@ -82,26 +82,19 @@ class DateTimeFormatter
                 ? \str_pad((string)$dateTimeZone->month, 2, '0', STR_PAD_LEFT)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::MonthName => $dateTimeZone instanceof Date
-                ? $dateTimeZone->calendar->getNameOfMonth($dateTimeZone->year, $dateTimeZone->month)
+                ? $dateTimeZone->calendar->getMonthName($dateTimeZone->year, $dateTimeZone->month)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::MonthAbbreviation => $dateTimeZone instanceof Date
-                ? $dateTimeZone->calendar->getAbbreviationOfMonth($dateTimeZone->year, $dateTimeZone->month)
+                ? $dateTimeZone->calendar->getMonthAbbreviation($dateTimeZone->year, $dateTimeZone->month)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::DaysInMonth => $dateTimeZone instanceof Date
                 ? (string)$dateTimeZone->calendar->getDaysInMonth($dateTimeZone->year, $dateTimeZone->month)
                 : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
 
             // Week
-            FormatToken::WeekOfYearIso => $dateTimeZone instanceof Date
-                ? (string)WeekInfo::fromIso()->getWeekOfYear($dateTimeZone)
-                : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
-            FormatToken::YearOfWeekIso => $dateTimeZone instanceof Date
-                ? (string)WeekInfo::fromIso()->getYearOfWeek($dateTimeZone)
-                : throw new \ValueError("Unexpected format: '{$token->value}' requires a date"),
             FormatToken::DayOfWeekName,
-            FormatToken::DayOfWeekName3Letter,
-            FormatToken::DayOfWeekNumber,
-            FormatToken::DayOfWeekNumberIso => $this->formatDayOfWeek($token, $dateTimeZone),
+            FormatToken::DayOfWeekAbbreviation,
+            FormatToken::DayOfWeekNumber => $this->formatDayOfWeek($token, $dateTimeZone),
 
             // Day
             FormatToken::DayOfMonth => $dateTimeZone instanceof Date
@@ -205,10 +198,9 @@ class DateTimeFormatter
 
         $dayOfWeek = $dateTimeZone->dayOfWeek;
         return (string)match ($token) {
-            FormatToken::DayOfWeekName => $dayOfWeek->name,
-            FormatToken::DayOfWeekName3Letter => \substr($dayOfWeek->name, 0, 3),
-            FormatToken::DayOfWeekNumber => $dayOfWeek->getIsoNumber() === 7 ? 0 : $dayOfWeek->getIsoNumber(),
-            FormatToken::DayOfWeekNumberIso => $dayOfWeek->getIsoNumber(),
+            FormatToken::DayOfWeekName         => $dateTimeZone->calendar->getDayOfWeekName($dayOfWeek),
+            FormatToken::DayOfWeekAbbreviation => $dateTimeZone->calendar->getDayOfWeekAbbreviation($dayOfWeek),
+            FormatToken::DayOfWeekNumber       => $dayOfWeek,
             default => throw new \LogicException("Unhandled token '{$token->value}'"),
         };
     }

@@ -519,7 +519,7 @@ final class Period {
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
     ): array {
-        $calendar ??= GregorianCalendar::getInstance();
+        $calendar ??= new GregorianCalendar();
 
         $bias   = $this->isNegative ? -1 : 1;
         $year   = $year + $this->years * $bias;
@@ -563,7 +563,7 @@ final class Period {
             $hour += 24;
         }
 
-        $ymd = $calendar->normalize($year, $month, $day);
+        $ymd = $calendar->normalizeYmd($year, $month, $day);
         return [
             ...$ymd,
             $hour,

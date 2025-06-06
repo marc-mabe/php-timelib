@@ -5,7 +5,7 @@ JulianCalendar->isLeapYear() & getDaysInYear()
 
 include __DIR__ . '/include.php';
 
-$cal = time\JulianCalendar::getInstance();
+$cal = new time\JulianCalendar();
 
 $years = [-400, -100, -4, 0, 4, 100, 400, 1970];
 foreach ($years as $year) {

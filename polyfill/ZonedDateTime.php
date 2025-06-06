@@ -35,7 +35,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         get => $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
     }
 
-    public DayOfWeek $dayOfWeek {
+    public int $dayOfWeek {
         get {
             $days = \intdiv($this->adjustedSec, self::SECONDS_PER_DAY);
             $days -= (int)(($this->adjustedSec % self::SECONDS_PER_DAY) < 0);
@@ -84,7 +84,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     }
 
     public LocalDate $date {
-        get => LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar, weekInfo:  $this->weekInfo);
+        get => LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar);
     }
 
     public LocalTime $time {
@@ -93,11 +93,11 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
 
     /** @var int<1,max> */
     public int $weekOfYear {
-        get => $this->weekInfo->getWeekOfYear($this);
+        get => $this->calendar->getWeekOfYearByYmd(...$this->ymd);
     }
 
     public int $yearOfWeek {
-        get => $this->weekInfo->getYearOfWeek($this);
+        get => $this->calendar->getYearOfWeekByYmd(...$this->ymd);
     }
 
     public readonly ZoneOffset $offset;
@@ -108,7 +108,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         public readonly Instant $instant,
         public readonly Zone $zone,
         public readonly Calendar $calendar,
-        public readonly WeekInfo $weekInfo,
     ) {
         [$s, $this->nanoOfSecond] = $instant->toUnixTimestampTuple();
         $this->offset             = $zone->getOffsetAt($instant);
@@ -122,7 +121,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
                 $this->instant->add($durationOrPeriod),
                 $this->zone,
                 calendar: $this->calendar,
-                weekInfo: $this->weekInfo,
             );
         }
 
@@ -147,7 +145,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             $ymdHms[6],
             zone: $this->zone,
             calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
             disambiguation: Disambiguation::COMPATIBLE,
         );
     }
@@ -163,7 +160,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             $this->instant,
             $zone,
             calendar: $this->calendar,
-            weekInfo: $this->weekInfo,
         );
     }
 
@@ -178,17 +174,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             $this->instant,
             zone: $this->zone,
             calendar: $calendar,
-            weekInfo: $this->weekInfo,
-        );
-    }
-
-    public function withWeekInfo(WeekInfo $weekInfo): self
-    {
-        return $this->weekInfo === $weekInfo ? $this : new self(
-            $this->instant,
-            zone: $this->zone,
-            calendar: $this->calendar,
-            weekInfo: $weekInfo,
         );
     }
 
@@ -212,13 +197,11 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         Instant $instant,
         ?Zone $zone = null,
         ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
     ): self {
         return new self(
             $instant,
             zone: $zone ?? $instant->zone,
             calendar: $calendar ?? $instant->calendar,
-            weekInfo: $weekInfo ?? $instant->weekInfo,
         );
     }
 
@@ -226,12 +209,10 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         int|float $timestamp,
         TimeUnit $unit = TimeUnit::Second,
         ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
     ): self {
         return self::fromInstant(
             Instant::fromUnixTimestamp($timestamp, $unit),
             calendar: $calendar,
-            weekInfo: $weekInfo,
         );
     }
 
@@ -239,12 +220,10 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     public static function fromUnixTimestampTuple(
         array $timestampTuple,
         ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
     ): self {
         return self::fromInstant(
             Instant::fromUnixTimestampTuple($timestampTuple),
             calendar: $calendar,
-            weekInfo: $weekInfo,
         );
     }
 
@@ -266,10 +245,9 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         int $nanoOfSecond = 0,
         ?Zone $zone = null,
         ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
-        $calendar ??= GregorianCalendar::getInstance();
+        $calendar ??= new GregorianCalendar();
 
         $localDays = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
         $localTs   = $localDays * 60 * 60 * 24;
@@ -283,7 +261,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             Instant::fromUnixTimestampTuple([$ts, $nanoOfSecond]),
             zone: $zone,
             calendar: $calendar,
-            weekInfo: $weekInfo,
         );
         $zdt->ymd = [$year, $month, $dayOfMonth];
 
@@ -306,10 +283,9 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         int $nanoOfSecond = 0,
         ?Zone $zone = null,
         ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
-        $calendar ??= GregorianCalendar::getInstance();
+        $calendar ??= new GregorianCalendar();
 
         $localDays = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
         $localTs   = $localDays * 60 * 60 * 24;
@@ -323,7 +299,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             Instant::fromUnixTimestampTuple([$ts, $nanoOfSecond]),
             zone: $zone,
             calendar: $calendar,
-            weekInfo: $weekInfo,
         );
     }
 
@@ -346,7 +321,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             Instant::fromUnixTimestampTuple([$ts, $ns]),
             zone: $zone,
             calendar: $date->calendar,
-            weekInfo: $date->weekInfo,
         );
         $zdt->ymd = [$date->year, $date->month, $date->dayOfMonth];
 

@@ -35,7 +35,7 @@ final class LocalDateTime implements Date, Time
         get => $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
     }
 
-    public DayOfWeek $dayOfWeek {
+    public int $dayOfWeek {
         get {
             $days = \intdiv($this->tsSec, self::SECONDS_PER_DAY);
             $days -= (int)(($this->tsSec % self::SECONDS_PER_DAY) < 0);
@@ -87,11 +87,11 @@ final class LocalDateTime implements Date, Time
 
     /** @var int<1,max> */
     public int $weekOfYear {
-        get => $this->weekInfo->getWeekOfYear($this);
+        get => $this->calendar->getWeekOfYearByYmd(...$this->ymd);
     }
 
     public int $yearOfWeek {
-        get => $this->weekInfo->getYearOfWeek($this);
+        get => $this->calendar->getYearOfWeekByYmd(...$this->ymd);
     }
 
     /**
@@ -101,7 +101,6 @@ final class LocalDateTime implements Date, Time
         private readonly int $tsSec,
         public readonly int $nanoOfSecond,
         public readonly Calendar $calendar,
-        public readonly WeekInfo $weekInfo,
     ) {}
 
     public function add(Duration|Period $durationOrPeriod): self
@@ -126,12 +125,11 @@ final class LocalDateTime implements Date, Time
                 $ymdHms[5],
                 $ymdHms[6],
                 calendar: $this->calendar,
-                weekInfo: $this->weekInfo,
             );
         }
 
         $tuple = $durationOrPeriod->addToUnixTimestampTuple([$this->tsSec, $this->nanoOfSecond]);
-        return new self($tuple[0], $tuple[1], $this->calendar, $this->weekInfo);
+        return new self($tuple[0], $tuple[1], $this->calendar);
     }
 
     public function sub(Duration|Period $durationOrPeriod): self
@@ -143,14 +141,7 @@ final class LocalDateTime implements Date, Time
     {
         return $this->calendar === $calendar
             ? $this
-            : new self($this->tsSec, $this->nanoOfSecond, $calendar, $this->weekInfo);
-    }
-
-    public function withWeekInfo(WeekInfo $weekInfo): self
-    {
-        return $this->weekInfo === $weekInfo
-            ? $this
-            : new self($this->tsSec, $this->nanoOfSecond, $this->calendar, $weekInfo);
+            : new self($this->tsSec, $this->nanoOfSecond, $calendar);
     }
 
     /**
@@ -171,14 +162,13 @@ final class LocalDateTime implements Date, Time
         int $second = 0,
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
     ): self {
-        $calendar ??= GregorianCalendar::getInstance();
+        $calendar ??= new GregorianCalendar();
 
         $ts = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth) * self::SECONDS_PER_DAY;
         $ts += $hour * 3600 + $minute * 60 + $second;
 
-        $ldt = new self($ts, $nanoOfSecond, calendar: $calendar, weekInfo: $weekInfo ?? WeekInfo::fromIso());
+        $ldt = new self($ts, $nanoOfSecond, calendar: $calendar);
         $ldt->ymd = [$year, $month, $dayOfMonth];
 
         return $ldt;
@@ -199,14 +189,13 @@ final class LocalDateTime implements Date, Time
         int $second = 0,
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
     ): self {
-        $calendar ??= GregorianCalendar::getInstance();
+        $calendar ??= new GregorianCalendar();
 
         $ts = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear) * self::SECONDS_PER_DAY;
         $ts += $hour * 3600 + $minute * 60 + $second;
 
-        return new self($ts, $nanoOfSecond, calendar: $calendar, weekInfo: $weekInfo ?? WeekInfo::fromIso());
+        return new self($ts, $nanoOfSecond, calendar: $calendar);
     }
 
     public static function fromDateTime(Date $date, Time $time): self
@@ -215,7 +204,7 @@ final class LocalDateTime implements Date, Time
             * self::SECONDS_PER_DAY;
         $ts += $time->hour * 3600 + $time->minute * 60 + $time->second;
 
-        $ldt = new self($ts, $time->nanoOfSecond, $date->calendar, $date->weekInfo);
+        $ldt = new self($ts, $time->nanoOfSecond, $date->calendar);
         $ldt->ymd = [$date->year, $date->month, $date->dayOfMonth];
 
         return $ldt;

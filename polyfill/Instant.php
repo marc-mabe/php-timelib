@@ -9,7 +9,7 @@ final class Instant implements Instanted, Date, Time, Zoned
     public readonly Instant $instant;
 
     public GregorianCalendar $calendar {
-        get => GregorianCalendar::getInstance();
+        get => $this->calendar ??= new GregorianCalendar();
     }
 
     /** @var array{int, int<1,12>, int<1,31>}  */
@@ -42,7 +42,8 @@ final class Instant implements Instanted, Date, Time, Zoned
         get => $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
     }
 
-    public DayOfWeek $dayOfWeek {
+    /** @var int<1,7> */
+    public int $dayOfWeek {
         get {
             $days = \intdiv($this->tsSec, self::SECONDS_PER_DAY);
             $days -= (int)(($this->tsSec % self::SECONDS_PER_DAY) < 0);
@@ -100,17 +101,13 @@ final class Instant implements Instanted, Date, Time, Zoned
         get => $this->zone ??= new ZoneOffset(0);
     }
 
-    public WeekInfo $weekInfo {
-        get => WeekInfo::fromIso();
-    }
-
-    /** @var int<1,max> */
+    /** @var int<1,53> */
     public int $weekOfYear {
-        get => WeekInfo::fromIso()->getWeekOfYear($this);
+        get => $this->calendar->getWeekOfYearByYmd(...$this->ymd);
     }
 
     public int $yearOfWeek {
-        get => WeekInfo::fromIso()->getYearOfWeek($this);
+        get => $this->calendar->getYearOfWeekByYmd(...$this->ymd);
     }
 
     /** @param int<0,999999999> $nanoOfSecond */
@@ -137,7 +134,7 @@ final class Instant implements Instanted, Date, Time, Zoned
 
             return self::fromYmd(
                 $ymdHms[0],
-                $ymdHms[1],
+                $ymdHms[1], // @phpstan-ignore argument.type
                 $ymdHms[2],
                 $ymdHms[3],
                 $ymdHms[4],
@@ -335,16 +332,12 @@ final class Instant implements Instanted, Date, Time, Zoned
         return [$this->tsSec, $this->nanoOfSecond];
     }
 
-    public function toZonedDateTime(
-        ?Zone $zone = null,
-        ?Calendar $calendar = null,
-        ?WeekInfo $weekInfo = null,
-    ): ZonedDateTime {
+    public function toZonedDateTime(?Zone $zone = null, ?Calendar $calendar = null): ZonedDateTime
+    {
         return ZonedDateTime::fromInstant(
             $this,
             zone: $zone ?? new ZoneOffset(0),
-            calendar: $calendar ?? GregorianCalendar::getInstance(),
-            weekInfo: $weekInfo ?? WeekInfo::fromIso(),
+            calendar: $calendar ?? new GregorianCalendar(),
         );
     }
 
@@ -420,9 +413,8 @@ final class Instant implements Instanted, Date, Time, Zoned
         int $minute = 0,
         int $second = 0,
         int $nanoOfSecond = 0,
-        ?Calendar $calendar = null,
     ): self {
-        $calendar = $calendar ?? GregorianCalendar::getInstance();
+        $calendar = new GregorianCalendar();
 
         $ts = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear) * self::SECONDS_PER_DAY;
         $ts += $hour * 3600 + $minute * 60 + $second;
@@ -431,7 +423,7 @@ final class Instant implements Instanted, Date, Time, Zoned
     }
 
     /**
-     * @param int<1,99> $month
+     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @param int<0,23> $hour
      * @param int<0,59> $minute
@@ -447,9 +439,8 @@ final class Instant implements Instanted, Date, Time, Zoned
         int $minute = 0,
         int $second = 0,
         int $nanoOfSecond = 0,
-        ?Calendar $calendar = null,
     ): self {
-        $calendar ??= GregorianCalendar::getInstance();
+        $calendar = new GregorianCalendar();
 
         $ts = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth) * self::SECONDS_PER_DAY;
         $ts += $hour * 3600 + $minute * 60 + $second;

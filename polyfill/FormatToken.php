@@ -13,12 +13,12 @@ enum FormatToken:string
     case DayOfYear = 'z';
 
     // Week
-    case WeekOfYearIso = 'W';
-    case YearOfWeekIso = 'o';
+    // case WeekOfYearIso = 'W'; Disabled as ISO handling is part of calendar
+    // case YearOfWeekIso = 'o'; Disabled as ISO handling is part of calendar
     case DayOfWeekName = 'l';
-    case DayOfWeekName3Letter = 'D';
+    case DayOfWeekAbbreviation = 'D';
     case DayOfWeekNumber = 'w';
-    case DayOfWeekNumberIso = 'N';
+    // case DayOfWeekNumberIso = 'N'; Disabled as ISO handling is part of calendar
 
     // Month
     case MonthName = 'F';

@@ -9,7 +9,7 @@ help:
 
 .PHONY: build-php-8.4
 build-php-8.4:
-	docker build -f ./Dockerfile -t '$(PROJECT):php-8.4' --build-arg 'PHP_VERSION=8.4' .
+	docker build --pull -f ./Dockerfile -t '$(PROJECT):php-8.4' --build-arg 'PHP_VERSION=8.4' .
 
 .PHONY: composer-install-php-8.4
 composer-install-php-8.4:

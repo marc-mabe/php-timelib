@@ -40,16 +40,6 @@ enum DayOfWeek
         };
     }
 
-    public function isWeekday() : bool
-    {
-        return $this !== self::Saturday && $this !== self::Sunday;
-    }
-
-    public function isWeekend() : bool
-    {
-        return $this === self::Saturday || $this === self::Sunday;
-    }
-
     public function getPrevious(): DayOfWeek
     {
         return match ($this) {

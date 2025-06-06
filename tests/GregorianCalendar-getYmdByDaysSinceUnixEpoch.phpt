@@ -5,7 +5,7 @@ GregorianCalendar->getYmdByDaysSinceUnixEpoch()
 
 include __DIR__ . '/include.php';
 
-$cal = time\GregorianCalendar::getInstance();
+$cal = new time\GregorianCalendar();
 
 $list = [
     -719163,

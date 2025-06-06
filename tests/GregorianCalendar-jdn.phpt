@@ -5,7 +5,7 @@ GregorianCalendar: Julian day number conversion
 
 include __DIR__ . '/include.php';
 
-$cal = time\GregorianCalendar::getInstance();
+$cal = new time\GregorianCalendar();
 
 $ymd = $cal->getYmdByJdn(0);
 echo "0 (Nov 24th 4714 B.C.) -> {$ymd[0]}-{$ymd[1]}-{$ymd[2]}\n";

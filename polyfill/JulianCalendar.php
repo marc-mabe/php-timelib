@@ -18,14 +18,15 @@ final class JulianCalendar implements Calendar
 
     private const int JDN_OFFSET = 32083;
 
-    private static ?self $instance = null;
-
-    private function __construct() {}
-
-    public static function getInstance(): self
-    {
-        return self::$instance ??= new self();
-    }
+    /**
+     * @param int<1,7> $firstDayOfWeekIso  Defines the first day of the week using ISO numbering system
+     *                                     (1: Mon, ... 7: Sun).
+     * @param int<1,7> $minDaysInFirstWeek Defined the minimum number of days of the first week of the year.
+     */
+    public function __construct(
+        public readonly int $firstDayOfWeekIso = 1,
+        public readonly int $minDaysInFirstWeek = 4,
+    ) {}
 
     public function isLeapYear(int $year): bool
     {
@@ -60,7 +61,7 @@ final class JulianCalendar implements Calendar
     }
 
     /** @param int<1,12> $month */
-    public function getNameOfMonth(int $year, int $month): string
+    public function getMonthName(int $year, int $month): string
     {
         return match ($month) {
             1 => 'January',
@@ -79,9 +80,9 @@ final class JulianCalendar implements Calendar
     }
 
     /** @param int<1,12> $month */
-    public function getAbbreviationOfMonth(int $year, int $month): string
+    public function getMonthAbbreviation(int $year, int $month): string
     {
-        return \substr($this->getNameOfMonth($year, $month), 0, 3);
+        return \substr($this->getMonthName($year, $month), 0, 3);
     }
 
     /**
@@ -89,7 +90,7 @@ final class JulianCalendar implements Calendar
      */
     public function getYmdByDaysSinceUnixEpoch(int $days): array
     {
-        $gregCal = GregorianCalendar::getInstance();
+        $gregCal = new GregorianCalendar($this->firstDayOfWeekIso, $this->minDaysInFirstWeek);
         $gregYmd = $gregCal->getYmdByDaysSinceUnixEpoch($days);
         $jdn     = $gregCal->getJdnByYmd(...$gregYmd);
         return $this->getYmdByJdn($jdn);
@@ -102,7 +103,7 @@ final class JulianCalendar implements Calendar
     public function getDaysSinceUnixEpochByYmd(int $year, int $month, int $dayOfMonth): int
     {
         $jdn     = $this->getJdnByYmd($year, $month, $dayOfMonth);
-        $gregCal = GregorianCalendar::getInstance();
+        $gregCal = new GregorianCalendar($this->firstDayOfWeekIso, $this->minDaysInFirstWeek);
         $gregYmd = $gregCal->getYmdByJdn($jdn);
         return $gregCal->getDaysSinceUnixEpochByYmd(...$gregYmd);
     }
@@ -124,7 +125,7 @@ final class JulianCalendar implements Calendar
         \assert($dayOfMonth >= 1);
 
         $jdn     = $this->getJdnByYmd($year, $month, $dayOfMonth);
-        $gregCal = GregorianCalendar::getInstance();
+        $gregCal = new GregorianCalendar($this->firstDayOfWeekIso, $this->minDaysInFirstWeek);
         $gregYmd = $gregCal->getYmdByJdn($jdn);
         return $gregCal->getDaysSinceUnixEpochByYmd(...$gregYmd);
     }
@@ -142,15 +143,140 @@ final class JulianCalendar implements Calendar
         ) + $dayOfMonth;
     }
 
-    public function getDayOfWeekByDaysSinceUnixEpoch(int $days): DayOfWeek
+    /**
+     * @param int<1,12> $month
+     * @param int<1,31> $dayOfMonth
+     * @return int<7,7>
+     */
+    public function getDaysInWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        // 1970-01-01 is a Wednesday
-        $dow = $days % 7;                   // -6 (Thu) - 0 (Wed) - 6 (Tue)
-        $dow = $dow < 0 ? $dow + 7 : $dow;  //  0 (Wed) - 6 (Tue)
-        $dow = $dow - 4;                    // -4 (Wed) - 2 (Tue)
-        $dow = $dow <= 0 ? $dow + 7 : $dow; //  1 (Mon) - 7 (Sun)
+        return 7;
+    }
 
-        return DayOfWeek::fromIsoNumber($dow);
+    /**
+     * @param int<1,12> $month
+     * @param int<1,31> $dayOfMonth
+     * @return int<1,53>
+     */
+    public function getWeekOfYearByYmd(int $year, int $month, int $dayOfMonth): int
+    {
+        $firstDate = [$year, 1, 1];
+        $firstDow  = $this->getDayOfWeekByYmd(...$firstDate);
+
+        $daysInFirstWeek = 7 - ($firstDow - 1);
+        $firstWeekMod    = $daysInFirstWeek < $this->minDaysInFirstWeek
+            ? -$daysInFirstWeek
+            : 7 - $daysInFirstWeek;
+        $woy = (int)\ceil(($this->getDayOfYearByYmd($year, $month, $dayOfMonth) + $firstWeekMod) / 7);
+        \assert($woy >= 0);
+
+        // it's the last week of the previous year
+        if ($woy === 0) {
+            return $this->getWeekOfYearByYmd($year - 1, 12, 31);
+        }
+
+        // check if the last days of the year are already part of the first week of the next year
+        $daysInYear   = $this->getDaysInYear($year);
+        $daysLastWeek = (($daysInYear + $firstWeekMod) % 7) ?: 7;
+        if (7 - $daysLastWeek >= $this->minDaysInFirstWeek
+            && $woy === (int)\ceil(($daysInYear + $firstWeekMod) / 7)
+        ) {
+            $woy = 1;
+        }
+
+        \assert($woy <= 53);
+        return $woy;
+    }
+
+    /**
+     * @param int<1,12> $month
+     * @param int<1,31> $dayOfMonth
+     */
+    public function getYearOfWeekByYmd(int $year, int $month, int $dayOfMonth): int
+    {
+        $firstDate = [$year, 1, 1];
+        $firstDow  = $this->getDayOfWeekByYmd(...$firstDate);
+
+        $daysInFirstWeek = 7 - ($firstDow - 1);
+        $firstWeekMod    = $daysInFirstWeek < $this->minDaysInFirstWeek
+            ? -$daysInFirstWeek
+            : 7 - $daysInFirstWeek;
+        $woy = (int)\ceil(($this->getDayOfYearByYmd($year, $month, $dayOfMonth) + $firstWeekMod) / 7);
+        \assert($woy >= 0);
+
+        // it's the last week of the previous year
+        if ($woy === 0) {
+            return $year - 1;
+        }
+
+        // check if the last days of the year are already part of the first week of the next year
+        $daysInYear   = $this->getDaysInYear($year);
+        $daysLastWeek = (($daysInYear + $firstWeekMod) % 7) ?: 7;
+        if (7 - $daysLastWeek >= $this->minDaysInFirstWeek
+            && $woy === (int)\ceil(($daysInYear + $firstWeekMod) / 7)
+        ) {
+            return $year + 1;
+        }
+
+        return $year;
+    }
+
+    /**
+     * @param int<1,12> $month
+     * @param int<1,31> $dayOfMonth
+     * @return int<1,7>
+     */
+    public function getDayOfWeekByYmd(int $year, int $month, int $dayOfMonth): int
+    {
+        $daysSinceEpoch = $this->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
+        return $this->getDayOfWeekByDaysSinceUnixEpoch($daysSinceEpoch);
+    }
+
+    /** @return int<1,7> */
+    public function getDayOfWeekByDaysSinceUnixEpoch(int $days): int
+    {
+        // TODO: Double check if this is correct
+        // 1970-01-01 is a Wednesday
+        $iso = $days % 7;                   // -6 (Thu) - 0 (Wed) - 6 (Tue)
+        $iso = $iso < 0 ? $iso + 7 : $iso;  //  0 (Wed) - 6 (Tue)
+        $iso = $iso - 4;                    // -4 (Wed) - 2 (Tue)
+        $iso = $iso <= 0 ? $iso + 7 : $iso; //  1 (Mon) - 7 (Sun)
+
+        $dow = $iso - $this->firstDayOfWeekIso;
+        return $dow <= 0 ? $dow + 7 : $dow;
+    }
+
+    /**
+     * Get the name of the given day-of-week.
+     *
+     * @param int<1,7> $dayOfWeek
+     * @return non-empty-string
+     */
+    public function getDayOfWeekName(int $dayOfWeek): string
+    {
+        $iso = $dayOfWeek + $this->firstDayOfWeekIso;
+        $iso = $iso > 7 ? $iso - 7 : $iso;
+
+        return match ($iso) {
+            1 => 'Monday',
+            2 => 'Tuesday',
+            3 => 'Wednesday',
+            4 => 'Thursday',
+            5 => 'Friday',
+            6 => 'Saturday',
+            7 => 'Sunday',
+        };
+    }
+
+    /**
+     * Get the abbreviation of the given day-of-week.
+     *
+     * @param int<1,7> $dayOfWeek
+     * @return non-empty-string
+     */
+    public function getDayOfWeekAbbreviation(int $dayOfWeek): string
+    {
+        return \substr($this->getDayOfWeekName($dayOfWeek), 0, 3);
     }
 
     /**
@@ -159,7 +285,7 @@ final class JulianCalendar implements Calendar
      * @param int $dayOfMonth
      * @return array{int, int<1,12>, int<1,31>}
      */
-    public function normalize(int $year, int $month, int $dayOfMonth): array
+    public function normalizeYmd(int $year, int $month, int $dayOfMonth): array
     {
         $year += \intdiv($month - 1, 12);
         $month = ($month - 1) % 12;

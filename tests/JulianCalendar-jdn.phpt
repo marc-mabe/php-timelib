@@ -5,7 +5,7 @@ JulianCalendar: Julian day number conversion
 
 include __DIR__ . '/include.php';
 
-$cal = time\JulianCalendar::getInstance();
+$cal = new time\JulianCalendar();
 
 $ymd = $cal->getYmdByJdn(0);
 echo "0 (Jan 1st 4713 B.C.) -> {$ymd[0]}-{$ymd[1]}-{$ymd[2]}\n";

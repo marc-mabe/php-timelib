@@ -1,16 +1,16 @@
 --TEST--
-GregorianCalendar->getNameOfMonth() & getAbbreviationOfMonth()
+JulianCalendar->getMonthName() & getMonthAbbreviation()
 --FILE--
 <?php
 
 include __DIR__ . '/include.php';
 
-$cal = time\GregorianCalendar::getInstance();
+$cal = new time\JulianCalendar();
 
 $years = [0, 1970];
 foreach ($years as $year) {
     for ($month = 1; $month <= 12; $month++) {
-        echo "{$year}-{$month}: {$cal->getNameOfMonth($year, $month)}, {$cal->getAbbreviationOfMonth($year, $month)}\n";
+        echo "{$year}-{$month}: {$cal->getMonthName($year, $month)}, {$cal->getMonthAbbreviation($year, $month)}\n";
     }
 }
 
