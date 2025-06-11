@@ -379,33 +379,28 @@ final class GregorianCalendar implements Calendar
         $daysPer4Years = 1461;
         $julianDay = (int)$julianDay;
 
-        if ($julianDay > (PHP_INT_MAX - 4 * self::JDN_OFFSET) / 4) {
-            throw new \InvalidArgumentException(
-                'Julian day must be lower than or equal to ' . ((PHP_INT_MAX - 4 * self::JDN_OFFSET) / 4)
-            );
+        if ($julianDay > \intdiv(PHP_INT_MAX - 4 * self::JDN_OFFSET, 4)
+            || $julianDay < \intdiv(PHP_INT_MIN, 4)
+        ) {
+            throw new RangeError(\sprintf(
+                'Julian day must be between %s and %s',
+                \intdiv(PHP_INT_MIN, 4),
+                \intdiv(PHP_INT_MAX - 4 * self::JDN_OFFSET, 4)
+            ));
         }
 
-        $temp = ($julianDay + self::JDN_OFFSET) * 4 - 1;
-        if ($temp < 0 || \intdiv($temp, self::HINNANT_DAYS_PER_ERA) > PHP_INT_MAX) {
-            throw new \InvalidArgumentException('Not sure if this is correct'); // TODO
-        }
-
+        $temp    = ($julianDay + self::JDN_OFFSET) * 4 - 1;
         $century = \intdiv($temp, self::HINNANT_DAYS_PER_ERA);
 
         // Calculate the year and day of year (1 <= dayOfYear <= 366)
         $temp = \intdiv($temp % self::HINNANT_DAYS_PER_ERA, 4) * 4 + 3;
-
-        if ($century > (\intdiv(PHP_INT_MAX, 100) - \intdiv($temp, $daysPer4Years))) {
-            throw new \InvalidArgumentException('Not sure if this is correct'); // TODO
-        }
-
         $year = ($century * 100) + \intdiv($temp, $daysPer4Years) - 4800;
         $dayOfYear = \intdiv(($temp % $daysPer4Years), 4) + 1;
 
         /* Calculate the month and day of month. */
-        $temp = $dayOfYear * 5 - 3;
+        $temp  = $dayOfYear * 5 - 3;
         $month = \intdiv($temp, $daysPer5Month);
-        $dom = \intdiv(($temp % $daysPer5Month), 5) + 1;
+        $dom   = \intdiv(($temp % $daysPer5Month), 5) + 1;
 
         // Convert to the normal beginning of the year
         if ($month < 10) {

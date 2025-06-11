@@ -87,7 +87,7 @@ ZonedDateTime('Sun 2000-10-29 02:30:03.000123456 +01:00 [Europe/Berlin]')
 ZonedDateTime::fromDateTime(LocalDate('Sun 2000-10-29'), LocalTime('02:30:03.000123456'), time\Zone('Europe/Berlin'), COMPATIBLE)
 ZonedDateTime('Sun 2000-10-29 02:30:03.000123456 +02:00 [Europe/Berlin]')
 ZonedDateTime::fromDateTime(LocalDate('Sun 2000-10-29'), LocalTime('02:30:03.000123456'), time\Zone('Europe/Berlin'), disambiguation: REJECT)
-RuntimeException: Ambiguous date-time '2000-10-29 02:30:03' for zone 'Europe/Berlin'
+time\AmbiguousValueException: Ambiguous date-time '2000-10-29 02:30:03' for zone 'Europe/Berlin'
 ZonedDateTime::fromDateTime(LocalDate('Sun 2000-10-29'), LocalTime('01:59:59'), time\Zone('Europe/Berlin'))
 ZonedDateTime('Sun 2000-10-29 01:59:59 +02:00 [Europe/Berlin]')
 ZonedDateTime::fromDateTime(LocalDate('Sun 2000-10-29'), LocalTime('03:00:00'), time\Zone('Europe/Berlin'))
@@ -105,4 +105,4 @@ ZonedDateTime('Sun 2000-03-26 03:00:00 +02:00 [Europe/Berlin]')
 ZonedDateTime::fromDateTime(LocalDate('Sun 2000-03-26'), LocalTime('02:00:00'), time\Zone('Europe/Berlin'), COMPATIBLE)
 ZonedDateTime('Sun 2000-03-26 03:00:00 +02:00 [Europe/Berlin]')
 ZonedDateTime::fromDateTime(LocalDate('Sun 2000-03-26'), LocalTime('02:00:00'), zone: time\Zone('Europe/Berlin'), disambiguation: REJECT)
-RuntimeException: Invalid date-time '2000-03-26 02:00:00' for zone 'Europe/Berlin'
+time\InvalidValueException: Invalid date-time '2000-03-26 02:00:00' for zone 'Europe/Berlin'

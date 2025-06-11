@@ -347,15 +347,15 @@ final class Instant implements Instanted, Date, Time, Zoned
     ): self {
         if (\is_float($timestamp)) {
             if (!\is_finite($timestamp)) {
-                throw new \ValueError('Timestamp must be a finite number.');
+                throw new RangeError('Timestamp must be a finite number.');
             }
 
             $tsFraction = \fmod($timestamp, 1);
             $tsInt      = $timestamp - $tsFraction;
 
             if ($tsInt > PHP_INT_MAX || $timestamp < PHP_INT_MIN) {
-                throw new \ValueError(
-                    'Timestamp must be within ' . PHP_INT_MIN . ' and ' . PHP_INT_MAX . '.999999999.'
+                throw new RangeError(
+                    'Timestamp must be between ' . PHP_INT_MIN . ' and ' . PHP_INT_MAX . '.999999999.'
                 );
             }
 

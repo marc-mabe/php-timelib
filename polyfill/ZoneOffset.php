@@ -17,7 +17,7 @@ final class ZoneOffset extends Zone implements \Stringable
         public readonly int $totalSeconds
     ) {
         if ($totalSeconds > self::TOTAL_SECONDS_MAX || $totalSeconds < self::TOTAL_SECONDS_MIN) {
-            throw new \InvalidArgumentException(\sprintf(
+            throw new RangeError(\sprintf(
                 "Zone offset must be between %s and %s",
                 new self(self::TOTAL_SECONDS_MAX)->identifier,
                 new self(self::TOTAL_SECONDS_MIN)->identifier,
@@ -63,15 +63,9 @@ final class ZoneOffset extends Zone implements \Stringable
         return new Duration(seconds: $this->totalSeconds);
     }
 
-    public static function fromDuration(Duration $duration): self
-    {
-        if ($duration->nanosOfSecond) {
-            throw new \ValueError("A time offset can not contain fractions of a second");
-        }
-
-        return new self($duration->totalSeconds);
-    }
-
+    /**
+     * @throws InvalidValueException
+     */
     public static function fromString(string $string): self
     {
         $match = \preg_match(
@@ -82,7 +76,7 @@ final class ZoneOffset extends Zone implements \Stringable
         \assert($match !== false);
 
         if (!$match) {
-            throw new \InvalidArgumentException("Invalid time offset '{$string}'");
+            throw new InvalidValueException("Invalid time offset '{$string}'");
         }
 
         $duration = new Duration(
@@ -95,6 +89,6 @@ final class ZoneOffset extends Zone implements \Stringable
             $duration = $duration->negated();
         }
 
-        return self::fromDuration($duration);
+        return new self($duration->totalSeconds);
     }
 }

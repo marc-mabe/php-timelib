@@ -62,6 +62,9 @@ class Zone
         ];
     }
 
+    /**
+     * @throws AmbiguousValueException
+     */
     private static function fromBuildInIdentifier(string $identifier): Zone
     {
         $legacy = new \DateTimeZone($identifier);
@@ -71,7 +74,7 @@ class Zone
         if ($lower !== 'utc' && $lower !== 'gmt'
             &&\array_key_exists($lower, \DateTimeZone::listAbbreviations())
         ) {
-            throw new \RuntimeException("Time zone identifier '{$identifier}' is ambiguous");
+            throw new AmbiguousValueException("Time zone identifier '{$identifier}' is ambiguous");
         }
 
         $info = new class ($legacy) extends ZoneInfo {

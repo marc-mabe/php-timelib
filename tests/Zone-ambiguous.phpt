@@ -29,9 +29,9 @@ foreach ($zones as $zoneId) {
 }
 
 --EXPECT--
-CET: RuntimeException: Time zone identifier 'CET' is ambiguous
-CEST: RuntimeException: Time zone identifier 'CEST' is ambiguous
-IST: RuntimeException: Time zone identifier 'IST' is ambiguous
+CET: time\AmbiguousValueException: Time zone identifier 'CET' is ambiguous
+CEST: time\AmbiguousValueException: Time zone identifier 'CEST' is ambiguous
+IST: time\AmbiguousValueException: Time zone identifier 'IST' is ambiguous
 GMT: GMT
 UTC: UTC
 Etc/GMT: Etc/GMT

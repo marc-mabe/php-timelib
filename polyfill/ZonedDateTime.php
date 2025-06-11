@@ -234,6 +234,9 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
      * @param int<0,59> $minute
      * @param int<0,59> $second
      * @param int<0,999999999> $nanoOfSecond
+     *
+     * @throws AmbiguousValueException
+     * @throws InvalidValueException
      */
     public static function fromYmd(
         int $year,
@@ -273,6 +276,9 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
      * @param int<0,59> $minute
      * @param int<0,59> $second
      * @param int<0,999999999> $nanoOfSecond
+     *
+     * @throws AmbiguousValueException
+     * @throws InvalidValueException
      */
     public static function fromYd(
         int $year,
@@ -302,6 +308,10 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         );
     }
 
+    /**
+     * @throws AmbiguousValueException
+     * @throws InvalidValueException
+     */
     public static function fromDateTime(
         Date $date,
         ?Time $time = null,
@@ -327,6 +337,10 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         return $zdt;
     }
 
+    /**
+     * @throws AmbiguousValueException
+     * @throws InvalidValueException
+     */
     private static function findOffsetByLocalTimestamp(
         Zone $zone,
         int $localTs,
@@ -354,7 +368,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
                     Disambiguation::EARLIER    => $minTran->offset,
                     Disambiguation::LATER      => $maxTran->offset,
                     Disambiguation::COMPATIBLE => $minTran->offset,
-                    Disambiguation::REJECT => throw new \RuntimeException(sprintf(
+                    Disambiguation::REJECT     => throw new AmbiguousValueException(sprintf(
                         "Ambiguous date-time '%s' for zone '%s'",
                         new DateTimeFormatter('Y-m-d H:i:s')->format(Instant::fromUnixTimestampTuple([$localTs, 0])),
                         $zone->identifier
@@ -370,7 +384,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
                 Disambiguation::EARLIER    => $maxTran->offset,
                 Disambiguation::LATER      => $minTran->offset,
                 Disambiguation::COMPATIBLE => $minTran->offset,
-                Disambiguation::REJECT => throw new \RuntimeException(sprintf(
+                Disambiguation::REJECT     => throw new InvalidValueException(sprintf(
                     "Invalid date-time '%s' for zone '%s'",
                     new DateTimeFormatter('Y-m-d H:i:s')->format(Instant::fromUnixTimestampTuple([$localTs, 0])),
                     $zone->identifier

@@ -21,7 +21,7 @@ class StopWatch
     public function start(): void
     {
         if ($this->isRunning) {
-            throw new \LogicException('StopWatch is already running');
+            throw new LogicError('StopWatch is already running');
         }
 
         $this->startedAt = $this->clock->takeUnixTimestampTuple();
@@ -33,7 +33,7 @@ class StopWatch
         $runningNanos = $this->getRunningNanos();
 
         if (!$this->isRunning) {
-            throw new \LogicException('StopWatch is not running');
+            throw new LogicError('StopWatch is not running');
         }
 
         $this->elapsedNanosPrev += $runningNanos;

@@ -16,7 +16,6 @@ $zones = [
     time\Zone::fromIdentifier('+12:34:56'),
     time\Zone::fromIdentifier('-12:34:56'),
     time\Zone::fromIdentifier('Europe/Berlin'),
-    time\ZoneOffset::fromDuration(new time\Duration(hours: -1, minutes: -2, seconds: -3)),
 ];
 
 foreach ($zones as $zone) {
@@ -34,4 +33,3 @@ time\ZoneOffset('-12:34'): time\ZoneOffset('-12:34')
 time\ZoneOffset('+12:34:56'): time\ZoneOffset('+12:34:56')
 time\ZoneOffset('-12:34:56'): time\ZoneOffset('-12:34:56')
 time\Zone('Europe/Berlin'): NULL
-time\ZoneOffset('-01:02:03'): time\ZoneOffset('-01:02:03')

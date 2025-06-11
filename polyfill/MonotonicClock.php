@@ -16,7 +16,7 @@ final class MonotonicClock implements Clock
         $hr = \hrtime();
         /** @phpstan-ignore identical.alwaysFalse */
         if (false === $hr) {
-            throw new \RuntimeException('No monotonic timer available');
+            throw new UnsupportedError('No monotonic timer available');
         }
 
         $this->resolution = new Duration(nanoseconds: 1);
