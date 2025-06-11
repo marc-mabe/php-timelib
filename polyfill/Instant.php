@@ -341,6 +341,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         );
     }
 
+    /** @throws RangeError */
     public static function fromUnixTimestamp(
         int|float $timestamp,
         TimeUnit $unit = TimeUnit::Second,
@@ -353,24 +354,57 @@ final class Instant implements Instanted, Date, Time, Zoned
             $tsFraction = \fmod($timestamp, 1);
             $tsInt      = $timestamp - $tsFraction;
 
-            if ($tsInt > PHP_INT_MAX || $timestamp < PHP_INT_MIN) {
+            if ($unit === TimeUnit::Minute && (
+                $tsInt > PHP_INT_MAX / 60 || $tsInt < PHP_INT_MIN / 60
+            )) {
+                throw new RangeError(\sprintf(
+                    'Timestamp in minutes must be between %f and %f',
+                    PHP_INT_MAX / 60,
+                    PHP_INT_MIN / 60,
+                ));
+            } elseif ($unit === TimeUnit::Hour && (
+                $tsInt > PHP_INT_MAX / 3600 || $timestamp < PHP_INT_MIN / 3600
+            )) {
+                throw new RangeError(\sprintf(
+                    'Timestamp in hours must be between %f and %f',
+                    PHP_INT_MIN / 3600,
+                    PHP_INT_MAX / 3600,
+                ));
+            } elseif (
+                (PHP_INT_SIZE === 8 && ($tsInt >= (float)PHP_INT_MAX || $tsInt < (float)PHP_INT_MIN))
+                || (PHP_INT_SIZE === 4 && ($tsInt > (float)PHP_INT_MAX || $tsInt < (float)PHP_INT_MIN))
+            ) {
                 throw new RangeError(
-                    'Timestamp must be between ' . PHP_INT_MIN . ' and ' . PHP_INT_MAX . '.999999999.'
+                    'Timestamp must be between ' . PHP_INT_MIN . ' and ' . PHP_INT_MAX . '.999999999'
                 );
             }
 
             $tsInt = (int)$tsInt;
-            if ($tsFraction < 0.0) {
-                $tsInt -= 1;
-                $tsFraction = 1.0 + $tsFraction;
-            }
 
         } else {
+            if ($unit === TimeUnit::Minute && (
+                $timestamp > PHP_INT_MAX / 60 || $timestamp < PHP_INT_MIN / 60
+            )) {
+                throw new RangeError(\sprintf(
+                    'Timestamp in minutes must be between %f and %f',
+                    PHP_INT_MAX / 60,
+                    PHP_INT_MIN / 60,
+                ));
+            } elseif ($unit === TimeUnit::Hour && (
+                $timestamp > PHP_INT_MAX / 3600 || $timestamp < PHP_INT_MIN / 3600
+            )) {
+                throw new RangeError(\sprintf(
+                    'Timestamp in hours must be between %f and %f',
+                    PHP_INT_MIN / 3600,
+                    PHP_INT_MAX / 3600,
+                ));
+            }
+
             $tsInt      = $timestamp;
             $tsFraction = 0.0;
         }
 
-        [$tsSecInt, $ns] = match ($unit) {
+        [$tsSec, $ns] = match ($unit) {
             TimeUnit::Second      => [$tsInt, (int)($tsFraction * 1_000_000_000)],
             TimeUnit::Millisecond => [
                 \intdiv($tsInt, 1_000),
@@ -384,12 +418,24 @@ final class Instant implements Instanted, Date, Time, Zoned
                 \intdiv($tsInt, 1_000_000_000),
                 $tsInt % 1_000_000_000,
             ],
-            TimeUnit::Minute => [(int)($timestamp * 60), (int)($timestamp * 60 / 1_000_000_000)],
-            TimeUnit::Hour => [(int)($timestamp * 3600), (int)($timestamp * 3600 / 1_000_000_000)],
+            TimeUnit::Minute => [
+                $tsInt * 60 + (int)($tsFraction * 60),
+                (int)(\fmod($tsFraction * 60, 1) * 1_000_000_000),
+            ],
+            TimeUnit::Hour => [
+                $tsInt * 3600 + (int)($tsFraction * 3600),
+                (int)(\fmod($tsFraction * 3600, 1) * 1_000_000_000),
+            ],
         };
-        assert($ns >= 0 && $ns <1_000_000_000);
 
-        return new self($tsSecInt, $ns);
+        // Nanoseconds part must be positive
+        if ($ns < 0) {
+            $tsSec -= 1;
+            $ns = 1_000_000_000 + $ns;
+        }
+        assert($ns >= 0 && $ns < 1_000_000_000);
+
+        return new self($tsSec, $ns);
     }
 
     /** @param array{int, int<0,999999999>} $timestampTuple */
