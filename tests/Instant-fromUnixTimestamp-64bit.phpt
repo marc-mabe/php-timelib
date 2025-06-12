@@ -1,7 +1,7 @@
 --TEST--
 Instant::fromUnixTimestamp (64bit)
 --SKIPIF--
-<?php if (PHP_INT_SIZE != 8) { die('This test is for 64 bit only'); }
+<?php if (PHP_INT_SIZE != 8) die('skip, this test is for 64 bit only');
 --FILE--
 <?php
 

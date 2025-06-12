@@ -172,9 +172,12 @@ class Zone
                 // Workaround DateTimeZone->getTransitions() resets the first transition to $fromTs
                 // but we need the real transition timestamp
                 $getTransitions = static function (int $fromTs, int $untilTs) use ($getTransitions): array {
-                    $allTrans = $getTransitions($fromTs - 60 * 60 * 24 * 365, $untilTs);
+                    $tmpFromTs = $fromTs > PHP_INT_MIN - 60 * 60 * 24 * 365
+                        ? PHP_INT_MIN
+                        : $fromTs - 60 * 60 * 24 * 365;
+                    $allTrans = $getTransitions($tmpFromTs, $untilTs);
 
-                    if (\count($allTrans) === 1 && $allTrans[0]['ts'] === $fromTs - 60 * 60 * 24 * 365) {
+                    if (\count($allTrans) === 1 && $allTrans[0]['ts'] === $tmpFromTs) {
                         $allTrans = $getTransitions(PHP_INT_MIN, $untilTs);
                     }
 

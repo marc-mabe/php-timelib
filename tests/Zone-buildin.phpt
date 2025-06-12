@@ -1,5 +1,5 @@
 --TEST--
-Tine zone offsets and transitions of buildin zones
+Zone: Time zone offsets and transitions of buildin zones
 --FILE--
 <?php
 

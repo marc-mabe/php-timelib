@@ -7,8 +7,12 @@ class StopWatch
     /** @var null|array{int, int<0,999999999>}  */
     private ?array $startedAt = null;
 
-    /** Elapsed nano seconds of previous runs */
-    private int $elapsedNanosPrev = 0;
+    /**
+     * Elapsed time of previous runs
+     *
+     * @var array{int, int<0,999999999>}
+     */
+    private array $elapsedPrev = [0, 0];
 
     public bool $isRunning {
         get => $this->startedAt !== null;
@@ -20,7 +24,7 @@ class StopWatch
 
     public function start(): void
     {
-        if ($this->isRunning) {
+        if ($this->startedAt) {
             throw new LogicError('StopWatch is already running');
         }
 
@@ -30,68 +34,92 @@ class StopWatch
     public function stop(): void
     {
         // take current time asap to prevent additional overhead
-        $runningNanos = $this->getRunningNanos();
+        $now = $this->clock->takeUnixTimestampTuple();
 
-        if (!$this->isRunning) {
+        if ($this->startedAt) {
+            $s  = $this->elapsedPrev[0] + ($now[0] - $this->startedAt[0]);
+            $ns = $this->elapsedPrev[1] + ($now[1] - $this->startedAt[1]);
+
+            $s += \intdiv($ns, 1_000_000_000);
+            $ns = $ns % 1_000_000_000;
+
+            if ($ns < 0) {
+                $s -= 1;
+                $ns = 1_000_000_000 - $ns;
+            }
+
+            \assert($ns <= 1_000_000_000);
+
+            $this->elapsedPrev = [$s, $ns];
+            $this->startedAt   = null;
+        } else {
             throw new LogicError('StopWatch is not running');
         }
-
-        $this->elapsedNanosPrev += $runningNanos;
-        $this->startedAt = null;
     }
 
     public function reset(): void
     {
-        $this->elapsedNanosPrev = 0;
-        $this->startedAt = null;
+        $this->elapsedPrev = [0, 0];
+        $this->startedAt   = null;
     }
 
     public function getElapsedDuration(): Duration
-    {
-        return new Duration(nanoseconds: $this->getElapsedNanos());
-    }
-
-    public function getElapsedTime(TimeUnit $unit = TimeUnit::Nanosecond, bool $fractions = true): int|float
-    {
-        $elapsedNanos = $this->getElapsedNanos();
-        if ($fractions) {
-            return match ($unit) {
-                TimeUnit::Hour => $elapsedNanos / (1_000_000_000 * 3600),
-                TimeUnit::Minute => $elapsedNanos / (1_000_000_000 * 60),
-                TimeUnit::Second => $elapsedNanos / 1_000_000_000,
-                TimeUnit::Millisecond => $elapsedNanos / 1_000_000,
-                TimeUnit::Microsecond => $elapsedNanos / 1_000,
-                TimeUnit::Nanosecond => $elapsedNanos,
-            };
-        }
-
-        return match ($unit) {
-            TimeUnit::Hour => \intdiv($elapsedNanos, 1_000_000_000 * 3600),
-            TimeUnit::Minute => \intdiv($elapsedNanos, 1_000_000_000 * 60),
-            TimeUnit::Second => \intdiv($elapsedNanos, 1_000_000_000),
-            TimeUnit::Millisecond => \intdiv($elapsedNanos, 1_000_000),
-            TimeUnit::Microsecond => \intdiv($elapsedNanos, 1_000),
-            TimeUnit::Nanosecond => $elapsedNanos,
-        };
-    }
-
-    private function getRunningNanos(): int
     {
         // take current time asap to prevent additional overhead
         $now = $this->clock->takeUnixTimestampTuple();
 
         if ($this->startedAt === null) {
-            return 0;
+            $s  = $this->elapsedPrev[0];
+            $ns = $this->elapsedPrev[1];
+        } else {
+            $s  = $this->elapsedPrev[0] + ($now[0] - $this->startedAt[0]);
+            $ns = $this->elapsedPrev[1] + ($now[1] - $this->startedAt[1]);
         }
 
-        $diffS  = $now[0] - $this->startedAt[0];
-        $diffNs = $now[1] - $this->startedAt[1];
-
-        return ($diffS * 1_000_000_000) + $diffNs;
+        return new Duration(seconds: $s, nanoseconds: $ns);
     }
 
-    private function getElapsedNanos(): int
+    public function getElapsedTime(TimeUnit $unit = TimeUnit::Nanosecond, bool $fractions = true): int|float
     {
-        return $this->elapsedNanosPrev + $this->getRunningNanos();
+        // take current time asap to prevent additional overhead
+        $now = $this->clock->takeUnixTimestampTuple();
+
+        if ($this->startedAt === null) {
+            $s  = $this->elapsedPrev[0];
+            $ns = $this->elapsedPrev[1];
+        } else {
+            $s  = $this->elapsedPrev[0] + ($now[0] - $this->startedAt[0]);
+            $ns = $this->elapsedPrev[1] + ($now[1] - $this->startedAt[1]);
+
+            $s += \intdiv($ns, 1_000_000_000);
+            $ns = $ns % 1_000_000_000;
+
+            if ($ns < 0) {
+                $s -= 1;
+                $ns = 1_000_000_000 - $ns;
+            }
+
+            \assert($ns <= 1_000_000_000);
+        }
+
+        if ($fractions) {
+            return match ($unit) {
+                TimeUnit::Hour        => $s / 3600 + $ns / 1_000_000_000,
+                TimeUnit::Minute      => $s / 60 + $ns / 1_000_000_000,
+                TimeUnit::Second      => $s + $ns / 1_000_000_000,
+                TimeUnit::Millisecond => $s * 1_000 + $ns / 1_000_000,
+                TimeUnit::Microsecond => $s * 1_000_000 + $ns / 1_000,
+                TimeUnit::Nanosecond  => $s * 1_000_000_000 + $ns,
+            };
+        }
+
+        return match ($unit) {
+            TimeUnit::Hour        => \intdiv($s, 3600),
+            TimeUnit::Minute      => \intdiv($s, 60),
+            TimeUnit::Second      => $s,
+            TimeUnit::Millisecond => $s * 1_000,
+            TimeUnit::Microsecond => $s * 1_000_000,
+            TimeUnit::Nanosecond  => $s * 1_000_000_000,
+        };
     }
 }
