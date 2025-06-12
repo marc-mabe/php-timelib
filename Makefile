@@ -21,7 +21,7 @@ composer-update-php-8.4:
 
 .PHONY: test-php-8.4
 test-php-8.4:
-	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' php ./vendor/bin/phpunit ./tests
+	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' /bin/sh -c '$$RUN_TESTS_BIN ./tests'
 
 .PHONY: test-phpstan
 test-phpstan:
