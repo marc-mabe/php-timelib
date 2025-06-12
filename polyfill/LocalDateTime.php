@@ -2,6 +2,8 @@
 
 namespace time;
 
+use IntlDateFormatter;
+
 final class LocalDateTime implements Date, Time
 {
     public const int SECONDS_PER_DAY = 24 * 3600;
@@ -165,8 +167,30 @@ final class LocalDateTime implements Date, Time
     ): self {
         $calendar ??= new GregorianCalendar();
 
-        $ts = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth) * self::SECONDS_PER_DAY;
-        $ts += $hour * 3600 + $minute * 60 + $second;
+        $days = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
+        $secs = $hour * 3600 + $minute * 60 + $second;
+
+        if ($days > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
+            || $days * self::SECONDS_PER_DAY > PHP_INT_MAX - $secs
+            || $days < \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+            || ($days === \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+                && $secs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
+            )
+        ) {
+            $fmt = new DateTimeFormatter('Y-m-d H:i:sf');
+            $sf  = $second + $nanoOfSecond / 1_000_000_000;
+            throw new RangeError(sprintf(
+                "A LocalDateTime of the %s must be between %s and %s, %s given",
+                $calendar::class,
+                $fmt->format(self::min($calendar)),
+                $fmt->format(self::max($calendar)),
+                "{$year}-{$month}-{$dayOfMonth} {$hour}:{$minute}:{$sf}",
+            ));
+        }
+
+        $ts = $days < 0
+            ? ($days + 1) * self::SECONDS_PER_DAY + $secs - self::SECONDS_PER_DAY
+            : $days * self::SECONDS_PER_DAY + $secs;
 
         $ldt = new self($ts, $nanoOfSecond, calendar: $calendar);
         $ldt->ymd = [$year, $month, $dayOfMonth];
@@ -192,21 +216,74 @@ final class LocalDateTime implements Date, Time
     ): self {
         $calendar ??= new GregorianCalendar();
 
-        $ts = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear) * self::SECONDS_PER_DAY;
-        $ts += $hour * 3600 + $minute * 60 + $second;
+        $days = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
+        $secs = $hour * 3600 + $minute * 60 + $second;
+
+        if ($days > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
+            || $days * self::SECONDS_PER_DAY > PHP_INT_MAX - $secs
+            || $days < \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+            || ($days === \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+                && $secs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
+            )
+        ) {
+            $fmt = new DateTimeFormatter('Y-z H:i:sf');
+            $sf  = $second + $nanoOfSecond / 1_000_000_000;
+            throw new RangeError(sprintf(
+                "A LocalDateTime of the %s must be between %s and %s, %s given",
+                $calendar::class,
+                $fmt->format(self::min($calendar)),
+                $fmt->format(self::max($calendar)),
+                "{$year}-{$dayOfYear} {$hour}:{$minute}:{$sf}",
+            ));
+        }
+
+        $ts = $days < 0
+            ? ($days + 1) * self::SECONDS_PER_DAY + $secs - self::SECONDS_PER_DAY
+            : $days * self::SECONDS_PER_DAY + $secs;
 
         return new self($ts, $nanoOfSecond, calendar: $calendar);
     }
 
     public static function fromDateTime(Date $date, Time $time): self
     {
-        $ts = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth)
-            * self::SECONDS_PER_DAY;
-        $ts += $time->hour * 3600 + $time->minute * 60 + $time->second;
+        $days = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
+        $secs = $time->hour * 3600 + $time->minute * 60 + $time->second;
+
+        if ($days > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
+            || $days * self::SECONDS_PER_DAY > PHP_INT_MAX - $secs
+            || $days < \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+            || ($days === \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+                && $secs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
+            )
+        ) {
+            $fmt = new DateTimeFormatter('Y-m-d H:i:sf');
+            throw new RangeError(sprintf(
+                "A LocalDateTime of the %s must be between %s and %s, %s %s given",
+                $date->calendar::class,
+                $fmt->format(self::min($date->calendar)),
+                $fmt->format(self::max($date->calendar)),
+                new DateTimeFormatter('Y-m-d')->format($date),
+                new DateTimeFormatter('H:i:sf')->format($time),
+            ));
+        }
+
+        $ts = $days < 0
+            ? ($days + 1) * self::SECONDS_PER_DAY + $secs - self::SECONDS_PER_DAY
+            : $days * self::SECONDS_PER_DAY + $secs;
 
         $ldt = new self($ts, $time->nanoOfSecond, $date->calendar);
         $ldt->ymd = [$date->year, $date->month, $date->dayOfMonth];
 
         return $ldt;
+    }
+
+    public static function min(?Calendar $calendar = null): self
+    {
+        return new self(PHP_INT_MIN, 0, $calendar ?? new GregorianCalendar());
+    }
+
+    public static function max(?Calendar $calendar = null): self
+    {
+        return new self(PHP_INT_MAX, 999_999_999, $calendar ?? new GregorianCalendar());
     }
 }

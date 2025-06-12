@@ -462,8 +462,29 @@ final class Instant implements Instanted, Date, Time, Zoned
     ): self {
         $calendar = new GregorianCalendar();
 
-        $ts = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear) * self::SECONDS_PER_DAY;
-        $ts += $hour * 3600 + $minute * 60 + $second;
+        $days = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
+        $secs = $hour * 3600 + $minute * 60 + $second;
+
+        if ($days > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
+            || $days * self::SECONDS_PER_DAY > PHP_INT_MAX - $secs
+            || $days < \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+            || ($days === \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+                && $secs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
+            )
+        ) {
+            $fmt = new DateTimeFormatter('Y-z H:i:sf');
+            $sf  = $second + $nanoOfSecond / 1_000_000_000;
+            throw new RangeError(sprintf(
+                "An Instant must be between %s and %s, %s given",
+                $fmt->format(self::min()),
+                $fmt->format(self::max()),
+                "{$year}-{$dayOfYear} {$hour}:{$minute}:{$sf}",
+            ));
+        }
+
+        $ts = $days < 0
+            ? ($days + 1) * self::SECONDS_PER_DAY + $secs - self::SECONDS_PER_DAY
+            : $days * self::SECONDS_PER_DAY + $secs;
 
         return new self($ts, $nanoOfSecond);
     }
@@ -488,8 +509,29 @@ final class Instant implements Instanted, Date, Time, Zoned
     ): self {
         $calendar = new GregorianCalendar();
 
-        $ts = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth) * self::SECONDS_PER_DAY;
-        $ts += $hour * 3600 + $minute * 60 + $second;
+        $days = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
+        $secs = $hour * 3600 + $minute * 60 + $second;
+
+        if ($days > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
+            || $days * self::SECONDS_PER_DAY > PHP_INT_MAX - $secs
+            || $days < \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+            || ($days === \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+                && $secs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
+            )
+        ) {
+            $fmt = new DateTimeFormatter('Y-m-d H:i:sf');
+            $sf  = $second + $nanoOfSecond / 1_000_000_000;
+            throw new RangeError(sprintf(
+                "An Instant must be between %s and %s, %s given",
+                $fmt->format(self::min()),
+                $fmt->format(self::max()),
+                "{$year}-{$month}-{$dayOfMonth} {$hour}:{$minute}:{$sf}",
+            ));
+        }
+
+        $ts = $days < 0
+            ? ($days + 1) * self::SECONDS_PER_DAY + $secs - self::SECONDS_PER_DAY
+            : $days * self::SECONDS_PER_DAY + $secs;
 
         return new self($ts, $nanoOfSecond);
     }
@@ -506,5 +548,15 @@ final class Instant implements Instanted, Date, Time, Zoned
             zone: $zone,
             disambiguation: $disambiguation,
         )->instant;
+    }
+
+    public static function min(): self
+    {
+        return new self(PHP_INT_MIN, 0);
+    }
+
+    public static function max(): self
+    {
+        return new self(PHP_INT_MAX, 999_999_999);
     }
 }

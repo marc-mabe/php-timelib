@@ -5,6 +5,7 @@ namespace time;
 final class ZonedDateTime implements Instanted, Date, Time, Zoned
 {
     private const int SECONDS_PER_DAY = 24 * 3600;
+    private const int MAX_OFFSET = 18 * 3600;
 
     /** @var array{int, int<1,99>, int<1,31>}  */
     private array $ymd {
@@ -250,13 +251,34 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         ?Calendar $calendar = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
+        $zone     ??= new ZoneOffset(0);
         $calendar ??= new GregorianCalendar();
 
         $localDays = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
-        $localTs   = $localDays * 60 * 60 * 24;
-        $localTs  += $hour * 3600 + $minute * 60 + $second;
+        $localSecs = $hour * 3600 + $minute * 60 + $second;
 
-        $zone   ??= new ZoneOffset(0);
+        if ($localDays > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
+            || $localDays * self::SECONDS_PER_DAY > PHP_INT_MAX - self::MAX_OFFSET - $localSecs
+            || $localDays < \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+            || ($localDays === \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+                && $localSecs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
+            )
+        ) {
+            $fmt = new DateTimeFormatter('Y-m-d H:i:sfP');
+            $sf  = $second + $nanoOfSecond / 1_000_000_000;
+            throw new RangeError(sprintf(
+                "A ZonedDateTime of the %s must be between %s and %s, %s given",
+                $calendar::class,
+                $fmt->format(self::min(zone: $zone, calendar: $calendar)),
+                $fmt->format(self::max(zone: $zone, calendar: $calendar)),
+                "{$year}-{$month}-{$dayOfMonth} {$hour}:{$minute}:{$sf} {$zone->identifier}",
+            ));
+        }
+
+        $localTs = $localDays < 0
+            ? ($localDays + 1) * self::SECONDS_PER_DAY + $localSecs - self::SECONDS_PER_DAY
+            : $localDays * self::SECONDS_PER_DAY + $localSecs;
+
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
 
@@ -291,13 +313,34 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         ?Calendar $calendar = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
+        $zone     ??= new ZoneOffset(0);
         $calendar ??= new GregorianCalendar();
 
         $localDays = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
-        $localTs   = $localDays * 60 * 60 * 24;
-        $localTs  += $hour * 3600 + $minute * 60 + $second;
+        $localSecs = $hour * 3600 + $minute * 60 + $second;
 
-        $zone   ??= new ZoneOffset(0);
+        if ($localDays > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
+            || $localDays * self::SECONDS_PER_DAY > PHP_INT_MAX - self::MAX_OFFSET - $localSecs
+            || $localDays < \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+            || ($localDays === \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+                && $localSecs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
+            )
+        ) {
+            $fmt = new DateTimeFormatter('Y-z H:i:sfP');
+            $sf  = $second + $nanoOfSecond / 1_000_000_000;
+            throw new RangeError(sprintf(
+                "A ZonedDateTime of the %s must be between %s and %s, %s given",
+                $calendar::class,
+                $fmt->format(self::min(zone: $zone, calendar: $calendar)),
+                $fmt->format(self::max(zone: $zone, calendar: $calendar)),
+                "{$year}-{$dayOfYear} {$hour}:{$minute}:{$sf} {$zone->identifier}",
+            ));
+        }
+
+        $localTs = $localDays < 0
+            ? ($localDays + 1) * self::SECONDS_PER_DAY + $localSecs - self::SECONDS_PER_DAY
+            : $localDays * self::SECONDS_PER_DAY + $localSecs;
+
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
 
@@ -318,17 +361,42 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         ?Zone $zone = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
-        $localDays = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
-        $localTs   = $localDays * 60 * 60 * 24;
-        $localTs  += $time ? $time->hour * 3600 + $time->minute * 60 + $time->second : 0;
+        $zone ??= new ZoneOffset(0);
+        [$hour, $minute, $second, $nanoOfSecond] = $time
+            ? [$time->hour, $time->minute, $time->second, $time->nanoOfSecond]
+            : [0, 0, 0, 0];
 
-        $zone   ??= new ZoneOffset(0);
+        $localDays = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
+        $localSecs = $hour * 3600 + $minute * 60 + $second;
+
+        if ($localDays > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
+            || $localDays * self::SECONDS_PER_DAY > PHP_INT_MAX - self::MAX_OFFSET - $localSecs
+            || $localDays < \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+            || ($localDays === \intdiv(PHP_INT_MIN, self::SECONDS_PER_DAY) - (int)(PHP_INT_MIN % self::SECONDS_PER_DAY !== 0) // @phpstan-ignore notIdentical.alwaysTrue
+                && $localSecs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
+            )
+        ) {
+            $fmt = new DateTimeFormatter('Y-m-d H:i:sfP');
+            $sf  = $second + $nanoOfSecond / 1_000_000_000;
+            throw new RangeError(sprintf(
+                "A ZonedDateTime of the %s must be between %s and %s, %s %s given",
+                $date->calendar::class,
+                $fmt->format(self::min(zone: $zone, calendar: $date->calendar)),
+                $fmt->format(self::max(zone: $zone, calendar: $date->calendar)),
+                new DateTimeFormatter('Y-m-d')->format($date),
+                "{$hour}:{$minute}:{$sf} {$zone->identifier}",
+            ));
+        }
+
+        $localTs = $localDays < 0
+            ? ($localDays + 1) * self::SECONDS_PER_DAY + $localSecs - self::SECONDS_PER_DAY
+            : $localDays * self::SECONDS_PER_DAY + $localSecs;
+
         $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
-        $ns     = $time ? $time->nanoOfSecond : 0;
 
         $zdt = self::fromInstant(
-            Instant::fromUnixTimestampTuple([$ts, $ns]),
+            Instant::fromUnixTimestampTuple([$ts, $nanoOfSecond]),
             zone: $zone,
             calendar: $date->calendar,
         );
@@ -393,5 +461,23 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         }
 
         return $maxTran->offset;
+    }
+
+    public static function min(?Zone $zone = null, ?Calendar $calendar = null): self
+    {
+        return new self(
+            Instant::fromUnixTimestampTuple([PHP_INT_MIN + self::MAX_OFFSET, 0]),
+            zone: $zone ?? new ZoneOffset(0),
+            calendar: $calendar ?? new GregorianCalendar(),
+        );
+    }
+
+    public static function max(?Zone $zone = null, ?Calendar $calendar = null): self
+    {
+        return new self(
+            Instant::fromUnixTimestampTuple([PHP_INT_MAX - self::MAX_OFFSET, 999_999_999]),
+            zone: $zone ?? new ZoneOffset(0),
+            calendar: $calendar ?? new GregorianCalendar(),
+        );
     }
 }
