@@ -15,10 +15,45 @@ final class RepeatingInterval implements \IteratorAggregate
 
             $end = $this->start;
             if ($this->repetitions > 1 && $this->durationOrPeriod instanceof Duration) {
-                $bias = $this->repetitions * ($this->durationOrPeriod->isNegative ? -1 : 1);
-                $end  = $end->add(new Duration(
-                    seconds: $this->durationOrPeriod->totalSeconds * $bias,
-                    nanoseconds: $this->durationOrPeriod->nanosOfSecond * $bias,
+                $totalSeconds  = $this->durationOrPeriod->totalSeconds;
+                $nanosOfSecond = $this->durationOrPeriod->nanosOfSecond;
+
+                if ($totalSeconds > \intdiv(PHP_INT_MAX, $this->repetitions)
+                    || $totalSeconds < \intdiv(PHP_INT_MIN, $this->repetitions)
+                ) {
+                    throw new RangeError(\sprintf(
+                        'Repeating %s seconds %s times is out-of-range of PHP integer',
+                        $totalSeconds,
+                        $this->repetitions,
+                    ));
+                }
+
+                if ($nanosOfSecond > \intdiv(PHP_INT_MAX, $this->repetitions)) {
+                    // Use floating point to prevent integer overflow
+                    $totalSeconds *= $this->repetitions;
+                    $nanosOfSecond = ($nanosOfSecond / 1_000_000_000) * $this->repetitions;
+                    $nanosOverflow = (int)\floor($nanosOfSecond);
+                    $nanosOfSecond = (int)\ceil(\fmod($nanosOfSecond, 1) * 1_000_000_000);
+
+                    if ($totalSeconds > PHP_INT_MAX - $nanosOverflow
+                        || $totalSeconds < PHP_INT_MIN + $nanosOverflow
+                    ) {
+                        throw new RangeError(\sprintf(
+                            'Adding the overflow of seconds of nanos %s to the total seconds %s is out-of-range of PHP integer',
+                            $nanosOverflow,
+                            $totalSeconds,
+                        ));
+                    }
+
+                    $totalSeconds  += $nanosOverflow;
+                } else {
+                    $totalSeconds  *= $this->repetitions;
+                    $nanosOfSecond *= $this->repetitions;
+                }
+
+                $end = $end->add(new Duration(
+                    seconds: $totalSeconds,
+                    nanoseconds: $nanosOfSecond,
                 ));
             } else {
                 for ($i = 0; $i < $this->repetitions; ++$i) {
