@@ -1,0 +1,44 @@
+name: Push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '**'
+  workflow_dispatch: ~
+permissions:
+  contents: read
+jobs:
+  LINUX_X64:
+    if: github.repository == 'marc-mabe/php-timelib' || github.event_name == 'pull_request'
+    name: "LINUX_X64"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: git checkout
+        uses: actions/checkout@v4
+      - name: build docker
+        run: make build-php-8.4-x64
+      - name: comport install
+        run: make composer-install-php-8.4
+      - name: test polyfill unit
+        run: make test-php-8.4
+      - name: test polyfill phpstan
+        run: make test-phpstan
+  LINUX_X32:
+    if: github.repository == 'marc-mabe/php-timelib' || github.event_name == 'pull_request'
+    name: "LINUX_X32"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: git checkout
+        uses: actions/checkout@v4
+      - name: build docker
+        run: make build-php-8.4-x32
+      - name: comport install
+        run: make composer-install-php-8.4
+      - name: test polyfill unit
+        run: make test-php-8.4
+      - name: test polyfill phpstan
+        run: make test-phpstan

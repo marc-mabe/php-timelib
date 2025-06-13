@@ -1,7 +1,5 @@
-ARG PHP_VERSION=latest
-ARG CODE_COVERAGE=false
+ARG PHP_VERSION="latest"
 FROM php:${PHP_VERSION}-cli-alpine
-ARG CODE_COVERAGE
 
 WORKDIR /workdir
 
