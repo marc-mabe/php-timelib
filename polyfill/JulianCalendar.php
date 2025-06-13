@@ -324,10 +324,12 @@ final class JulianCalendar implements Calendar
     /** @return array{int, int<1,12>, int<1,31>} */
     public function getYmdByJdn(int|float $julianDay): array
     {
-        if ($julianDay > \intdiv(PHP_INT_MAX - self::JDN_OFFSET * 4 + 1, 4) || $julianDay < PHP_INT_MIN / 4) {
+        if ($julianDay > \intdiv(PHP_INT_MAX - self::JDN_OFFSET * 4 + 1, 4)
+            || $julianDay <= -self::JDN_OFFSET
+        ) {
             throw new RangeError(\sprintf(
                 'The julian day number must be between %s and %s',
-                PHP_INT_MIN / 4,
+                -self::JDN_OFFSET + 1,
                 \intdiv(PHP_INT_MAX - self::JDN_OFFSET * 4 + 1, 4)
             ));
         }

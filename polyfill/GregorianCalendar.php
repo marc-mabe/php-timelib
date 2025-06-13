@@ -377,20 +377,20 @@ final class GregorianCalendar implements Calendar
     {
         $daysPer5Month = 153;
         $daysPer4Years = 1461;
-        $julianDay = (int)$julianDay;
 
         if ($julianDay > \intdiv(PHP_INT_MAX - 4 * self::JDN_OFFSET, 4)
-            || $julianDay < \intdiv(PHP_INT_MIN, 4)
+            || $julianDay <= -self::JDN_OFFSET
         ) {
             throw new RangeError(\sprintf(
-                'Julian day must be between %s and %s',
-                \intdiv(PHP_INT_MIN, 4),
+                'Julian day number must be between %s and %s',
+                -self::JDN_OFFSET + 1,
                 \intdiv(PHP_INT_MAX - 4 * self::JDN_OFFSET, 4)
             ));
         }
 
-        $temp    = ($julianDay + self::JDN_OFFSET) * 4 - 1;
-        $century = \intdiv($temp, self::HINNANT_DAYS_PER_ERA);
+        $julianDay = (int)$julianDay;
+        $temp      = ($julianDay + self::JDN_OFFSET) * 4 - 1;
+        $century   = \intdiv($temp, self::HINNANT_DAYS_PER_ERA);
 
         // Calculate the year and day of year (1 <= dayOfYear <= 366)
         $temp = \intdiv($temp % self::HINNANT_DAYS_PER_ERA, 4) * 4 + 3;
