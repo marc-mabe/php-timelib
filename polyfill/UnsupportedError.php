@@ -2,5 +2,5 @@
 
 namespace time;
 
-class UnsupportedError extends Error
+class UnsupportedError extends TimeError
 {}

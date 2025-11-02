@@ -196,12 +196,12 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
 
     public static function fromInstant(
         Instant $instant,
-        ?Zone $zone = null,
+        Zone $zone = new ZoneOffset(0),
         ?Calendar $calendar = null,
     ): self {
         return new self(
             $instant,
-            zone: $zone ?? $instant->zone,
+            zone: $zone,
             calendar: $calendar ?? $instant->calendar,
         );
     }
@@ -247,11 +247,10 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         int $minute = 0,
         int $second = 0,
         int $nanoOfSecond = 0,
-        ?Zone $zone = null,
+        Zone $zone = new ZoneOffset(0),
         ?Calendar $calendar = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
-        $zone     ??= new ZoneOffset(0);
         $calendar ??= new GregorianCalendar();
 
         $localDays = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
@@ -309,11 +308,10 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         int $minute = 0,
         int $second = 0,
         int $nanoOfSecond = 0,
-        ?Zone $zone = null,
+        Zone $zone = new ZoneOffset(0),
         ?Calendar $calendar = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
-        $zone     ??= new ZoneOffset(0);
         $calendar ??= new GregorianCalendar();
 
         $localDays = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
@@ -358,10 +356,9 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     public static function fromDateTime(
         Date $date,
         ?Time $time = null,
-        ?Zone $zone = null,
+        Zone $zone = new ZoneOffset(0),
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
-        $zone ??= new ZoneOffset(0);
         [$hour, $minute, $second, $nanoOfSecond] = $time
             ? [$time->hour, $time->minute, $time->second, $time->nanoOfSecond]
             : [0, 0, 0, 0];

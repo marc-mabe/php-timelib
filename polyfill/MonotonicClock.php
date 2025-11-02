@@ -49,7 +49,7 @@ final class MonotonicClock implements Clock
         return Instant::fromUnixTimestampTuple(($this->timer)());
     }
 
-    public function takeZonedDateTime(?Zone $zone = null, ?Calendar $calendar = null): ZonedDateTime
+    public function takeZonedDateTime(Zone $zone = new ZoneOffset(0), ?Calendar $calendar = null): ZonedDateTime
     {
         return $this->takeInstant()->toZonedDateTime($zone, $calendar);
     }

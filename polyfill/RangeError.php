@@ -2,5 +2,6 @@
 
 namespace time;
 
-class RangeError extends Error
-{}
+class RangeError extends TimeError
+{
+}

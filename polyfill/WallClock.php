@@ -28,23 +28,15 @@ final class WallClock implements Clock
                 self::$globalTimer           = $timer;
                 self::$globalTimerResolution = new Duration(microseconds: 1);
             } else {
-                self::$globalTimer = static function () {
-                    return [\time(), 0];
-                };
+                self::$globalTimer = static fn () => [\time(), 0];
                 self::$globalTimerResolution = new Duration(seconds: 1);
             }
         }
 
         $this->resolution = self::$globalTimerResolution;
-
-        // Setup timer including modifier
-        if ($modifier->isZero) {
-            $this->timer = self::$globalTimer;
-        } else {
-            $this->timer = static function () use ($modifier) {
-                return $modifier->addToUnixTimestampTuple((self::$globalTimer)());
-            };
-        }
+        $this->timer      = $modifier->isZero
+            ? self::$globalTimer
+            : static fn () => $modifier->addToUnixTimestampTuple((self::$globalTimer)());
     }
 
     public function takeInstant(): Instant
@@ -52,7 +44,7 @@ final class WallClock implements Clock
         return Instant::fromUnixTimestampTuple(($this->timer)());
     }
 
-    public function takeZonedDateTime(?Zone $zone = null, ?Calendar $calendar = null): ZonedDateTime
+    public function takeZonedDateTime(Zone $zone = new ZoneOffset(0), ?Calendar $calendar = null): ZonedDateTime
     {
         return $this->takeInstant()->toZonedDateTime($zone, $calendar);
     }

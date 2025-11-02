@@ -8,7 +8,7 @@ interface Clock
 
     public function takeInstant(): Instant;
 
-    public function takeZonedDateTime(?Zone $zone = null, ?Calendar $calendar = null): ZonedDateTime;
+    public function takeZonedDateTime(Zone $zone = new ZoneOffset(0), ?Calendar $calendar = null): ZonedDateTime;
 
     public function takeUnixTimestamp(TimeUnit $unit = TimeUnit::Second, bool $fractions = false): int|float;
 

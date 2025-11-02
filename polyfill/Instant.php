@@ -332,11 +332,11 @@ final class Instant implements Instanted, Date, Time, Zoned
         return [$this->tsSec, $this->nanoOfSecond];
     }
 
-    public function toZonedDateTime(?Zone $zone = null, ?Calendar $calendar = null): ZonedDateTime
+    public function toZonedDateTime(Zone $zone = new ZoneOffset(0), ?Calendar $calendar = null): ZonedDateTime
     {
         return ZonedDateTime::fromInstant(
             $this,
-            zone: $zone ?? new ZoneOffset(0),
+            zone: $zone,
             calendar: $calendar ?? new GregorianCalendar(),
         );
     }
@@ -539,7 +539,7 @@ final class Instant implements Instanted, Date, Time, Zoned
     public static function fromDateTime(
         Date $date,
         ?Time $time = null,
-        ?Zone $zone = null,
+        Zone $zone = new ZoneOffset(0),
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
         return ZonedDateTime::fromDateTime(

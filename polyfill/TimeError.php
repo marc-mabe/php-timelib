@@ -2,5 +2,6 @@
 
 namespace time;
 
-class Exception extends \Exception
-{}
+class TimeError extends \Error
+{
+}

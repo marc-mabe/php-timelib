@@ -13,9 +13,9 @@ final readonly class Interval
     public const string ISO80000_SIGN_END_EXCLUSIVE = ')';
 
     public function __construct(
-        public Instanted $start,
-        public Instanted $end,
-        public Boundary $boundary = Boundary::InclusiveToExclusive,
+        public readonly Instanted $start,
+        public readonly Instanted $end,
+        public readonly Boundary $boundary = Boundary::InclusiveToExclusive,
     ) {}
 
     public function withStart(Instanted $start): self

@@ -14,7 +14,7 @@ namespace time;
  *
  * NOTE: There is no DST (daylight saving time), nor leap seconds or similar edge cases involved.
  *
- * @see Period For date based equivalent.
+ * @see Period for date based equivalent.
  */
 final class Duration
 {
@@ -39,7 +39,7 @@ final class Duration
         get => \abs($this->totalMinutes % 60);
     }
 
-    public int $totalSeconds;
+    public readonly int $totalSeconds;
 
     /** @var int<0,59> */
     public int $secondsOfMinute {
@@ -71,7 +71,7 @@ final class Duration
     }
 
     /** @var int<0,999999999> */
-    public int $nanosOfSecond;
+    public readonly int $nanosOfSecond;
 
     public function __construct(
         int $hours = 0,
@@ -81,17 +81,37 @@ final class Duration
         int $microseconds = 0,
         int $nanoseconds = 0,
     ) {
-        $ns = $nanoseconds + ($microseconds * 1_000) + ($milliseconds * 1_000_000);
-        $s  = \intdiv($ns, 1_000_000_000) + $seconds + ($minutes * 60) + ($hours * 3_600);
-        $ns = $ns % 1_000_000_000;
+        $s = $seconds
+            + ($minutes * 60)
+            + ($hours * 3_600)
+            + \intdiv($milliseconds, 1_000)
+            + \intdiv($microseconds, 1_000_000)
+            + \intdiv($nanoseconds, 1_000_000_000);
 
-        // nanoOfSecond must be positive
+        $ns = ($nanoseconds % 1_000_000_000) + (($microseconds % 1_000_000) * 1_000);
+        $s += \intdiv($ns, 1_000_000_000);
+        $ns %= 1_000_000_000;
+
+        $ns += ($milliseconds % 1_000) * 1_000_000;
+        $s += \intdiv($ns, 1_000_000_000);
+        $ns %= 1_000_000_000;
+
+        // nanosOfSecond must be positive
         if ($ns < 0) {
             $s -= 1;
             $ns += 1_000_000_000;
         }
 
-        $this->totalSeconds = $s;
+        // @phpstan-ignore-next-line function.impossibleType booleanOr.alwaysFalse
+        if (\is_float($s)) {
+            throw new RangeError(sprintf(
+                'Duration must be within %d and %d total seconds',
+                PHP_INT_MIN,
+                PHP_INT_MAX
+            ));
+        }
+
+        $this->totalSeconds  = $s;
         $this->nanosOfSecond = $ns;
     }
 
@@ -119,7 +139,8 @@ final class Duration
     {
         $ns = $tuple[1] + $this->nanosOfSecond;
         $s  = $tuple[0] + $this->totalSeconds + \intdiv($ns, 1_000_000_000);
-        $ns = $ns % 1_000_000_000;
+        $ns %= 1_000_000_000;
+        /** @phpstan-var int<0,999999999> $ns */
         return [$s, $ns];
     }
 

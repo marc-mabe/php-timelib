@@ -2,5 +2,5 @@
 
 namespace time;
 
-class InvalidValueException extends Exception
+class InvalidValueException extends TimeException
 {}

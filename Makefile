@@ -33,7 +33,7 @@ test-php-8.4:
 
 .PHONY: test-phpstan
 test-phpstan:
-	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' php ./vendor/bin/phpstan analyse
+	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' php -d memory_limit=2g ./vendor/bin/phpstan analyse
 
 test: test-php-8.4 test-phpstan
 
