@@ -58,7 +58,7 @@ final class LocalDate implements Date
         int $dayOfMonth,
         ?Calendar $calendar = null,
     ): self {
-        $calendar     ??= new GregorianCalendar();
+        $calendar     ??= IsoCalendar::getInstance();
         $daysSinceEpoch = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
         return new self($daysSinceEpoch, $calendar);
     }
@@ -71,7 +71,7 @@ final class LocalDate implements Date
         int $dayOfYear,
         ?Calendar $calendar = null,
     ): self {
-        $calendar     ??= new GregorianCalendar();
+        $calendar     ??= IsoCalendar::getInstance();
         $daysSinceEpoch = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
         return new self($daysSinceEpoch, $calendar);
     }

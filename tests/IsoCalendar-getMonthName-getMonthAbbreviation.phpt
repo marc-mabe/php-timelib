@@ -1,13 +1,13 @@
 --TEST--
-JulianCalendar->getMonthName() & getMonthAbbreviation()
+IsoCalendar->getMonthName() & getMonthAbbreviation()
 --FILE--
 <?php
 
 include __DIR__ . '/include.php';
 
-$cal = new time\JulianCalendar();
+$cal = time\IsoCalendar::getInstance();
 
-$years = [-1, 1970];
+$years = [-1, 0, 1970];
 foreach ($years as $year) {
     for ($month = 1; $month <= 12; $month++) {
         echo "{$year}-{$month}: {$cal->getMonthName($year, $month)}, {$cal->getMonthAbbreviation($year, $month)}\n";
@@ -27,6 +27,18 @@ foreach ($years as $year) {
 -1-10: October, Oct
 -1-11: November, Nov
 -1-12: December, Dec
+0-1: January, Jan
+0-2: February, Feb
+0-3: March, Mar
+0-4: April, Apr
+0-5: May, May
+0-6: June, Jun
+0-7: July, Jul
+0-8: August, Aug
+0-9: September, Sep
+0-10: October, Oct
+0-11: November, Nov
+0-12: December, Dec
 1970-1: January, Jan
 1970-2: February, Feb
 1970-3: March, Mar

@@ -1,14 +1,11 @@
 --TEST--
-GregorianCalendar->getWeekOfYearByYmd() & getYearOfWeekByYmd()
+IsoCalendar->getWeekOfYearByYmd() & getYearOfWeekByYmd()
 --FILE--
 <?php
 
 include __DIR__ . '/include.php';
 
-$calendars = [
-    new time\GregorianCalendar(),     // ISO
-    new time\GregorianCalendar(7, 1), // US
-];
+$cal = time\IsoCalendar::getInstance();
 
 $dates = [
     [2005, 1, 1],
@@ -47,20 +44,14 @@ $dates = [
     [2010, 1, 4],
 ];
 
-foreach ($calendars as $cal) {
-    echo "firstDayOfIsoWeek: {$cal->firstDayOfIsoWeek}, minDaysInFirstWeek: {$cal->minDaysInFirstWeek}\n";
-    foreach ($dates as $ymd) {
-        echo stringify($ymd)
-            . "\t{$cal->getDayOfWeekByYmd(...$ymd)} ({$cal->getDayOfWeekAbbreviation($cal->getDayOfWeekByYmd(...$ymd))})"
-            . "\tW{$cal->getWeekOfYearByYmd(...$ymd)}"
-            . "\t{$cal->getYearOfWeekByYmd(...$ymd)}\n";
-    }
-
-    echo "-----\n";
+foreach ($dates as $ymd) {
+    echo stringify($ymd)
+        . "\t{$cal->getDayOfWeekByYmd(...$ymd)} ({$cal->getDayOfWeekAbbreviation($cal->getDayOfWeekByYmd(...$ymd))})"
+        . "\tW{$cal->getWeekOfYearByYmd(...$ymd)}"
+        . "\t{$cal->getYearOfWeekByYmd(...$ymd)}\n";
 }
 
 --EXPECT--
-firstDayOfIsoWeek: 1, minDaysInFirstWeek: 4
 [2005, 1, 1]	6 (Sat)	W53	2004
 [2005, 1, 2]	7 (Sun)	W53	2004
 [2005, 12, 31]	6 (Sat)	W52	2005
@@ -95,40 +86,3 @@ firstDayOfIsoWeek: 1, minDaysInFirstWeek: 4
 [2010, 1, 2]	6 (Sat)	W53	2009
 [2010, 1, 3]	7 (Sun)	W53	2009
 [2010, 1, 4]	1 (Mon)	W1	2010
------
-firstDayOfIsoWeek: 7, minDaysInFirstWeek: 1
-[2005, 1, 1]	7 (Sat)	W1	2005
-[2005, 1, 2]	1 (Sun)	W2	2005
-[2005, 12, 31]	7 (Sat)	W53	2005
-[2006, 1, 1]	1 (Sun)	W1	2006
-[2006, 1, 2]	2 (Mon)	W1	2006
-[2006, 12, 25]	2 (Mon)	W52	2006
-[2006, 12, 26]	3 (Tue)	W52	2006
-[2006, 12, 27]	4 (Wed)	W52	2006
-[2006, 12, 28]	5 (Thu)	W52	2006
-[2006, 12, 29]	6 (Fri)	W52	2006
-[2006, 12, 30]	7 (Sat)	W52	2006
-[2006, 12, 31]	1 (Sun)	W1	2007
-[2007, 1, 1]	2 (Mon)	W1	2007
-[2007, 1, 2]	3 (Tue)	W1	2007
-[2007, 1, 3]	4 (Wed)	W1	2007
-[2007, 1, 4]	5 (Thu)	W1	2007
-[2007, 1, 5]	6 (Fri)	W1	2007
-[2007, 1, 6]	7 (Sat)	W1	2007
-[2007, 1, 7]	1 (Sun)	W2	2007
-[2007, 1, 8]	2 (Mon)	W2	2007
-[2007, 12, 30]	1 (Sun)	W1	2008
-[2007, 12, 31]	2 (Mon)	W1	2008
-[2008, 1, 1]	3 (Tue)	W1	2008
-[2008, 1, 2]	4 (Wed)	W1	2008
-[2008, 12, 28]	1 (Sun)	W1	2009
-[2008, 12, 29]	2 (Mon)	W1	2009
-[2008, 12, 30]	3 (Tue)	W1	2009
-[2008, 12, 31]	4 (Wed)	W1	2009
-[2009, 1, 1]	5 (Thu)	W1	2009
-[2009, 12, 31]	5 (Thu)	W1	2010
-[2010, 1, 1]	6 (Fri)	W1	2010
-[2010, 1, 2]	7 (Sat)	W1	2010
-[2010, 1, 3]	1 (Sun)	W2	2010
-[2010, 1, 4]	2 (Mon)	W2	2010
------

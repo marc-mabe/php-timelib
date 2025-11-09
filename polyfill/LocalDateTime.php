@@ -108,7 +108,8 @@ final class LocalDateTime implements Date, Time
     public function add(Duration|Period $durationOrPeriod): self
     {
         if ($durationOrPeriod instanceof Period) {
-            $ymdHms = $durationOrPeriod->addToYmd(
+            $ymdHms = $this->calendar->addPeriodToYmd(
+                $durationOrPeriod,
                 $this->ymd[0],
                 $this->ymd[1],
                 $this->ymd[2],
@@ -116,8 +117,8 @@ final class LocalDateTime implements Date, Time
                 $this->minute,
                 $this->second,
                 $this->nanoOfSecond,
-                calendar: $this->calendar,
             );
+
             return self::fromYmd(
                 $ymdHms[0],
                 $ymdHms[1],
@@ -165,7 +166,7 @@ final class LocalDateTime implements Date, Time
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
     ): self {
-        $calendar ??= new GregorianCalendar();
+        $calendar ??= IsoCalendar::getInstance();
 
         $days = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
         $secs = $hour * 3600 + $minute * 60 + $second;
@@ -214,7 +215,7 @@ final class LocalDateTime implements Date, Time
         int $nanoOfSecond = 0,
         ?Calendar $calendar = null,
     ): self {
-        $calendar ??= new GregorianCalendar();
+        $calendar ??= IsoCalendar::getInstance();
 
         $days = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
         $secs = $hour * 3600 + $minute * 60 + $second;
@@ -279,11 +280,11 @@ final class LocalDateTime implements Date, Time
 
     public static function min(?Calendar $calendar = null): self
     {
-        return new self(PHP_INT_MIN, 0, $calendar ?? new GregorianCalendar());
+        return new self(PHP_INT_MIN, 0, $calendar ?? IsoCalendar::getInstance());
     }
 
     public static function max(?Calendar $calendar = null): self
     {
-        return new self(PHP_INT_MAX, 999_999_999, $calendar ?? new GregorianCalendar());
+        return new self(PHP_INT_MAX, 999_999_999, $calendar ?? IsoCalendar::getInstance());
     }
 }

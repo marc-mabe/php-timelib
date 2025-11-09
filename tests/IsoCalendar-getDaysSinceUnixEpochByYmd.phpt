@@ -1,14 +1,14 @@
 --TEST--
-GregorianCalendar->getDaysSinceUnixEpochByYmd()
+IsoCalendar->getDaysSinceUnixEpochByYmd()
 --FILE--
 <?php
 
 include __DIR__ . '/include.php';
 
-$cal = new time\GregorianCalendar();
+$cal = time\IsoCalendar::getInstance();
 
 $list = [
-    [-1, 12, 31],
+    [0, 12, 31],
     [1, 1, 1],
     [1582, 10, 14],
     [1582, 10, 15],
@@ -20,7 +20,7 @@ foreach ($list as $ymd) {
 }
 
 --EXPECT--
-[-1, 12, 31]: -719163
+[0, 12, 31]: -719163
 [1, 1, 1]: -719162
 [1582, 10, 14]: -141428
 [1582, 10, 15]: -141427

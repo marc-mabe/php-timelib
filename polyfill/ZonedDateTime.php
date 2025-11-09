@@ -125,7 +125,8 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             );
         }
 
-        $ymdHms = $durationOrPeriod->addToYmd(
+        $ymdHms = $this->calendar->addPeriodToYmd(
+            $durationOrPeriod,
             $this->ymd[0],
             $this->ymd[1],
             $this->ymd[2],
@@ -133,7 +134,6 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             $this->minute,
             $this->second,
             $this->nanoOfSecond,
-            calendar: $this->calendar,
         );
 
         return self::fromYmd(
@@ -251,7 +251,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         ?Calendar $calendar = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
-        $calendar ??= new GregorianCalendar();
+        $calendar ??= IsoCalendar::getInstance();
 
         $localDays = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
         $localSecs = $hour * 3600 + $minute * 60 + $second;
@@ -312,7 +312,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         ?Calendar $calendar = null,
         Disambiguation $disambiguation = Disambiguation::REJECT,
     ): self {
-        $calendar ??= new GregorianCalendar();
+        $calendar ??= IsoCalendar::getInstance();
 
         $localDays = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
         $localSecs = $hour * 3600 + $minute * 60 + $second;
@@ -465,7 +465,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         return new self(
             Instant::fromUnixTimestampTuple([PHP_INT_MIN + self::MAX_OFFSET, 0]),
             zone: $zone ?? new ZoneOffset(0),
-            calendar: $calendar ?? new GregorianCalendar(),
+            calendar: $calendar ?? IsoCalendar::getInstance(),
         );
     }
 
@@ -474,7 +474,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         return new self(
             Instant::fromUnixTimestampTuple([PHP_INT_MAX - self::MAX_OFFSET, 999_999_999]),
             zone: $zone ?? new ZoneOffset(0),
-            calendar: $calendar ?? new GregorianCalendar(),
+            calendar: $calendar ?? IsoCalendar::getInstance(),
         );
     }
 }

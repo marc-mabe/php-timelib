@@ -4,42 +4,23 @@ namespace time;
 
 final class GregorianCalendar implements Calendar
 {
-    private const int DAYS_PER_YEAR_COMMON = 365;
-    private const int DAYS_PER_YEAR_LEAP   = 366;
-
-    private const array DAYS_IN_MONTH_COMMON = [0, 31,  28,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31];
-    private const array DAYS_IN_MONTH_LEAP   = [0, 31,  29,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31];
-
-    private const array DAYS_OF_YEAR_BY_MONTH_COMMON = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];
-    private const array DAYS_OF_YEAR_BY_MONTH_LEAP   = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
-
-    private const int HINNANT_YEARS_PER_ERA = 400;
-
-    private const int HINNANT_LEAP_YEARS_PER_ERA = 97;
-
-    private const int HINNANT_DAYS_PER_ERA = self::HINNANT_YEARS_PER_ERA * self::DAYS_PER_YEAR_COMMON
-        + self::HINNANT_LEAP_YEARS_PER_ERA;
-
     /**
-     * Number of days between Hinnant epoch (0000-03-01) and unix epoch (1970-01-01)
-     */
-    private const int HINNANT_EPOCH_SHIFT = 719468;
-
-    private const int JDN_OFFSET = 32045;
-
-    /**
-     * @param int<1,7> $firstDayOfWeekIso  Defines the first day of the week using ISO numbering system
+     * @param int<1,7> $firstDayOfIsoWeek  Defines the first day of the week using ISO numbering system
      *                                     (1: Mon, ... 7: Sun).
      * @param int<1,7> $minDaysInFirstWeek Defined the minimum number of days of the first week of the year.
      */
     public function __construct(
-        public readonly int $firstDayOfWeekIso = 1,
+        public readonly int $firstDayOfIsoWeek  = 1,
         public readonly int $minDaysInFirstWeek = 4,
     ) {}
 
     public function isLeapYear(int $year): bool
     {
-        return $year % 4 === 0 && ($year % 100 !== 0 || $year % 400 === 0);
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
+        return IsoCalendar::getInstance()->isLeapYear($year < 0 ? $year + 1 : $year);
     }
 
     /**
@@ -47,9 +28,11 @@ final class GregorianCalendar implements Calendar
      */
     public function getDaysInYear(int $year): int
     {
-        return $this->isLeapYear($year)
-            ? self::DAYS_PER_YEAR_LEAP
-            : self::DAYS_PER_YEAR_COMMON;
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
+        return IsoCalendar::getInstance()->getDaysInYear($year < 0 ? $year + 1 : $year);
     }
 
     /**
@@ -58,34 +41,31 @@ final class GregorianCalendar implements Calendar
      */
     public function getDaysInMonth(int $year, int $month): int
     {
-        return $this->isLeapYear($year)
-            ? self::DAYS_IN_MONTH_LEAP[$month]
-            : self::DAYS_IN_MONTH_COMMON[$month];
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
+        return IsoCalendar::getInstance()->getDaysInMonth($year < 0 ? $year + 1 : $year, $month);
     }
 
     /** @return int<1,12> */
     public function getMonthsInYear(int $year): int
     {
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
         return 12;
     }
 
     /** @param int<1,12> $month */
     public function getMonthName(int $year, int $month): string
     {
-        return match ($month) {
-            1 => 'January',
-            2 => 'February',
-            3 => 'March',
-            4 => 'April',
-            5 => 'May',
-            6 => 'June',
-            7 => 'July',
-            8 => 'August',
-            9 => 'September',
-            10 => 'October',
-            11 => 'November',
-            12 => 'December',
-        };
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
+        return IsoCalendar::getInstance()->getMonthName($year < 0 ? $year + 1 : $year, $month);
     }
 
     /** @param int<1,12> $month */
@@ -99,37 +79,10 @@ final class GregorianCalendar implements Calendar
      */
     public function getYmdByDaysSinceUnixEpoch(int $days): array
     {
-        $days += self::HINNANT_EPOCH_SHIFT;
-        $era = \intdiv($days >= 0 ? $days : $days - self::HINNANT_DAYS_PER_ERA + 1, self::HINNANT_DAYS_PER_ERA);
-        $dayOfEra = $days - $era * self::HINNANT_DAYS_PER_ERA;
-        \assert($dayOfEra >= 0 && $dayOfEra < self::HINNANT_DAYS_PER_ERA);
+        $ymd = IsoCalendar::getInstance()->getYmdByDaysSinceUnixEpoch($days);
+        $ymd[0] = $ymd[0] <= 0 ? $ymd[0] - 1 : $ymd[0];
 
-        $yearOfEra = \intdiv(
-            $dayOfEra - \intdiv($dayOfEra, 1460) + \intdiv($dayOfEra, 36524) - \intdiv($dayOfEra, 146096),
-            self::DAYS_PER_YEAR_COMMON
-        );
-        \assert($yearOfEra >= 0 && $yearOfEra < self::HINNANT_YEARS_PER_ERA);
-
-        $year = $yearOfEra + $era * self::HINNANT_YEARS_PER_ERA;
-        $dayOfYear = $dayOfEra - (
-            self::DAYS_PER_YEAR_COMMON * $yearOfEra
-            + \intdiv($yearOfEra, 4)
-            - \intdiv($yearOfEra, 100)
-        );
-        \assert($dayOfYear >= 0 && $dayOfYear < self::DAYS_PER_YEAR_LEAP);
-
-        $monthPortion = \intdiv(5 * $dayOfYear + 2, 153);
-        \assert($monthPortion >= 0 && $monthPortion <= 11);
-
-        $day = $dayOfYear - \intdiv(153 * $monthPortion + 2, 5) + 1;
-        \assert($day >= 1 && $day <= 31);
-
-        $month = $monthPortion + ($monthPortion < 10 ? 3 : -9);
-        \assert($month >= 1 && $month <= 12);
-
-        $year += (int)($month <= 2);
-
-        return [$year, $month, $day];
+        return $ymd;
     }
 
     /**
@@ -138,25 +91,13 @@ final class GregorianCalendar implements Calendar
      */
     public function getDaysSinceUnixEpochByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        // adjust leap days to the end of the year and month between 0 and 11
-        if ($month <= 2) {
-            $year -= 1;
-            $month += 9;
-        } else {
-            $month -= 3;
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
         }
 
-        $era = \intdiv($year >= 0 ? $year : $year - self::HINNANT_YEARS_PER_ERA + 1, self::HINNANT_YEARS_PER_ERA);
-        $yoe = $year - $era * self::HINNANT_YEARS_PER_ERA;
-        \assert($yoe >= 0 && $yoe < self::HINNANT_YEARS_PER_ERA);
+        $year = $year < 0 ? $year + 1 : $year;
 
-        $doy = \intdiv(153 * $month + 2, 5) + $dayOfMonth - 1;
-        \assert($doy >= 0 && $doy < 366);
-
-        $doe = $yoe * self::DAYS_PER_YEAR_COMMON + \intdiv($yoe, 4) - \intdiv($yoe, 100) + $doy;
-        \assert($doe >= 0 && $doe < self::HINNANT_DAYS_PER_ERA);
-
-        return $era * self::HINNANT_DAYS_PER_ERA + $doe - self::HINNANT_EPOCH_SHIFT;
+        return IsoCalendar::getInstance()->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
     }
 
     /**
@@ -164,22 +105,13 @@ final class GregorianCalendar implements Calendar
      */
     public function getDaysSinceUnixEpochByYd(int $year, int $dayOfYear): int
     {
-        $daysOfYearByMonth = self::isLeapYear($year)
-            ? self::DAYS_OF_YEAR_BY_MONTH_LEAP
-            : self::DAYS_OF_YEAR_BY_MONTH_COMMON;
-
-        $dayOfMonth = 0;
-        for ($month = \intdiv($dayOfYear, 31) + 1; $month <= 12; $month++) {
-            if ($daysOfYearByMonth[$month] >= $dayOfYear) {
-                $dayOfMonth = $dayOfYear - $daysOfYearByMonth[$month - 1];
-                break;
-            }
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
         }
 
-        \assert($month > 0 && $month <= 12);
-        \assert($dayOfMonth > 0 && $dayOfMonth <= 31);
+        $year = $year < 0 ? $year + 1 : $year;
 
-        return $this->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
+        return IsoCalendar::getInstance()->getDaysSinceUnixEpochByYd($year, $dayOfYear);
     }
 
     /**
@@ -189,10 +121,13 @@ final class GregorianCalendar implements Calendar
      */
     public function getDayOfYearByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        return ($this->isLeapYear($year)
-            ? self::DAYS_OF_YEAR_BY_MONTH_LEAP[$month - 1]
-            : self::DAYS_OF_YEAR_BY_MONTH_COMMON[$month - 1]
-        ) + $dayOfMonth;
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
+        $year = $year < 0 ? $year + 1 : $year;
+
+        return IsoCalendar::getInstance()->getDayOfYearByYmd($year, $month, $dayOfMonth);
     }
 
     /**
@@ -202,6 +137,10 @@ final class GregorianCalendar implements Calendar
      */
     public function getDaysInWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
         return 7;
     }
 
@@ -212,6 +151,10 @@ final class GregorianCalendar implements Calendar
      */
     public function getWeekOfYearByYmd(int $year, int $month, int $dayOfMonth): int
     {
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
         $firstDate = [$year, 1, 1];
         $firstDow  = $this->getDayOfWeekByYmd(...$firstDate);
 
@@ -224,7 +167,11 @@ final class GregorianCalendar implements Calendar
 
         // it's the last week of the previous year
         if ($woy === 0) {
-            return $this->getWeekOfYearByYmd($year - 1, 12, 31);
+            return $this->getWeekOfYearByYmd(
+                $year === 1 ? -1 : $year - 1,
+                 12, 
+                 31,
+            );
         }
 
         // check if the last days of the year are already part of the first week of the next year
@@ -246,6 +193,10 @@ final class GregorianCalendar implements Calendar
      */
     public function getYearOfWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
         $firstDate = [$year, 1, 1];
         $firstDow  = $this->getDayOfWeekByYmd(...$firstDate);
 
@@ -258,7 +209,7 @@ final class GregorianCalendar implements Calendar
 
         // it's the last week of the previous year
         if ($woy === 0) {
-            return $year - 1;
+            return $year === 1 ? -1 : $year - 1;
         }
 
         // check if the last days of the year are already part of the first week of the next year
@@ -267,7 +218,7 @@ final class GregorianCalendar implements Calendar
         if (7 - $daysLastWeek >= $this->minDaysInFirstWeek
             && $woy === (int)\ceil(($daysInYear + $firstWeekMod) / 7)
         ) {
-            return $year + 1;
+            return $year === -1 ? 1 : $year + 1;
         }
 
         return $year;
@@ -280,20 +231,24 @@ final class GregorianCalendar implements Calendar
      */
     public function getDayOfWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        $daysSinceEpoch = $this->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
-        return $this->getDayOfWeekByDaysSinceUnixEpoch($daysSinceEpoch);
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
+        $year = $year < 0 ? $year + 1 : $year;
+
+        $iso = IsoCalendar::getInstance()->getDayOfWeekByYmd($year, $month, $dayOfMonth);
+        $dow = $iso - ($this->firstDayOfIsoWeek - 1);
+
+        return $dow <= 0 ? $dow + 7 : $dow;
     }
 
     /** @return int<1,7> */
     public function getDayOfWeekByDaysSinceUnixEpoch(int $days): int
     {
-        // 1970-01-01 is a Thursday
-        $iso = $days % 7;                   // -6 (Fri) - 0 (Thu) - 6 (Wed)
-        $iso = $iso < 0 ? $iso + 7 : $iso;  //  0 (Thu) - 6 (Wed)
-        $iso = $iso - 3;                    // -3 (Thu) - 3 (Wed)
-        $iso = $iso <= 0 ? $iso + 7 : $iso; //  1 (Mon) - 7 (Sun)
+        $iso = IsoCalendar::getInstance()->getDayOfWeekByDaysSinceUnixEpoch($days);
+        $dow = $iso - ($this->firstDayOfIsoWeek - 1);
 
-        $dow = $iso - ($this->firstDayOfWeekIso - 1);
         return $dow <= 0 ? $dow + 7 : $dow;
     }
 
@@ -305,18 +260,10 @@ final class GregorianCalendar implements Calendar
      */
     public function getDayOfWeekName(int $dayOfWeek): string
     {
-        $iso = $dayOfWeek + ($this->firstDayOfWeekIso - 1);
+        $iso = $dayOfWeek + ($this->firstDayOfIsoWeek - 1);
         $iso = $iso > 7 ? $iso - 7 : $iso;
 
-        return match ($iso) {
-            1 => 'Monday',
-            2 => 'Tuesday',
-            3 => 'Wednesday',
-            4 => 'Thursday',
-            5 => 'Friday',
-            6 => 'Saturday',
-            7 => 'Sunday',
-        };
+        return IsoCalendar::getInstance()->getDayOfWeekName($iso);
     }
 
     /**
@@ -331,111 +278,73 @@ final class GregorianCalendar implements Calendar
     }
 
     /**
-     * @param int $year
-     * @param int $month
-     * @param int $dayOfMonth
-     * @return array{int, int<1,12>, int<1,31>}
+     * @param int<1,12> $month
+     * @param int<1,31> $dayOfMonth
+     * @return array{int, int<1,12>, int<1,31>, int<0,23>, int<0,59>, int<0,59>, int<0,999999999>}
      */
-    public function normalizeYmd(int $year, int $month, int $dayOfMonth): array
-    {
-        $year += \intdiv($month - 1, 12);
-        $month = ($month - 1) % 12;
-        if ($month < 0) {
-            $year--;
-            $month += 12;
+    public function addPeriodToYmd(
+        Period $period,
+        int $year,
+        int $month,
+        int $dayOfMonth,
+        int $hour = 0,
+        int $minute = 0,
+        int $second = 0,
+        int $nanoOfSecond = 0,
+    ): array {
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
         }
-        $month += 1;
 
-        if ($dayOfMonth >= 1) {
-            while ($dayOfMonth > ($daysInMonth = $this->getDaysInMonth($year, $month)))  {
-                $dayOfMonth -= $daysInMonth;
-                $month++;
-                if ($month > 12) {
-                    $month = 1;
-                    $year++;
-                }
-            }
+        if ($year < 0) {
+            $year += 1;
+            $bc = true;
         } else {
-            do {
-                $month--;
-                if ($month < 1) {
-                    $year--;
-                    $month = 12;
-                }
-
-                $daysInMonth = $this->getDaysInMonth($year, $month);
-                $dayOfMonth += $daysInMonth;
-            } while ($dayOfMonth < 1);
+            $bc = false;
         }
-        \assert($dayOfMonth >= 1 && $dayOfMonth <= 31); // @phpstan-ignore smallerOrEqual.alwaysTrue
 
-        return [$year, $month, $dayOfMonth];
+        $ymdHis = IsoCalendar::getInstance()->addPeriodToYmd(
+            $period,
+            $year,
+            $month,
+            $dayOfMonth,
+            $hour,
+            $minute,
+            $second,
+            $nanoOfSecond
+        );
+
+        if ($bc) {
+            $ymdHis[0] -= 1;
+        }
+
+        if ($ymdHis[0] === 0) {
+            $ymdHis[0] -= 1;
+        }
+
+        return $ymdHis;
     }
 
     /** @return array{int, int<1,12>, int<1,31>} */
     public function getYmdByJdn(int|float $julianDay): array
     {
-        $daysPer5Month = 153;
-        $daysPer4Years = 1461;
+        $ymd = IsoCalendar::getInstance()->getYmdByJdn($julianDay);
 
-        if ($julianDay > \intdiv(PHP_INT_MAX - 4 * self::JDN_OFFSET, 4)
-            || $julianDay <= -self::JDN_OFFSET
-        ) {
-            throw new RangeError(\sprintf(
-                'Julian day number must be between %s and %s',
-                -self::JDN_OFFSET + 1,
-                \intdiv(PHP_INT_MAX - 4 * self::JDN_OFFSET, 4)
-            ));
+        if ($ymd[0] <= 0) {
+            $ymd[0] -= 1;
         }
 
-        $julianDay = (int)$julianDay;
-        $temp      = ($julianDay + self::JDN_OFFSET) * 4 - 1;
-        $century   = \intdiv($temp, self::HINNANT_DAYS_PER_ERA);
-
-        // Calculate the year and day of year (1 <= dayOfYear <= 366)
-        $temp = \intdiv($temp % self::HINNANT_DAYS_PER_ERA, 4) * 4 + 3;
-        $year = ($century * 100) + \intdiv($temp, $daysPer4Years) - 4800;
-        $dayOfYear = \intdiv(($temp % $daysPer4Years), 4) + 1;
-
-        /* Calculate the month and day of month. */
-        $temp  = $dayOfYear * 5 - 3;
-        $month = \intdiv($temp, $daysPer5Month);
-        $dom   = \intdiv(($temp % $daysPer5Month), 5) + 1;
-
-        // Convert to the normal beginning of the year
-        if ($month < 10) {
-            $month += 3;
-        } else {
-            $year += 1;
-            $month -= 9;
-        }
-
-        \assert($month >= 1 && $month <= 12);
-        \assert($dom >= 1 && $dom <= 31);
-        return [$year, $month, $dom];
+        return $ymd;
     }
 
     /** @param int<1,12> $month */
     public function getJdnByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        $daysPer5Month = 153;
-        $daysPer4Years = 1461;
-
-        // Adjust the year
-        $year = $year + 4800;
-
-        // Adjust the start of the year
-        if ($month > 2) {
-            $month = $month - 3;
-        } else {
-            $month = $month + 9;
-            $year--;
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
         }
 
-        return \intdiv((\intdiv($year, 100) * self::HINNANT_DAYS_PER_ERA), 4)
-            + \intdiv((($year % 100) * $daysPer4Years), 4)
-            + \intdiv(($month * $daysPer5Month + 2), 5)
-            + $dayOfMonth
-            - self::JDN_OFFSET;
+        $year = $year < 0 ? $year + 1 : $year;
+        return IsoCalendar::getInstance()->getJdnByYmd($year, $month, $dayOfMonth);
     }
 }

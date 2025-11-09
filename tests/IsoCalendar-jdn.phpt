@@ -1,5 +1,5 @@
 --TEST--
-GregorianCalendar: Julian day number conversion
+IsoCalendar: Julian day number conversion
 --FILE--
 <?php
 
@@ -7,7 +7,7 @@ include __DIR__ . '/include.php';
 
 const JDN_OFFSET = 32045;
 
-$cal = new time\GregorianCalendar();
+$cal = time\IsoCalendar::getInstance();
 
 $ymd = $cal->getYmdByJdn(-365);
 echo "-365 (Nov 24th 4715 B.C.) -> {$ymd[0]}-{$ymd[1]}-{$ymd[2]}\n";
@@ -69,16 +69,16 @@ try {
 }
 
 --EXPECTF--
--365 (Nov 24th 4715 B.C.) -> -4715-11-24
--4715-11-24 -> -365
--1 (Nov 23th 4714 B.C.) -> -4714-11-23
--4714-11-23 -> -1
-0 (Nov 24th 4714 B.C.) -> -4714-11-24
--4714-11-24 -> 0
-1 (Nov 25th 4714 B.C.) -> -4714-11-25
--4714-11-25 -> 1
-1721425 (Dec 31st 0001 B.C.) -> -1-12-31
--1-12-31 -> 1721425
+-365 (Nov 24th 4715 B.C.) -> -4714-11-24
+-4714-11-24 -> -365
+-1 (Nov 23th 4714 B.C.) -> -4713-11-23
+-4713-11-23 -> -1
+0 (Nov 24th 4714 B.C.) -> -4713-11-24
+-4713-11-24 -> 0
+1 (Nov 25th 4714 B.C.) -> -4713-11-25
+-4713-11-25 -> 1
+1721425 (Dec 31st 0001 B.C.) -> 0-12-31
+0-12-31 -> 1721425
 1721426 (Jan 1st 0001 A.C.) -> 1-1-1
 1-1-1 -> 1721426
 2460822 (May 26st 2025 A.C.) -> 2025-5-26
@@ -87,8 +87,8 @@ try {
 1465102-10-17 -> 536838866
 %d (MAX) -> %d-%d-%d
 %d-%d-%d -> %d
--32044 (MIN) -> -4801-3-1
--4801-3-1 -> -32044
+-32044 (MIN) -> -4800-3-1
+-4800-3-1 -> -32044
 %d
 time\RangeError: Julian day number must be between -32044 and %d
 -32045

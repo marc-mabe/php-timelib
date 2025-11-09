@@ -8,8 +8,8 @@ final class Instant implements Instanted, Date, Time, Zoned
 
     public readonly Instant $instant;
 
-    public GregorianCalendar $calendar {
-        get => $this->calendar ??= new GregorianCalendar();
+    public IsoCalendar $calendar {
+        get => IsoCalendar::getInstance();
     }
 
     /** @var array{int, int<1,12>, int<1,31>}  */
@@ -121,7 +121,8 @@ final class Instant implements Instanted, Date, Time, Zoned
     public function add(Duration|Period $durationOrPeriod): self
     {
         if ($durationOrPeriod instanceof Period) {
-            $ymdHms = $durationOrPeriod->addToYmd(
+            $ymdHms = $this->calendar->addPeriodToYmd(
+                $durationOrPeriod,
                 $this->ymd[0],
                 $this->ymd[1],
                 $this->ymd[2],
@@ -129,12 +130,11 @@ final class Instant implements Instanted, Date, Time, Zoned
                 $this->minute,
                 $this->second,
                 $this->nanoOfSecond,
-                calendar: $this->calendar,
             );
 
             return self::fromYmd(
                 $ymdHms[0],
-                $ymdHms[1], // @phpstan-ignore argument.type
+                $ymdHms[1],
                 $ymdHms[2],
                 $ymdHms[3],
                 $ymdHms[4],
@@ -337,7 +337,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         return ZonedDateTime::fromInstant(
             $this,
             zone: $zone,
-            calendar: $calendar ?? new GregorianCalendar(),
+            calendar: $calendar ?? IsoCalendar::getInstance(),
         );
     }
 
@@ -460,7 +460,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         int $second = 0,
         int $nanoOfSecond = 0,
     ): self {
-        $calendar = new GregorianCalendar();
+        $calendar = IsoCalendar::getInstance();
 
         $days = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
         $secs = $hour * 3600 + $minute * 60 + $second;
@@ -507,7 +507,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         int $second = 0,
         int $nanoOfSecond = 0,
     ): self {
-        $calendar = new GregorianCalendar();
+        $calendar = IsoCalendar::getInstance();
 
         $days = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
         $secs = $hour * 3600 + $minute * 60 + $second;
