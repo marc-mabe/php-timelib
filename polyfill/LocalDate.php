@@ -4,23 +4,27 @@ namespace time;
 
 final class LocalDate implements Date
 {
+    /** @var array{int, int<1,99>, int<1,31>}  */
+    private array $ymd {
+        get {
+            return $this->ymd ??= $this->calendar->getYmdByDaysSinceUnixEpoch($this->daysSinceEpoch);
+        }
+    }
+
     public int $year {
-        get => $this->calendar->getYmdByDaysSinceUnixEpoch($this->daysSinceEpoch)[0];
+        get => $this->ymd[0];
     }
 
     public int $month {
-        get => $this->calendar->getYmdByDaysSinceUnixEpoch($this->daysSinceEpoch)[1];
+        get => $this->ymd[1];
     }
 
     public int $dayOfMonth {
-        get => $this->calendar->getYmdByDaysSinceUnixEpoch($this->daysSinceEpoch)[2];
+        get => $this->ymd[2];
     }
 
     public int $dayOfYear {
-        get {
-            $date = $this->calendar->getYmdByDaysSinceUnixEpoch($this->daysSinceEpoch);
-            return $this->calendar->getDayOfYearByYmd($date[0], $date[1], $date[2]);
-        }
+        get => $this->calendar->getDayOfYearByYmd(...$this->ymd);
     }
 
     public int $dayOfWeek {
@@ -46,6 +50,20 @@ final class LocalDate implements Date
         return $this->calendar === $calendar
             ? $this
             : new self($this->daysSinceEpoch, $calendar);
+    }
+
+    public function add(Period $period): self {
+        $ymd = $this->calendar->addPeriodToYmd($period,...$this->ymd);
+        return self::fromYmd(
+            year: $ymd[0],
+            month: $ymd[1],
+            dayOfMonth: $ymd[2],
+            calendar: $this->calendar,
+        );
+    }
+
+    public function sub(Period $period): self {
+        return $this->add($period->inverted());
     }
 
     /**

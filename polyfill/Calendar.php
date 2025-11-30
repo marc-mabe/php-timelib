@@ -158,20 +158,12 @@ interface Calendar
      * @param int $year
      * @param int $month
      * @param int $dayOfMonth
-     * @param int<0,23> $hour
-     * @param int<0,59> $minute
-     * @param int<0,59> $second
-     * @param int<0,999999999> $nanoOfSecond
-     * @return array{int, int<1,99>, int<1,31>, int<0,23>, int<0,59>, int<0,59>,int<0,999999999>}
+     * @return array{int, int<1,99>, int<1,31>}
      */
     public function addPeriodToYmd(
         Period $period,
         int $year,
         int $month,
         int $dayOfMonth,
-        int $hour = 0,
-        int $minute = 0,
-        int $second = 0,
-        int $nanoOfSecond = 0,
     ): array;
 }

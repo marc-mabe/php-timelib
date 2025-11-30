@@ -23,4 +23,7 @@ interface Date {
     public int $weekOfYear { get; }
 
     public int $yearOfWeek { get; }
+
+    public function add(Period $period): self;
+    public function sub(Period $period): self;
 }

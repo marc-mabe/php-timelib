@@ -125,25 +125,16 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             );
         }
 
-        $ymdHms = $this->calendar->addPeriodToYmd(
-            $durationOrPeriod,
-            $this->ymd[0],
-            $this->ymd[1],
-            $this->ymd[2],
-            $this->hour,
-            $this->minute,
-            $this->second,
-            $this->nanoOfSecond,
-        );
+        $ymdHms = $this->calendar->addPeriodToYmd($durationOrPeriod, ...$this->ymd);
 
         return self::fromYmd(
-            $ymdHms[0],
-            $ymdHms[1],
-            $ymdHms[2],
-            $ymdHms[3],
-            $ymdHms[4],
-            $ymdHms[5],
-            $ymdHms[6],
+            year: $ymdHms[0],
+            month: $ymdHms[1],
+            dayOfMonth: $ymdHms[2],
+            hour: $this->hour,
+            minute: $this->minute,
+            second: $this->second,
+            nanoOfSecond: $this->nanoOfSecond,
             zone: $this->zone,
             calendar: $this->calendar,
             disambiguation: Disambiguation::COMPATIBLE,

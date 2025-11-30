@@ -24,12 +24,12 @@ $intervals = [
     'ZonedDateTime + Period' => new time\RepeatingInterval(
         repetitions: 12,
         start: time\ZonedDateTime::fromYmd(2000, 1, 1, zone: time\Zone::fromIdentifier('Europe/Berlin')),
-        durationOrPeriod: new \time\Period(years: 1, months: 2, days: 3, hours: 4),
+        durationOrPeriod: new \time\Period(years: 1, months: 2, days: 3),
     ),
     'ZonedDateTime + negative Period' => new time\RepeatingInterval(
         repetitions: 12,
         start: time\ZonedDateTime::fromYmd(2000, 1, 1, zone: time\Zone::fromIdentifier('Europe/Berlin')),
-        durationOrPeriod: new \time\Period(isNegative: true, years: 1, months: 2, days: 3, hours: 4),
+        durationOrPeriod: new \time\Period(isNegative: true, years: 1, months: 2, days: 3),
     ),
 ];
 
@@ -50,8 +50,8 @@ Instant + Duration
   R12/2000-01-01T00:00:00Z/PT2M3S
   R12--2000-01-01T00:00:00Z--PT2M3S
 ZonedDateTime + Period
-  R12/2000-01-01T00:00:00+01:00/P1Y2M3DT4H
-  R12--2000-01-01T00:00:00+01:00--P1Y2M3DT4H
+  R12/2000-01-01T00:00:00+01:00/P1Y2M3D
+  R12--2000-01-01T00:00:00+01:00--P1Y2M3D
 ZonedDateTime + negative Period
-  R12/P1Y2M3DT4H/2000-01-01T00:00:00+01:00
-  R12--P1Y2M3DT4H--2000-01-01T00:00:00+01:00
+  R12/P1Y2M3D/2000-01-01T00:00:00+01:00
+  R12--P1Y2M3D--2000-01-01T00:00:00+01:00

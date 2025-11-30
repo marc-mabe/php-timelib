@@ -121,25 +121,16 @@ final class Instant implements Instanted, Date, Time, Zoned
     public function add(Duration|Period $durationOrPeriod): self
     {
         if ($durationOrPeriod instanceof Period) {
-            $ymdHms = $this->calendar->addPeriodToYmd(
-                $durationOrPeriod,
-                $this->ymd[0],
-                $this->ymd[1],
-                $this->ymd[2],
-                $this->hour,
-                $this->minute,
-                $this->second,
-                $this->nanoOfSecond,
-            );
+            $ymd = $this->calendar->addPeriodToYmd($durationOrPeriod, ...$this->ymd);
 
             return self::fromYmd(
-                $ymdHms[0],
-                $ymdHms[1],
-                $ymdHms[2],
-                $ymdHms[3],
-                $ymdHms[4],
-                $ymdHms[5],
-                $ymdHms[6],
+                year: $ymd[0],
+                month: $ymd[1],
+                dayOfMonth: $ymd[2],
+                hour: $this->hour,
+                minute: $this->minute,
+                second: $this->second,
+                nanoOfSecond: $this->nanoOfSecond,
             );
         }
 

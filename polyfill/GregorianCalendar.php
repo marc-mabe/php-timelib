@@ -280,17 +280,13 @@ final class GregorianCalendar implements Calendar
     /**
      * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
-     * @return array{int, int<1,12>, int<1,31>, int<0,23>, int<0,59>, int<0,59>, int<0,999999999>}
+     * @return array{int, int<1,12>, int<1,31>}
      */
     public function addPeriodToYmd(
         Period $period,
         int $year,
         int $month,
         int $dayOfMonth,
-        int $hour = 0,
-        int $minute = 0,
-        int $second = 0,
-        int $nanoOfSecond = 0,
     ): array {
         if ($year === 0) {
             throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
@@ -303,26 +299,22 @@ final class GregorianCalendar implements Calendar
             $bc = false;
         }
 
-        $ymdHis = IsoCalendar::getInstance()->addPeriodToYmd(
+        $ymd = IsoCalendar::getInstance()->addPeriodToYmd(
             $period,
             $year,
             $month,
             $dayOfMonth,
-            $hour,
-            $minute,
-            $second,
-            $nanoOfSecond
         );
 
         if ($bc) {
-            $ymdHis[0] -= 1;
+            $ymd[0] -= 1;
         }
 
-        if ($ymdHis[0] === 0) {
-            $ymdHis[0] -= 1;
+        if ($ymd[0] === 0) {
+            $ymd[0] -= 1;
         }
 
-        return $ymdHis;
+        return $ymd;
     }
 
     /** @return array{int, int<1,12>, int<1,31>} */

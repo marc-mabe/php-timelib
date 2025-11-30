@@ -108,25 +108,12 @@ final class LocalDateTime implements Date, Time
     public function add(Duration|Period $durationOrPeriod): self
     {
         if ($durationOrPeriod instanceof Period) {
-            $ymdHms = $this->calendar->addPeriodToYmd(
-                $durationOrPeriod,
-                $this->ymd[0],
-                $this->ymd[1],
-                $this->ymd[2],
-                $this->hour,
-                $this->minute,
-                $this->second,
-                $this->nanoOfSecond,
-            );
+            $ymd = $this->calendar->addPeriodToYmd($durationOrPeriod, ...$this->ymd);
 
             return self::fromYmd(
-                $ymdHms[0],
-                $ymdHms[1],
-                $ymdHms[2],
-                $ymdHms[3],
-                $ymdHms[4],
-                $ymdHms[5],
-                $ymdHms[6],
+                $ymd[0],
+                $ymd[1],
+                $ymd[2],
                 calendar: $this->calendar,
             );
         }

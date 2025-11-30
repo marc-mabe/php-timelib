@@ -299,17 +299,13 @@ final class JulianCalendar implements Calendar
     /**
      * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
-     * @return array{int, int<1,12>, int<1,31>, int<0,23>, int<0,59>, int<0,59>, int<0,999999999>}
+     * @return array{int, int<1,12>, int<1,31>}
      */
     public function addPeriodToYmd(
         Period $period,
         int $year,
         int $month,
         int $dayOfMonth,
-        int $hour = 0,
-        int $minute = 0,
-        int $second = 0,
-        int $nanoOfSecond = 0,
     ): array {
         if ($year === 0) {
             throw new InvalidValueException('Year zero does not exist in the Julian calendar');
@@ -322,41 +318,6 @@ final class JulianCalendar implements Calendar
         $day    = $dayOfMonth
             + $period->days * $bias
             + $period->weeks * 7 * $bias;
-        $hour   = $hour + $period->hours * $bias;
-        $minute = $minute + $period->minutes * $bias;
-        $second = $second + $period->seconds * $bias;
-        $ns     = $nanoOfSecond
-            + $period->milliseconds * 1_000_000 * $bias
-            + $period->microseconds * 1_000 * $bias
-            + $period->nanoseconds * $bias;
-
-        $second += \intdiv($ns, 1_000_000_000);
-        $ns     = $ns % 1_000_000_000;
-        if ($ns < 0) {
-            $second--;
-            $ns += 1_000_000_000;
-        }
-
-        $minute += \intdiv($second, 60);
-        $second = $second % 60;
-        if ($second < 0) {
-            $minute--;
-            $second += 60;
-        }
-
-        $hour += \intdiv($minute, 60);
-        $minute = $minute % 60;
-        if ($minute < 0) {
-            $hour--;
-            $minute += 60;
-        }
-
-        $day += \intdiv($hour, 24);
-        $hour = $hour % 24;
-        if ($hour < 0) {
-            $day--;
-            $hour += 24;
-        }
 
         $year += \intdiv($month - 1, 12);
         $month = ($month - 1) % 12;
@@ -390,7 +351,7 @@ final class JulianCalendar implements Calendar
         \assert($day >= 1 && $day <= 31); // @phpstan-ignore smallerOrEqual.alwaysTrue
 
         $year = $year <= 0 ? $year - 1 : $year;
-        return [$year, $month, $day, $hour, $minute, $second, $ns];
+        return [$year, $month, $day];
     }
 
     /** @return array{int, int<1,12>, int<1,31>} */

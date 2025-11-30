@@ -86,7 +86,8 @@ is not defined by this class.
 ### ZoneTransition
 
 A representation of a single zone transition with the exact instant
-when the transition happened/happens and the zone offset that has been / will be applied. 
+when the transition happened/happens
+and the zone offset that has been / will be applied.
 
 ### Duration
 
@@ -95,8 +96,8 @@ and does not need to handle time zone on applying.
 
 ### Period
 
-A relative time including dates
-that needs to handle time zone on applying.
+A relative period of date units to be handled by calendars
+and evtl. time zone on applying.
 
 ### Interval
 
