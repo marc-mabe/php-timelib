@@ -85,16 +85,16 @@ final class Instant implements Instanted, Date, Time, Zoned
         get => \intdiv($this->nanoOfSecond, 1_000);
     }
 
-    public LocalDateTime $local {
-        get => LocalDateTime::fromDateTime($this->date, $this->time);
+    public PlainDateTime $local {
+        get => PlainDateTime::fromDateTime($this->date, $this->time);
     }
 
-    public LocalDate $date {
-        get => LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar);
+    public PlainDate $date {
+        get => PlainDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar);
     }
 
-    public LocalTime $time {
-        get => LocalTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
+    public PlainTime $time {
+        get => PlainTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
     public ZoneOffset $zone {

@@ -2,7 +2,7 @@
 
 namespace time;
 
-final class LocalDate implements Date
+final class PlainDate implements Date
 {
     /** @var array{int, int<1,99>, int<1,31>}  */
     private array $ymd {

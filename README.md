@@ -34,24 +34,24 @@ It's based on unix timestamp with nanosecond adjustment,
 supports the `Date` and `Time` interface based on UTC,
 but otherwise does not provide any time zone information. 
 
-### Local[Date|Time|DateTime]
+### Plain[Date|Time|DateTime]
 
-Classes that represent a local date, time or date+time
+Classes that represent a plain date, time or date+time
 without time zone information.
 
 It does **not** represent a point in time
 as the used information might be ambiguous.
 
 #### Examples
-* **New-Year's-Eve**: is at a specific local date+time no matter time zone.
+* **New-Year's-Eve**: is at a specific date+time no matter time zone.
   It happens at different instants for different locations on the earth.
-  -> `LocalDateTime`
+  -> `PlainDateTime`
 * **Day of birth**: A specific date in your passport but on the edge
   you might have a different age on different locations on the earth
-  -> `LocalDate`
+  -> `PlainDate`
 * **Midnight**: A specific time without any date information,
   which also happens on different instants on the earth
-  -> `LocalTime`
+  -> `PlainTime`
 
 ### ZonedDateTime
 
@@ -103,7 +103,7 @@ and evtl. time zone on applying.
 
 An Interval defines a time range of two points-in-time.
 
-### DateUnit / TimeUnit / Month / DayOfWeek (enum)
+### DateUnit / TimeUnit / DayOfWeek (enum)
 
 Represents a specific predefined unit of a date or time. 
 
@@ -141,7 +141,7 @@ The following interfaces are defined:
   via a `instant` property providing an `Instant` object.
 * `Date`: An object that represents a date
 * `Time`: An object that represents a time
-* `Zoned`: An object that is adjusted by time zone
+* `Zoned`: An object that is adjusted by time zone or offset
 * `Clock`: A clock
 * `Calendar`: An object that represents a calendar system
 

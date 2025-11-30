@@ -2,7 +2,7 @@
 
 namespace time;
 
-final class LocalTime implements Time {
+final class PlainTime implements Time {
     public int $hour {
         get => \intdiv($this->secondsSinceMidnight, 3600) % 24;
     }

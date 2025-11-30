@@ -4,7 +4,7 @@ namespace time;
 
 use IntlDateFormatter;
 
-final class LocalDateTime implements Date, Time
+final class PlainDateTime implements Date, Time
 {
     public const int SECONDS_PER_DAY = 24 * 3600;
 
@@ -79,12 +79,12 @@ final class LocalDateTime implements Date, Time
         get => \intdiv($this->nanoOfSecond, 1_000);
     }
 
-    public LocalDate $date {
-        get => LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar);
+    public PlainDate $date {
+        get => PlainDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar);
     }
 
-    public LocalTime $time {
-        get => LocalTime::fromHms($this->hour, $this->minute, $this->second);
+    public PlainTime $time {
+        get => PlainTime::fromHms($this->hour, $this->minute, $this->second);
     }
 
     /** @var int<1,max> */

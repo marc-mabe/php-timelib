@@ -80,16 +80,16 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
 
     public readonly int $nanoOfSecond;
 
-    public LocalDateTime $local {
-        get => LocalDateTime::fromDateTime($this->date, $this->time);
+    public PlainDateTime $local {
+        get => PlainDateTime::fromDateTime($this->date, $this->time);
     }
 
-    public LocalDate $date {
-        get => LocalDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar);
+    public PlainDate $date {
+        get => PlainDate::fromYmd($this->ymd[0], $this->ymd[1], $this->ymd[2], calendar: $this->calendar);
     }
 
-    public LocalTime $time {
-        get => LocalTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
+    public PlainTime $time {
+        get => PlainTime::fromHms($this->hour, $this->minute, $this->second, $this->nanoOfSecond);
     }
 
     /** @var int<1,max> */
@@ -269,7 +269,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             ? ($localDays + 1) * self::SECONDS_PER_DAY + $localSecs - self::SECONDS_PER_DAY
             : $localDays * self::SECONDS_PER_DAY + $localSecs;
 
-        $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
+        $offset = self::findOffsetByPlainTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
 
         $zdt = self::fromInstant(
@@ -330,7 +330,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             ? ($localDays + 1) * self::SECONDS_PER_DAY + $localSecs - self::SECONDS_PER_DAY
             : $localDays * self::SECONDS_PER_DAY + $localSecs;
 
-        $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
+        $offset = self::findOffsetByPlainTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
 
         return self::fromInstant(
@@ -380,7 +380,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             ? ($localDays + 1) * self::SECONDS_PER_DAY + $localSecs - self::SECONDS_PER_DAY
             : $localDays * self::SECONDS_PER_DAY + $localSecs;
 
-        $offset = self::findOffsetByLocalTimestamp($zone, $localTs, $disambiguation);
+        $offset = self::findOffsetByPlainTimestamp($zone, $localTs, $disambiguation);
         $ts     = $localTs - $offset->totalSeconds;
 
         $zdt = self::fromInstant(
@@ -397,7 +397,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
      * @throws AmbiguousValueException
      * @throws InvalidValueException
      */
-    private static function findOffsetByLocalTimestamp(
+    private static function findOffsetByPlainTimestamp(
         Zone $zone,
         int $localTs,
         Disambiguation $disambiguation,

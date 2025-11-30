@@ -2,9 +2,9 @@
 
 use time\Duration;
 use time\Period;
-use time\LocalDate;
-use time\LocalDateTime;
-use time\LocalTime;
+use time\PlainDate;
+use time\PlainDateTime;
+use time\PlainTime;
 use time\Instant;
 use time\MonotonicClock;
 use time\StopWatch;
@@ -28,19 +28,19 @@ function stringifyInstant(Instant $instant) {
     return "Instant('{$fmt->format($instant)}', {$tuple[0]}, {$tuple[1]})";
 }
 
-function stringifyLocalDate(LocalDate $date) {
+function stringifyPlainDate(PlainDate $date) {
     $fmt = new time\DateTimeFormatter('D Y-m-d');
-    return "LocalDate('{$fmt->format($date)}')";
+    return "PlainDate('{$fmt->format($date)}')";
 }
 
-function stringifyLocalTime(LocalTime $time) {
+function stringifyPlainTime(PlainTime $time) {
     $fmt = new time\DateTimeFormatter('H:i:sf');
-    return "LocalTime('{$fmt->format($time)}')";
+    return "PlainTime('{$fmt->format($time)}')";
 }
 
-function stringifyLocalDateTime(LocalDateTime $dt) {
+function stringifyPlainDateTime(PlainDateTime $dt) {
     $fmt = new time\DateTimeFormatter('D Y-m-d H:i:sf');
-    return "LocalDateTime('{$fmt->format($dt)}')";
+    return "PlainDateTime('{$fmt->format($dt)}')";
 }
 
 function stringifyZonedDateTime(ZonedDateTime $dt) {
@@ -101,9 +101,9 @@ function stringify(mixed $v) {
         is_scalar($v) => var_export($v, true),
         $v instanceof UnitEnum => stringifyEnum($v),
         $v instanceof Instant => stringifyInstant($v),
-        $v instanceof LocalDate => stringifyLocalDate($v),
-        $v instanceof LocalTime => stringifyLocalTime($v),
-        $v instanceof LocalDateTime => stringifyLocalDateTime($v),
+        $v instanceof PlainDate => stringifyPlainDate($v),
+        $v instanceof PlainTime => stringifyPlainTime($v),
+        $v instanceof PlainDateTime => stringifyPlainDateTime($v),
         $v instanceof ZonedDateTime => stringifyZonedDateTime($v),
         $v instanceof Zone => stringifyZone($v),
         $v instanceof ZoneInfo => stringifyZoneInfo($v),
