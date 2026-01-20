@@ -29,4 +29,4 @@ jobs:
       - name: test polyfill unit
         run: make test-php-${{ matrix.php_version }}
       - name: test polyfill phpstan
-        run: make test-phpstan
+        run: make test-phpstan-${{ matrix.php_version }}

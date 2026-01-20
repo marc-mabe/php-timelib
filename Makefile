@@ -36,6 +36,10 @@ build-php-8.5-i386:
 composer-install-php-8.4:
 	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' composer install
 
+.PHONY: composer-install-php-8.5
+composer-install-php-8.5:
+	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.5' composer install
+
 .PHONY: composer-update-php-8.4
 composer-update-php-8.4:
 	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' composer update
@@ -48,9 +52,13 @@ test-php-8.4:
 test-php-8.5:
 	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.5' /bin/sh -c '$$RUN_TESTS_BIN --no-progress --offline --show-diff ./tests'
 
-.PHONY: test-phpstan
-test-phpstan:
+.PHONY: test-phpstan-8.4
+test-phpstan-8.4:
 	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' php -d memory_limit=2g ./vendor/bin/phpstan analyse
+
+.PHONY: test-phpstan-8.5
+test-phpstan-8.5:
+	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.5' php -d memory_limit=2g ./vendor/bin/phpstan analyse
 
 test: test-php-8.4 test-phpstan
 
