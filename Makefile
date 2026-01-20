@@ -11,13 +11,26 @@ help:
 build-php-8.4:
 	docker build --pull -f ./Dockerfile -t '$(PROJECT):php-8.4' --build-arg 'PHP_VERSION=8.4' .
 
-.PHONY: build-php-8.4-x64
-build-php-8.4-x64:
+.PHONY: build-php-8.4-amd64
+build-php-8.4-amd64:
 	docker build --pull --platform=amd64 -f ./Dockerfile -t '$(PROJECT):php-8.4' --build-arg 'PHP_VERSION=8.4' .
 
-.PHONY: build-php-8.4-x32
-build-php-8.4-x32:
+.PHONY: build-php-8.4-i386
+build-php-8.4-i386:
 	docker build --pull --platform=i386 -f ./Dockerfile -t '$(PROJECT):php-8.4' --build-arg 'PHP_VERSION=8.4' .
+
+.PHONY: build-php-8.5
+build-php-8.5:
+	docker build --pull -f ./Dockerfile -t '$(PROJECT):php-8.5' --build-arg 'PHP_VERSION=8.5' .
+
+.PHONY: build-php-8.5-amd64
+build-php-8.5-amd64:
+	docker build --pull --platform=amd64 -f ./Dockerfile -t '$(PROJECT):php-8.5' --build-arg 'PHP_VERSION=8.5' .
+
+.PHONY: build-php-8.5-i386
+build-php-8.5-i386:
+	docker build --pull --platform=i386 -f ./Dockerfile -t '$(PROJECT):php-8.5' --build-arg 'PHP_VERSION=8.5' .
+
 
 .PHONY: composer-install-php-8.4
 composer-install-php-8.4:
@@ -30,6 +43,10 @@ composer-update-php-8.4:
 .PHONY: test-php-8.4
 test-php-8.4:
 	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.4' /bin/sh -c '$$RUN_TESTS_BIN --no-progress --offline --show-diff ./tests'
+
+.PHONY: test-php-8.5
+test-php-8.5:
+	docker run --rm -u "$$(id -u):$$(id -g)" -v "$$(pwd):/workdir" '$(PROJECT):php-8.5' /bin/sh -c '$$RUN_TESTS_BIN --no-progress --offline --show-diff ./tests'
 
 .PHONY: test-phpstan
 test-phpstan:

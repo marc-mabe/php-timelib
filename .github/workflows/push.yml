@@ -10,35 +10,23 @@ on:
 permissions:
   contents: read
 jobs:
-  LINUX_X64:
+  LINUX:
     if: github.repository == 'marc-mabe/php-timelib' || github.event_name == 'pull_request'
-    name: "LINUX_X64"
+    strategy:
+      matrix:
+        platform: [amd64, i386]
+        php_version: [8.4, 8.5]
+    name: "LINUX"
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: git checkout
         uses: actions/checkout@v4
       - name: build docker
-        run: make build-php-8.4-x64
+        run: make build-php-${{ matrix.php_version }}-${{ matrix.platform }}
       - name: comport install
-        run: make composer-install-php-8.4
+        run: make composer-install-php-${{ matrix.php_version }}
       - name: test polyfill unit
-        run: make test-php-8.4
-      - name: test polyfill phpstan
-        run: make test-phpstan
-  LINUX_X32:
-    if: github.repository == 'marc-mabe/php-timelib' || github.event_name == 'pull_request'
-    name: "LINUX_X32"
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - name: git checkout
-        uses: actions/checkout@v4
-      - name: build docker
-        run: make build-php-8.4-x32
-      - name: comport install
-        run: make composer-install-php-8.4
-      - name: test polyfill unit
-        run: make test-php-8.4
+        run: make test-php-${{ matrix.php_version }}
       - name: test polyfill phpstan
         run: make test-phpstan
