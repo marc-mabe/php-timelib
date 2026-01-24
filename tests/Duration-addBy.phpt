@@ -1,5 +1,5 @@
 --TEST--
-Duration->add
+Duration->addBy()
 --FILE--
 <?php
 
@@ -14,10 +14,10 @@ $durations = [
 ];
 
 foreach ($durations as $baseDuration) {
-    foreach ($durations as $addDuration) {
+    foreach ($durations as $otherDuration) {
         echo stringify($baseDuration)
-            . ' + ' . stringify($addDuration)
-            . ' = ' . stringify($baseDuration->add($addDuration))
+            . ' + ' . stringify($otherDuration)
+            . ' = ' . stringify($baseDuration->addBy($otherDuration))
             . "\n";
     }
 }

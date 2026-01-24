@@ -2,41 +2,90 @@
 
 namespace time;
 
+if (\function_exists('microtime')) {
+    /** @internal Max. resolution of WallClock */
+    \define('__WALL_CLOCK_MAX_RESOLUTION', new Duration(microseconds: 1));
+} else {
+    /** @internal Max. resolution of WallClock */
+    \define('__WALL_CLOCK_MAX_RESOLUTION', new Duration(seconds: 1));
+}
+
 final class WallClock implements Clock
 {
-    /** @var \Closure(): array{int, int<0,999999999>} */
-    private static \Closure $globalTimer;
-    private static Duration $globalTimerResolution;
+    public const Duration MAX_RESOLUTION = __WALL_CLOCK_MAX_RESOLUTION;
 
-    public readonly Duration $resolution;
+    /** @var \Closure(): array{int, int<0,999999999>} */
+    private static \Closure $globalMicroTimer;
+
+    /** @var \Closure(): array{int, 0} */
+    private static \Closure $globalSecondTimer;
 
     /** @var \Closure(): array{int, int<0,999999999>} */
     private readonly \Closure $timer;
 
     public function __construct(
         public readonly Duration $modifier = new Duration(),
+        public readonly Duration $resolution = self::MAX_RESOLUTION,
     ) {
-        if (!isset(self::$globalTimer, self::$globalTimerResolution)) {
-            // \microtime() function is only available on operating systems
-            // that support the gettimeofday() system call.
-            if (\function_exists('microtime')) {
+        if (!$resolution->isEqual(self::MAX_RESOLUTION)) {
+            if ($resolution->isNegative) {
+                throw new LogicError('Resolution must not be negative');
+            }
+
+            if ($resolution->isZero) {
+                throw new LogicError('Resolution must not be zero');
+            }
+
+            if ($resolution->moduloOf(self::MAX_RESOLUTION) !== 0.0) {
+                throw new LogicError('Resolution must be a multiple of ' . self::class .  '::MAX_RESOLUTION');
+            }
+        }
+
+        if ($resolution->nanosOfSecond) {
+            if (!isset(self::$globalMicroTimer)) {
                 /** @var \Closure(): array{int, int<0,999999999>} $timer */
                 $timer = static function () {
                     [$us, $s] = \explode(' ', \microtime(), 2);
                     return [(int)$s, (int)\substr($us, 2, -2) * 1_000];
                 };
-                self::$globalTimer           = $timer;
-                self::$globalTimerResolution = new Duration(microseconds: 1);
+                self::$globalMicroTimer = $timer;
             } else {
-                self::$globalTimer = static fn () => [\time(), 0];
-                self::$globalTimerResolution = new Duration(seconds: 1);
+                $timer = self::$globalMicroTimer;
             }
-        }
 
-        $this->resolution = self::$globalTimerResolution;
-        $this->timer      = $modifier->isZero
-            ? self::$globalTimer
-            : static fn () => $modifier->addToUnixTimestampTuple((self::$globalTimer)());
+            if ($resolution->totalSeconds !== 0 || $resolution->nanosOfSecond !== 100) {
+                /** @var \Closure(): array{int, int<0,999999999>} $timer */
+                $timer = static function () use ($timer, $resolution): array {
+                    [$s, $ns] = ($timer)();
+
+                    $ns -= $ns % $resolution->nanosOfSecond;
+
+                    if ($resolution->totalSeconds) {
+                        $s -= $s % $resolution->totalSeconds;
+                    }
+
+                    return [$s, $ns];
+                };
+            }
+        } else {
+            self::$globalSecondTimer ??= static fn () => [\time(), 0];
+            $timer = self::$globalSecondTimer;
+
+            if ($resolution->totalSeconds !== 1) {
+                /** @var \Closure(): array{int, int<0,999999999>} $timer */
+                $timer = static function () use ($timer, $resolution): array {
+                    [$s, $ns] = ($timer)();
+
+                    $s -= $s % $resolution->totalSeconds;
+
+                    return [$s, $ns];
+                };
+            }
+        } 
+
+        $this->timer = $modifier->isZero
+            ? $timer
+            : static fn () => $modifier->addToUnixTimestampTuple(($timer)());
     }
 
     public function takeInstant(): Instant

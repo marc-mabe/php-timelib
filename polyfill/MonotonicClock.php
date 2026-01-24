@@ -2,8 +2,13 @@
 
 namespace time;
 
+/** @internal Max. resolution of MonotonicClock */
+\define('__MONOTONIC_CLOCK_MAX_RESOLUTION', new Duration(nanoseconds: 1));
+
 final class MonotonicClock implements Clock
 {
+    public const Duration MAX_RESOLUTION = __MONOTONIC_CLOCK_MAX_RESOLUTION;
+
     public readonly Duration $resolution;
 
     /** @var \Closure(): array{int, int<0,999999999>} */
@@ -24,7 +29,7 @@ final class MonotonicClock implements Clock
         $timeModifier = $modifier;
         if ($initClock) {
             $initTs       = $initClock->takeUnixTimestampTuple();
-            $timeModifier = $timeModifier->add(new Duration(
+            $timeModifier = $timeModifier->addBy(new Duration(
                 seconds:     $initTs[0] - $hr[0],
                 nanoseconds: $initTs[1] - $hr[1],
             ));

@@ -10,7 +10,7 @@ namespace time;
  *   - each minute has 60 seconds
  *   - each hour has 60 minutes
  *
- * It's measured in the number of total seconds with nanoOfSecond adjustment.
+ * It's measured in the number of total seconds with nanosOfSecond adjustment.
  *
  * NOTE: There is no DST (daylight saving time), nor leap seconds or similar edge cases involved.
  *
@@ -115,20 +115,6 @@ final class Duration
         $this->nanosOfSecond = $ns;
     }
 
-    public function equals(self $other): bool
-    {
-        return $this->totalSeconds === $other->totalSeconds
-            && $this->nanosOfSecond === $other->nanosOfSecond;
-    }
-
-    public function add(self $other): self
-    {
-        return new self(
-            seconds: $this->totalSeconds + $other->totalSeconds,
-            nanoseconds: $this->nanosOfSecond + $other->nanosOfSecond,
-        );
-    }
-
     /**
      * Adds this duration to the specified unix timestamp tuple.
      *
@@ -144,7 +130,221 @@ final class Duration
         return [$s, $ns];
     }
 
-    public function diff(self $other): self
+    /**
+     * Compares this duration to another duration.
+     * 
+     * @return int<-1,1>
+     */
+    public function compare(self $other): int
+    {
+        return $this->totalSeconds === $other->totalSeconds
+            ? $this->nanosOfSecond <=> $other->nanosOfSecond
+            : $this->totalSeconds <=> $other->totalSeconds;
+    }
+
+    /**
+     * Checks if this durations equals another duration.
+     */
+    public function isEqual(self $other): bool
+    {
+        return $this->totalSeconds === $other->totalSeconds
+            && $this->nanosOfSecond === $other->nanosOfSecond;
+    }
+
+    public function isLessThan(self $other): bool
+    {
+        return $this->compare($other) < 0;
+    }
+
+    public function isLessThanOrEqual(self $other): bool
+    {
+        return $this->compare($other) <= 0;
+    }
+
+    public function isGreaterThan(self $other): bool
+    {
+        return $this->compare($other) > 0;
+    }
+
+    public function isGreaterThanOrEqual(self $other): bool
+    {
+        return $this->compare($other) >= 0;
+    }
+
+    /**
+     * Adds another duration to this duration.
+     */
+    public function addBy(self $other): self
+    {
+        if ($other->isZero) {
+            return $this;
+        } elseif ($this->isZero) {
+            return $other;
+        }
+
+        return new self(
+            seconds: $this->totalSeconds + $other->totalSeconds,
+            nanoseconds: $this->nanosOfSecond + $other->nanosOfSecond,
+        );
+    }
+
+    /**
+     * Subtracts another duration from this duration.
+     */
+    public function subtractBy(self $other): self
+    {
+        if ($other->isZero) {
+            return $this;
+        }
+
+        return new self(
+            seconds: $this->totalSeconds - $other->totalSeconds,
+            nanoseconds: $this->nanosOfSecond - $other->nanosOfSecond,
+        );
+    }
+
+    /**
+     * Multiplies this duration by a multiplier.
+     * 
+     * @throws \ValueError If the multiplier is NaN.
+     */
+    public function multiplyBy(int|float $multiplier): self
+    {
+        if ($multiplier == 1) {
+            return $this;
+        }
+
+        if (\is_nan($multiplier)) {
+            throw new \ValueError('Multiplier cannot be NaN');
+        }
+
+        $s  = $this->totalSeconds * $multiplier;
+        $ns = $this->nanosOfSecond * $multiplier;
+
+        if (\is_float($s)) {
+            $ns += (int)(\fmod($s, 1) * 1_000_000_000);
+            $s = (int)$s;
+        }
+
+        if ($ns >= 1_000_000_000) {
+            $s += (int)($ns / 1_000_000_000);
+            $ns = (int)$ns % 1_000_000_000;
+        } elseif ($ns < 0) {
+            $s -= (int)(\abs($ns) / 1_000_000_000) + 1;
+            $ns = 1_000_000_000 - ((int)\abs($ns) % 1_000_000_000);
+        } else {
+            $ns = (int)$ns;
+        }
+
+        return new self(seconds: $s, nanoseconds: $ns);
+    }
+
+    /**
+     * Divides this duration by a divisor.
+     * 
+     * @throws \DivisionByZeroError If the divisor is zero.
+     * @throws \ValueError If the divisor is NaN.
+     */
+    public function divideBy(int|float $divisor): self
+    {
+        if ($divisor == 1) {
+            return $this;
+        }
+
+        if (\is_nan($divisor)) {
+            throw new \ValueError('Divisor cannot be NaN');
+        }
+
+        if ($divisor == 0) {
+            throw new \DivisionByZeroError('Division by zero');
+        }
+
+        $s  = $this->totalSeconds / $divisor;
+        $ns = $this->nanosOfSecond / $divisor;
+
+        if (\is_float($s)) {
+            $ns += (int)(\fmod($s, 1) * 1_000_000_000);
+            $s = (int)$s;
+        }
+
+        if ($ns >= 1_000_000_000) {
+            $s += (int)($ns / 1_000_000_000);
+            $ns = (int)$ns % 1_000_000_000;
+        } elseif ($ns < 0) {
+            $s -= (int)(\abs($ns) / 1_000_000_000) + 1;
+            $ns = 1_000_000_000 - ((int)\abs($ns) % 1_000_000_000);
+        } else {
+            $ns = (int)$ns;
+        }
+
+        return new self(seconds: $s, nanoseconds: $ns);
+    }
+
+    /**
+     * Modulo of this duration by a divisor.
+     * 
+     * @throws \DivisionByZeroError If the divisor is zero.
+     * @throws \ValueError If the divisor is NaN.
+     */
+    public function moduloBy(int|float $divisor): self
+    {
+        if ($divisor == 1) {
+            return $this;
+        }
+
+        if (\is_nan($divisor)) {
+            throw new \ValueError('Divisor cannot be NaN');
+        }
+
+        if ($divisor == 0) {
+            throw new \DivisionByZeroError('Modulo by zero');
+        }
+
+        if (\is_float($divisor)) {
+            $s  = \fmod($this->totalSeconds, $divisor);
+            $ns = \fmod($this->nanosOfSecond, $divisor);
+
+            $ns += (int)(\fmod($s, 1) * 1_000_000_000);
+            $s = (int)$s;
+
+            if ($ns >= 1_000_000_000) {
+                $s += (int)($ns / 1_000_000_000);
+                $ns = (int)$ns % 1_000_000_000;
+            } elseif ($ns < 0) {
+                $s -= (int)(\abs($ns) / 1_000_000_000) + 1;
+                $ns = 1_000_000_000 - ((int)\abs($ns) % 1_000_000_000);
+            } else {
+                $ns = (int)$ns;
+            }
+        } else {
+            $s  = $this->totalSeconds % $divisor;
+            $ns = $this->nanosOfSecond % $divisor;
+        }
+
+        return new self(seconds: $s, nanoseconds: $ns);
+    }
+
+    /**
+     * Modulo of this duration by another duration.
+     * 
+     * @throws \DivisionByZeroError If the other duration is zero.
+     */
+    public function moduloOf(self $other): float
+    {
+        if ($other->isZero) {
+            throw new \DivisionByZeroError('Modulo by zero');
+        }
+
+        $s  = $other->totalSeconds === 0 ? 0 : $this->totalSeconds % $other->totalSeconds;
+        $ns = $other->nanosOfSecond === 0 ? 0 : $this->nanosOfSecond % $other->nanosOfSecond;
+
+        return $s + ($ns / 1_000_000_000);
+    }
+
+    /**
+     * Creates the difference of this duration and another duration.
+     */
+    public function difference(self $other): self
     {
         return new self(
             seconds: \abs($this->totalSeconds - $other->totalSeconds),
@@ -152,6 +352,9 @@ final class Duration
         );
     }
 
+    /**
+     * Inverts this duration.
+     */
     public function inverted(): self
     {
         if ($this->isZero) {
@@ -169,16 +372,27 @@ final class Duration
         return new self(seconds: $s, nanoseconds: $ns);
     }
 
+    /**
+     * Makes this duration absolute.
+     */
     public function abs(): self
     {
         return $this->isNegative ? $this->inverted() : $this;
     }
 
+    /**
+     * Negates this duration.
+     */
     public function negated(): self
     {
         return !$this->isNegative ? $this->inverted() : $this;
     }
 
+    /**
+     * Converts this duration to an ISO 8601 duration string.
+     * 
+     * @return non-empty-string
+     */
     public function toIso(): string
     {
         $timeIso  = '';
@@ -209,6 +423,6 @@ final class Duration
             $timeIso = '0S';
         }
 
-        return $this->isNegative ? '-PT' . $timeIso : 'PT' . $timeIso;
+        return $this->isNegative ? "-PT$timeIso" : "PT$timeIso";
     }
 }

@@ -4,7 +4,7 @@ namespace time;
 
 final class Period {
     public bool $isZero {
-        get => $this->years || $this->months || $this->weeks || $this->days;
+        get => !($this->years || $this->months || $this->weeks || $this->days);
     }
 
     public function __construct(
@@ -15,7 +15,7 @@ final class Period {
         public readonly int $days = 0,
     ) {}
 
-    public function equals(self $other): bool
+    public function isEqual(self $other): bool
     {
         if ($this->isNegative !== $other->isNegative) {
             $other = $other->allInverted();
@@ -27,8 +27,14 @@ final class Period {
             && $this->days === $other->days;
     }
 
-    public function add(self $other): self
+    public function addBy(self $other): self
     {
+        if ($other->isZero) {
+            return $this;
+        } elseif ($this->isZero) {
+            return $other;
+        }
+
         if ($this->isNegative !== $other->isNegative) {
             $other = $other->allInverted();
         }
@@ -37,11 +43,32 @@ final class Period {
             years: $this->years + $other->years,
             months: $this->months + $other->months,
             weeks: $this->weeks + $other->weeks,
-            days: $this->days + $other->days,
+            days: $this->days + $other->days, 
         );
     }
 
-    public function diff(self $other): self
+    /**
+     * Subtracts another duration from this duration.
+     */
+    public function subtractBy(self $other): self
+    {
+        if ($other->isZero) {
+            return $this;
+        }
+
+        if ($this->isNegative !== $other->isNegative) {
+            $other = $other->allInverted();
+        }
+
+        return new self(
+            years: $this->years - $other->years,
+            months: $this->months - $other->months,
+            weeks: $this->weeks - $other->weeks,
+            days: $this->days - $other->days,
+        );
+    }
+
+    public function difference(self $other): self
     {
         $self  = $this->isNegative ? $this->allInverted() : $this;
         $other = $other->isNegative ? $other->allInverted() : $other;
