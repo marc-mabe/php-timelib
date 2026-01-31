@@ -1,5 +1,7 @@
 --TEST--
 Zone: Time zone offsets and transitions of buildin zones
+--XFAIL--
+This test fails on 32bit because of PHP bug https://github.com/php/php-src/issues/18051
 --FILE--
 <?php
 
