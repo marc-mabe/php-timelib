@@ -47,7 +47,15 @@ final class Duration
     }
 
     public int $totalMilliseconds {
-        get => \intdiv($this->nanosOfSecond, 1_000_000) + ($this->totalSeconds * 1_000);
+        get {
+            $totalMilliseconds = \intdiv($this->nanosOfSecond, 1_000_000) + ($this->totalSeconds * 1_000);
+
+            if (\is_float($totalMilliseconds)) {
+                throw new RangeError('Total milliseconds overflowed');
+            }
+
+            return $totalMilliseconds;
+        }
     }
 
     /** @var int<0,999> */
@@ -57,7 +65,15 @@ final class Duration
     }
 
     public int $totalMicroseconds {
-        get => \intdiv($this->nanosOfSecond, 1_000) + ($this->totalSeconds * 1_000_000);
+        get {
+            $totalMicroseconds = \intdiv($this->nanosOfSecond, 1_000_000) + ($this->totalSeconds * 1_000_000);
+
+            if (\is_float($totalMicroseconds)) {
+                throw new RangeError('Total microseconds overflowed');
+            }
+
+            return $totalMicroseconds;
+        }
     }
 
     /** @var int<0,999999> */
@@ -67,7 +83,15 @@ final class Duration
     }
 
     public int $totalNanoseconds {
-        get => $this->nanosOfSecond + ($this->totalSeconds * 1_000_000_000);
+        get {
+            $totalNanoseconds = \intdiv($this->nanosOfSecond, 1_000_000) + ($this->totalSeconds * 1_000_000_000);
+
+            if (\is_float($totalNanoseconds)) {
+                throw new RangeError('Total nanoseconds overflowed');
+            }
+
+            return $totalNanoseconds;
+        }
     }
 
     /** @var int<0,999999999> */
@@ -182,8 +206,13 @@ final class Duration
             return $other;
         }
 
+        $s = $this->totalSeconds + $other->totalSeconds;
+        if (\is_float($s)) {
+            throw new RangeError('Total seconds overflowed during addition');
+        }
+
         return new self(
-            seconds: $this->totalSeconds + $other->totalSeconds,
+            seconds: $s,
             nanoseconds: $this->nanosOfSecond + $other->nanosOfSecond,
         );
     }
@@ -197,8 +226,13 @@ final class Duration
             return $this;
         }
 
+        $s = $this->totalSeconds - $other->totalSeconds;
+        if (\is_float($s)) {
+            throw new RangeError('Total seconds overflowed during subtraction');
+        }
+
         return new self(
-            seconds: $this->totalSeconds - $other->totalSeconds,
+            seconds: $s,
             nanoseconds: $this->nanosOfSecond - $other->nanosOfSecond,
         );
     }
@@ -222,8 +256,14 @@ final class Duration
         $ns = $this->nanosOfSecond * $multiplier;
 
         if (\is_float($s)) {
-            $ns += (int)(\fmod($s, 1) * 1_000_000_000);
+            $f = \fmod($s, 1);
+            $s -= $f;
+            if ($s > PHP_INT_MAX || $s < PHP_INT_MIN) {
+                throw new RangeError('Total seconds overflowed during multiplication');
+            }
+
             $s = (int)$s;
+            $ns += (int)($f * 1_000_000_000);
         }
 
         if ($ns >= 1_000_000_000) {
@@ -346,8 +386,13 @@ final class Duration
      */
     public function difference(self $other): self
     {
+        $s = $this->totalSeconds - $other->totalSeconds;
+        if (\is_float($s)) {
+            throw new RangeError('Total seconds overflowed during subtraction');
+        }
+
         return new self(
-            seconds: \abs($this->totalSeconds - $other->totalSeconds),
+            seconds: \abs($s),
             nanoseconds: \abs($this->nanosOfSecond - $other->nanosOfSecond),
         );
     }
@@ -367,6 +412,10 @@ final class Duration
         if ($ns) {
             $s -= 1;
             $ns = 1_000_000_000 - $ns;
+        }
+
+        if (\is_float($s)) {
+            throw new RangeError('Total seconds overflowed during inversion');
         }
 
         return new self(seconds: $s, nanoseconds: $ns);

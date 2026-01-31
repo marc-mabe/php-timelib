@@ -39,12 +39,27 @@ final class Period {
             $other = $other->allInverted();
         }
 
-        return new self(
-            years: $this->years + $other->years,
-            months: $this->months + $other->months,
-            weeks: $this->weeks + $other->weeks,
-            days: $this->days + $other->days, 
-        );
+        $years = $this->years + $other->years;
+        if (\is_float($years)) {
+            throw new RangeError('Years overflowed during addition');
+        }
+
+        $months = $this->months + $other->months;
+        if (\is_float($months)) {
+            throw new RangeError('Month overflowed during addition');
+        }
+
+        $weeks = $this->weeks + $other->weeks;
+        if (\is_float($weeks)) {
+            throw new RangeError('Weeks overflowed during addition');
+        }
+
+        $days = $this->days + $other->days;
+        if (\is_float($days)) {
+            throw new RangeError('Days overflowed during addition');
+        }
+
+        return new self(years: $years, months: $months, weeks: $weeks, days: $days);
     }
 
     /**
@@ -60,12 +75,27 @@ final class Period {
             $other = $other->allInverted();
         }
 
-        return new self(
-            years: $this->years - $other->years,
-            months: $this->months - $other->months,
-            weeks: $this->weeks - $other->weeks,
-            days: $this->days - $other->days,
-        );
+        $years = $this->years - $other->years;
+        if (\is_float($years)) {
+            throw new RangeError('Years overflowed during subtraction');
+        }
+
+        $months = $this->months - $other->months;
+        if (\is_float($months)) {
+            throw new RangeError('Month overflowed during subtraction');
+        }
+
+        $weeks = $this->weeks - $other->weeks;
+        if (\is_float($weeks)) {
+            throw new RangeError('Weeks overflowed during subtraction');
+        }
+
+        $days = $this->days - $other->days;
+        if (\is_float($days)) {
+            throw new RangeError('Days overflowed during subtraction');
+        }
+
+        return new self(years: $years, months: $months, weeks: $weeks, days: $days);
     }
 
     public function difference(self $other): self
@@ -73,11 +103,31 @@ final class Period {
         $self  = $this->isNegative ? $this->allInverted() : $this;
         $other = $other->isNegative ? $other->allInverted() : $other;
 
+        $years = $self->years - $other->years;
+        if (\is_float($years)) {
+            throw new RangeError('Years overflowed during subtraction');
+        }
+
+        $months = $self->months - $other->months;
+        if (\is_float($months)) {
+            throw new RangeError('Month overflowed during subtraction');
+        }
+
+        $weeks = $self->weeks - $other->weeks;
+        if (\is_float($weeks)) {
+            throw new RangeError('Weeks overflowed during subtraction');
+        }
+
+        $days = $self->days - $other->days;
+        if (\is_float($days)) {
+            throw new RangeError('Days overflowed during subtraction');
+        }
+
         return new self(
-            years: \abs($self->years - $other->years),
-            months: \abs($self->months - $other->months),
-            weeks: \abs($self->weeks - $other->weeks),
-            days: \abs($self->days - $other->days),
+            years: \abs($years),
+            months: \abs($months),
+            weeks: \abs($weeks),
+            days: \abs($days),
         );
     }
 
@@ -88,13 +138,27 @@ final class Period {
      */
     public function allInverted(): self
     {
-        return new self(
-            isNegative: !$this->isNegative,
-            years: $this->years * -1,
-            months: $this->months * -1,
-            weeks: $this->weeks * -1,
-            days: $this->days * -1,
-        );
+        $years = $this->years * -1;
+        if (\is_float($years)) {
+            throw new RangeError('Years overflowed during invertion');
+        }
+
+        $months = $this->months * -1;
+        if (\is_float($months)) {
+            throw new RangeError('Month overflowed during invertion');
+        }
+
+        $weeks = $this->weeks * -1;
+        if (\is_float($weeks)) {
+            throw new RangeError('Weeks overflowed during invertion');
+        }
+
+        $days = $this->days * -1;
+        if (\is_float($days)) {
+            throw new RangeError('Days overflowed during invertion');
+        }
+
+        return new self(isNegative: !$this->isNegative, years: $years, months: $months, weeks: $weeks, days: $days);
     }
 
     public function inverted(): self
@@ -131,9 +195,14 @@ final class Period {
             return $this;
         }
 
+        $years = $this->years + \intdiv($this->months, 12);
+        if (\is_float($years)) {
+            throw new RangeError('Years overflowed during normalization');
+        }
+
         return new self(
             isNegative: $this->isNegative,
-            years: $this->years + \intdiv($this->months, 12),
+            years: $years,
             months: $this->months % 12,
             weeks: $this->weeks,
             days: $this->days,
@@ -155,11 +224,16 @@ final class Period {
             return $this;
         }
 
+        $weeks = $this->weeks + \intdiv($this->days, 7);
+        if (\is_float($weeks)) {
+            throw new RangeError('Weeks overflowed during normalization');
+        }
+
         return new self(
             isNegative: $this->isNegative,
             years: $this->years,
             months: $this->months,
-            weeks: $this->weeks + \intdiv($this->days, 7),
+            weeks: $weeks,
             days: $this->days % 7,
         );
     }
