@@ -2,6 +2,8 @@
 
 namespace time;
 
+require_once __DIR__ . '/include.php';
+
 class Zone
 {
     /** @var array<string, Zone> Registered zones by identifier */
@@ -119,32 +121,15 @@ class Zone
                 }
 
                 if (!$from && !$until) {
+                    // By default take the last ~100 years from now.
                     $untilTs = \time();
-                    $fromTs  = $untilTs - 60 * 60 * 24 * 365 * 100; // ~100 years
-
-                    // integer underflow
-                    // @phpstan-ignore function.alreadyNarrowedType
-                    if (\is_float($fromTs)) {
-                        $fromTs = PHP_INT_MIN;
-                    }
+                    $fromTs = _intSub($untilTs, 60 * 60 * 24 * 365 * 100, \PHP_INT_MIN); // ~100 years
                 } elseif (!$from) {
                     $untilTs = $until->toUnixTimestampTuple()[0];
-                    $fromTs  = $untilTs - 60 * 60 * 24 * 365 * 100; // ~100 years
-
-                    // integer underflow
-                    // @phpstan-ignore function.alreadyNarrowedType
-                    if (\is_float($fromTs)) {
-                        $fromTs = PHP_INT_MIN;
-                    }
+                    $fromTs  = _intSub($untilTs, 60 * 60 * 24 * 365 * 100, \PHP_INT_MIN); // ~100 years
                 } elseif (!$until) {
                     $fromTs  = $from->toUnixTimestampTuple()[0];
-                    $untilTs = $fromTs + 60 * 60 * 24 * 365 * 100; // ~100 years
-
-                    // integer overflow
-                    // @phpstan-ignore function.alreadyNarrowedType
-                    if (\is_float($untilTs)) {
-                        $untilTs = PHP_INT_MAX;
-                    }
+                    $untilTs = _intAdd($fromTs, 60 * 60 * 24 * 365 * 100, \PHP_INT_MAX); // ~100 years
                 } else {
                     $fromTs  = $from->toUnixTimestampTuple()[0];
                     $untilTs = $until->toUnixTimestampTuple()[0];
@@ -172,10 +157,8 @@ class Zone
                 // Workaround DateTimeZone->getTransitions() resets the first transition to $fromTs
                 // but we need the real transition timestamp
                 $getTransitions = static function (int $fromTs, int $untilTs) use ($getTransitions): array {
-                    $tmpFromTs = $fromTs > PHP_INT_MIN - 60 * 60 * 24 * 365
-                        ? PHP_INT_MIN
-                        : $fromTs - 60 * 60 * 24 * 365;
-                    $allTrans = $getTransitions($tmpFromTs, $untilTs);
+                    $tmpFromTs = _intSub($fromTs, 60 * 60 * 24 * 365, \PHP_INT_MIN); // ~1 year
+                    $allTrans  = $getTransitions($tmpFromTs, $untilTs);
 
                     if (\count($allTrans) === 1 && $allTrans[0]['ts'] === $tmpFromTs) {
                         $allTrans = $getTransitions(PHP_INT_MIN, $untilTs);
