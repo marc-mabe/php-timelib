@@ -123,7 +123,7 @@ class Zone
                     $fromTs  = $untilTs - 60 * 60 * 24 * 365 * 100; // ~100 years
 
                     // integer underflow
-                    // @phpstan-ignore function.impossibleType
+                    // @phpstan-ignore function.alreadyNarrowedType
                     if (\is_float($fromTs)) {
                         $fromTs = PHP_INT_MIN;
                     }
@@ -132,7 +132,7 @@ class Zone
                     $fromTs  = $untilTs - 60 * 60 * 24 * 365 * 100; // ~100 years
 
                     // integer underflow
-                    // @phpstan-ignore function.impossibleType
+                    // @phpstan-ignore function.alreadyNarrowedType
                     if (\is_float($fromTs)) {
                         $fromTs = PHP_INT_MIN;
                     }
@@ -141,7 +141,7 @@ class Zone
                     $untilTs = $fromTs + 60 * 60 * 24 * 365 * 100; // ~100 years
 
                     // integer overflow
-                    // @phpstan-ignore function.impossibleType
+                    // @phpstan-ignore function.alreadyNarrowedType
                     if (\is_float($untilTs)) {
                         $untilTs = PHP_INT_MAX;
                     }
