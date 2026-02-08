@@ -4,8 +4,8 @@ namespace time;
 
 final class ZoneOffset extends Zone implements \Stringable
 {
-    const int TOTAL_SECONDS_MAX = 60 * 60 * 18;
-    const int TOTAL_SECONDS_MIN = -60 * 60 * 18;
+    public const int MAX_TOTAL_SECONDS = 60 * 60 * 18;
+    public const int MIN_TOTAL_SECONDS = -60 * 60 * 18;
 
     public string $name {
         get => $this->identifier;
@@ -16,11 +16,11 @@ final class ZoneOffset extends Zone implements \Stringable
     public function __construct(
         public readonly int $totalSeconds
     ) {
-        if ($totalSeconds > self::TOTAL_SECONDS_MAX || $totalSeconds < self::TOTAL_SECONDS_MIN) {
+        if ($totalSeconds > self::MAX_TOTAL_SECONDS || $totalSeconds < self::MIN_TOTAL_SECONDS) {
             throw new RangeError(\sprintf(
                 "Zone offset must be between %s and %s",
-                new self(self::TOTAL_SECONDS_MAX)->identifier,
-                new self(self::TOTAL_SECONDS_MIN)->identifier,
+                new self(self::MAX_TOTAL_SECONDS)->identifier,
+                new self(self::MIN_TOTAL_SECONDS)->identifier,
             ));
         }
 
