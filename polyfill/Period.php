@@ -2,6 +2,8 @@
 
 namespace time;
 
+require_once __DIR__ . '/include.php';
+
 final class Period {
     public bool $isZero {
         get => !($this->years || $this->months || $this->weeks || $this->days);
@@ -39,25 +41,10 @@ final class Period {
             $other = $other->allInverted();
         }
 
-        $years = $this->years + $other->years;
-        if (\is_float($years)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Years overflowed during addition');
-        }
-
-        $months = $this->months + $other->months;
-        if (\is_float($months)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Month overflowed during addition');
-        }
-
-        $weeks = $this->weeks + $other->weeks;
-        if (\is_float($weeks)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Weeks overflowed during addition');
-        }
-
-        $days = $this->days + $other->days;
-        if (\is_float($days)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Days overflowed during addition');
-        }
+        $years = _intAdd($this->years, $other->years, 'Years overflowed during addition');
+        $months = _intAdd($this->months, $other->months, 'Months overflowed during addition');
+        $weeks = _intAdd($this->weeks, $other->weeks, 'Weeks overflowed during addition');
+        $days = _intAdd($this->days, $other->days, 'Days overflowed during addition');
 
         return new self(years: $years, months: $months, weeks: $weeks, days: $days);
     }
@@ -75,25 +62,10 @@ final class Period {
             $other = $other->allInverted();
         }
 
-        $years = $this->years - $other->years;
-        if (\is_float($years)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Years overflowed during subtraction');
-        }
-
-        $months = $this->months - $other->months;
-        if (\is_float($months)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Month overflowed during subtraction');
-        }
-
-        $weeks = $this->weeks - $other->weeks;
-        if (\is_float($weeks)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Weeks overflowed during subtraction');
-        }
-
-        $days = $this->days - $other->days;
-        if (\is_float($days)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Days overflowed during subtraction');
-        }
+        $years = _intSub($this->years, $other->years, 'Years overflowed during subtraction');
+        $months = _intSub($this->months, $other->months, 'Months overflowed during subtraction');
+        $weeks = _intSub($this->weeks, $other->weeks, 'Weeks overflowed during subtraction');
+        $days = _intSub($this->days, $other->days, 'Days overflowed during subtraction');
 
         return new self(years: $years, months: $months, weeks: $weeks, days: $days);
     }
@@ -103,25 +75,10 @@ final class Period {
         $self  = $this->isNegative ? $this->allInverted() : $this;
         $other = $other->isNegative ? $other->allInverted() : $other;
 
-        $years = $self->years - $other->years;
-        if (\is_float($years)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Years overflowed during subtraction');
-        }
-
-        $months = $self->months - $other->months;
-        if (\is_float($months)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Month overflowed during subtraction');
-        }
-
-        $weeks = $self->weeks - $other->weeks;
-        if (\is_float($weeks)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Weeks overflowed during subtraction');
-        }
-
-        $days = $self->days - $other->days;
-        if (\is_float($days)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Days overflowed during subtraction');
-        }
+        $years = _intSub($self->years, $other->years, 'Years overflowed during subtraction');
+        $months = _intSub($self->months, $other->months, 'Months overflowed during subtraction');
+        $weeks = _intSub($self->weeks, $other->weeks, 'Weeks overflowed during subtraction');
+        $days = _intSub($self->days, $other->days, 'Days overflowed during subtraction');
 
         return new self(
             years: \abs($years),
@@ -195,10 +152,7 @@ final class Period {
             return $this;
         }
 
-        $years = $this->years + \intdiv($this->months, 12);
-        if (\is_float($years)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Years overflowed during normalization');
-        }
+        $years = _intAdd($this->years, \intdiv($this->months, 12), 'Years overflowed during normalization');
 
         return new self(
             isNegative: $this->isNegative,
@@ -224,10 +178,7 @@ final class Period {
             return $this;
         }
 
-        $weeks = $this->weeks + \intdiv($this->days, 7);
-        if (\is_float($weeks)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Weeks overflowed during normalization');
-        }
+        $weeks = _intAdd($this->weeks, \intdiv($this->days, 7), 'Weeks overflowed during normalization');
 
         return new self(
             isNegative: $this->isNegative,

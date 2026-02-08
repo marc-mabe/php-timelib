@@ -2,6 +2,8 @@
 
 namespace time;
 
+require_once __DIR__ . '/include.php';
+
 /**
  * A `Duration` is a relative amount of time that strictly follows the following definition:
  *   - each microsecond has 1000 nanoseconds
@@ -47,15 +49,7 @@ final class Duration
     }
 
     public int $totalMilliseconds {
-        get {
-            $totalMilliseconds = \intdiv($this->nanosOfSecond, 1_000_000) + ($this->totalSeconds * 1_000);
-
-            if (\is_float($totalMilliseconds)) { // @phpstan-ignore function.impossibleType
-                throw new RangeError('Total milliseconds overflowed');
-            }
-
-            return $totalMilliseconds;
-        }
+        get =>_intAdd($this->millisOfSecond, $this->totalSeconds * 1_000, 'Total milliseconds overflowed');
     }
 
     /** @var int<0,999> */
@@ -65,15 +59,7 @@ final class Duration
     }
 
     public int $totalMicroseconds {
-        get {
-            $totalMicroseconds = \intdiv($this->nanosOfSecond, 1_000_000) + ($this->totalSeconds * 1_000_000);
-
-            if (\is_float($totalMicroseconds)) { // @phpstan-ignore function.impossibleType
-                throw new RangeError('Total microseconds overflowed');
-            }
-
-            return $totalMicroseconds;
-        }
+        get =>_intAdd($this->microsOfSecond, $this->totalSeconds * 1_000_000, 'Total microseconds overflowed');
     }
 
     /** @var int<0,999999> */
@@ -83,15 +69,7 @@ final class Duration
     }
 
     public int $totalNanoseconds {
-        get {
-            $totalNanoseconds = \intdiv($this->nanosOfSecond, 1_000_000) + ($this->totalSeconds * 1_000_000_000);
-
-            if (\is_float($totalNanoseconds)) { // @phpstan-ignore function.impossibleType
-                throw new RangeError('Total nanoseconds overflowed');
-            }
-
-            return $totalNanoseconds;
-        }
+        get =>_intAdd($this->nanosOfSecond, $this->totalSeconds * 1_000_000_000, 'Total nanoseconds overflowed');
     }
 
     /** @var int<0,999999999> */
@@ -128,7 +106,7 @@ final class Duration
 
         // @phpstan-ignore-next-line function.impossibleType booleanOr.alwaysFalse
         if (\is_float($s)) {
-            throw new RangeError(sprintf(
+            throw new RangeError(\sprintf(
                 'Duration must be within %d and %d total seconds',
                 PHP_INT_MIN,
                 PHP_INT_MAX
@@ -206,13 +184,8 @@ final class Duration
             return $other;
         }
 
-        $s = $this->totalSeconds + $other->totalSeconds;
-        if (\is_float($s)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Total seconds overflowed during addition');
-        }
-
         return new self(
-            seconds: $s,
+            seconds: _intAdd($this->totalSeconds, $other->totalSeconds, 'Total seconds overflowed during addition'),
             nanoseconds: $this->nanosOfSecond + $other->nanosOfSecond,
         );
     }
@@ -226,13 +199,8 @@ final class Duration
             return $this;
         }
 
-        $s = $this->totalSeconds - $other->totalSeconds;
-        if (\is_float($s)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Total seconds overflowed during subtraction');
-        }
-
         return new self(
-            seconds: $s,
+            seconds: _intSub($this->totalSeconds, $other->totalSeconds, 'Total seconds overflowed during subtraction'),
             nanoseconds: $this->nanosOfSecond - $other->nanosOfSecond,
         );
     }
@@ -303,8 +271,14 @@ final class Duration
         $ns = $this->nanosOfSecond / $divisor;
 
         if (\is_float($s)) {
-            $ns += (int)(\fmod($s, 1) * 1_000_000_000);
+            $f = \fmod($s, 1);
+            $s -= $f;
+            if ($s > PHP_INT_MAX || $s < PHP_INT_MIN) {
+                throw new RangeError('Total seconds overflowed during multiplication');
+            }
+
             $s = (int)$s;
+            $ns += (int)($f * 1_000_000_000);
         }
 
         if ($ns >= 1_000_000_000) {
@@ -386,13 +360,12 @@ final class Duration
      */
     public function difference(self $other): self
     {
-        $s = $this->totalSeconds - $other->totalSeconds;
-        if (\is_float($s)) { // @phpstan-ignore function.impossibleType
-            throw new RangeError('Total seconds overflowed during subtraction');
-        }
-
         return new self(
-            seconds: \abs($s),
+            seconds: \abs(_intSub(
+                $this->totalSeconds,
+                $other->totalSeconds,
+                'Total seconds overflowed during subtraction'
+            )),
             nanoseconds: \abs($this->nanosOfSecond - $other->nanosOfSecond),
         );
     }
