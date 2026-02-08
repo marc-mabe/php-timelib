@@ -4,7 +4,13 @@ namespace time;
 
 final class Instant implements Instanted, Date, Time, Zoned
 {
-    public const int SECONDS_PER_DAY = 24 * 3600;
+    public const int SECONDS_PER_MINUTE = 60;
+    public const int SECONDS_PER_HOUR = 3600;
+    public const int SECONDS_PER_DAY = 24 * self::SECONDS_PER_HOUR;
+
+    public const int NANOS_PER_SECOND = 1_000_000_000;
+    public const int MICROS_PER_SECOND = 1_000_000;
+    public const int MILLIS_PER_SECOND = 1_000;
 
     public readonly Instant $instant;
 
@@ -54,26 +60,26 @@ final class Instant implements Instanted, Date, Time, Zoned
 
     public int $hour {
         get {
-            $remainder = $this->tsSec % 86400;
-            $remainder += ($remainder < 0) * 86400;
-            return \intdiv($remainder, 3600);
+            $remainder = $this->tsSec % self::SECONDS_PER_DAY;
+            $remainder += ($remainder < 0) * self::SECONDS_PER_DAY;
+            return \intdiv($remainder, self::SECONDS_PER_HOUR);
         }
     }
 
     public int $minute  {
         get {
-            $remainder = $this->tsSec % 86400;
-            $remainder += ($remainder < 0) * 86400;
-            $hours = \intdiv($remainder, 3600);
-            return \intdiv($remainder - $hours * 3600, 60);
+            $remainder = $this->tsSec % self::SECONDS_PER_DAY;
+            $remainder += ($remainder < 0) * self::SECONDS_PER_DAY;
+            $hours = \intdiv($remainder, self::SECONDS_PER_HOUR);
+            return \intdiv($remainder - $hours * self::SECONDS_PER_HOUR, self::SECONDS_PER_MINUTE);
         }
     }
 
     public int $second  {
         get {
-            $remainder = $this->tsSec % 86400;
-            $remainder += ($remainder < 0) * 86400;
-            return $remainder % 60;
+            $remainder = $this->tsSec % self::SECONDS_PER_DAY;
+            $remainder += ($remainder < 0) * self::SECONDS_PER_DAY;
+            return $remainder % self::SECONDS_PER_MINUTE;
         }
     }
 
@@ -299,22 +305,22 @@ final class Instant implements Instanted, Date, Time, Zoned
     {
         if ($fractions) {
             return match ($unit) {
-                TimeUnit::Hour        => ($this->tsSec / 3_600) + ($this->nanoOfSecond / 1_000_000_000 / 3_600),
-                TimeUnit::Minute      => ($this->tsSec / 60) + ($this->nanoOfSecond / 1_000_000_000 / 60),
-                TimeUnit::Second      => ($this->tsSec + ($this->nanoOfSecond / 1_000_000_000)),
-                TimeUnit::Millisecond => ($this->tsSec * 1_000) + ($this->nanoOfSecond / 1_000_000),
-                TimeUnit::Microsecond => ($this->tsSec * 1_000_000) + ($this->nanoOfSecond / 1_000),
-                TimeUnit::Nanosecond  => ($this->tsSec * 1_000_000_000) + $this->nanoOfSecond,
+                TimeUnit::Hour        => ($this->tsSec / self::SECONDS_PER_HOUR) + ($this->nanoOfSecond / self::NANOS_PER_SECOND / self::SECONDS_PER_HOUR),
+                TimeUnit::Minute      => ($this->tsSec / self::SECONDS_PER_MINUTE) + ($this->nanoOfSecond / self::NANOS_PER_SECOND / self::SECONDS_PER_MINUTE),
+                TimeUnit::Second      => ($this->tsSec + ($this->nanoOfSecond / self::NANOS_PER_SECOND)),
+                TimeUnit::Millisecond => ($this->tsSec * self::MILLIS_PER_SECOND) + ($this->nanoOfSecond / 1_000_000),
+                TimeUnit::Microsecond => ($this->tsSec * self::MICROS_PER_SECOND) + ($this->nanoOfSecond / 1_000),
+                TimeUnit::Nanosecond  => ($this->tsSec * self::NANOS_PER_SECOND) + $this->nanoOfSecond,
             };
         }
 
         return match ($unit) {
-            TimeUnit::Hour        => \intdiv($this->tsSec, 3_600),
-            TimeUnit::Minute      => \intdiv($this->tsSec, 60),
+            TimeUnit::Hour        => \intdiv($this->tsSec, self::SECONDS_PER_HOUR),
+            TimeUnit::Minute      => \intdiv($this->tsSec, self::SECONDS_PER_MINUTE),
             TimeUnit::Second      => $this->tsSec,
-            TimeUnit::Millisecond => ($this->tsSec * 1_000) + \intdiv($this->nanoOfSecond, 1_000_000),
-            TimeUnit::Microsecond => ($this->tsSec * 1_000_000) + \intdiv($this->nanoOfSecond, 1_000),
-            TimeUnit::Nanosecond  => ($this->tsSec * 1_000_000_000) + $this->nanoOfSecond,
+            TimeUnit::Millisecond => ($this->tsSec * self::MILLIS_PER_SECOND) + \intdiv($this->nanoOfSecond, 1_000_000),
+            TimeUnit::Microsecond => ($this->tsSec * self::MICROS_PER_SECOND) + \intdiv($this->nanoOfSecond, 1_000),
+            TimeUnit::Nanosecond  => ($this->tsSec * self::NANOS_PER_SECOND) + $this->nanoOfSecond,
         };
     }
 
@@ -346,20 +352,20 @@ final class Instant implements Instanted, Date, Time, Zoned
             $tsInt      = $timestamp - $tsFraction;
 
             if ($unit === TimeUnit::Minute && (
-                $tsInt > PHP_INT_MAX / 60 || $tsInt < PHP_INT_MIN / 60
+                $tsInt > PHP_INT_MAX / self::SECONDS_PER_MINUTE || $tsInt < PHP_INT_MIN / self::SECONDS_PER_MINUTE
             )) {
                 throw new RangeError(\sprintf(
                     'Timestamp in minutes must be between %f and %f',
-                    PHP_INT_MAX / 60,
-                    PHP_INT_MIN / 60,
+                    PHP_INT_MAX / self::SECONDS_PER_MINUTE,
+                    PHP_INT_MIN / self::SECONDS_PER_MINUTE,
                 ));
             } elseif ($unit === TimeUnit::Hour && (
-                $tsInt > PHP_INT_MAX / 3600 || $timestamp < PHP_INT_MIN / 3600
+                $tsInt > PHP_INT_MAX / self::SECONDS_PER_HOUR || $tsInt < PHP_INT_MIN / self::SECONDS_PER_HOUR
             )) {
                 throw new RangeError(\sprintf(
                     'Timestamp in hours must be between %f and %f',
-                    PHP_INT_MIN / 3600,
-                    PHP_INT_MAX / 3600,
+                    PHP_INT_MIN / self::SECONDS_PER_HOUR,
+                    PHP_INT_MAX / self::SECONDS_PER_HOUR,
                 ));
             } elseif (
                 (PHP_INT_SIZE === 8 && ($tsInt >= (float)PHP_INT_MAX || $tsInt < (float)PHP_INT_MIN))
@@ -374,20 +380,20 @@ final class Instant implements Instanted, Date, Time, Zoned
 
         } else {
             if ($unit === TimeUnit::Minute && (
-                $timestamp > PHP_INT_MAX / 60 || $timestamp < PHP_INT_MIN / 60
+                $timestamp > PHP_INT_MAX / self::SECONDS_PER_MINUTE || $timestamp < PHP_INT_MIN / self::SECONDS_PER_MINUTE
             )) {
                 throw new RangeError(\sprintf(
                     'Timestamp in minutes must be between %f and %f',
-                    PHP_INT_MAX / 60,
-                    PHP_INT_MIN / 60,
+                    PHP_INT_MAX / self::SECONDS_PER_MINUTE,
+                    PHP_INT_MIN / self::SECONDS_PER_MINUTE,
                 ));
             } elseif ($unit === TimeUnit::Hour && (
-                $timestamp > PHP_INT_MAX / 3600 || $timestamp < PHP_INT_MIN / 3600
+                $timestamp > PHP_INT_MAX / self::SECONDS_PER_HOUR || $timestamp < PHP_INT_MIN / self::SECONDS_PER_HOUR
             )) {
                 throw new RangeError(\sprintf(
                     'Timestamp in hours must be between %f and %f',
-                    PHP_INT_MIN / 3600,
-                    PHP_INT_MAX / 3600,
+                    PHP_INT_MIN / self::SECONDS_PER_HOUR,
+                    PHP_INT_MAX / self::SECONDS_PER_HOUR,
                 ));
             }
 
@@ -396,35 +402,35 @@ final class Instant implements Instanted, Date, Time, Zoned
         }
 
         [$tsSec, $ns] = match ($unit) {
-            TimeUnit::Second      => [$tsInt, (int)($tsFraction * 1_000_000_000)],
+            TimeUnit::Second      => [$tsInt, (int)($tsFraction * self::NANOS_PER_SECOND)],
             TimeUnit::Millisecond => [
                 \intdiv($tsInt, 1_000),
-                ($tsInt % 1_000 * 1_000_000) - (int)($tsFraction * 1_000_000_000),
+                ($tsInt % 1_000 * 1_000_000) - (int)($tsFraction * self::NANOS_PER_SECOND),
             ],
             TimeUnit::Microsecond => [
                 \intdiv($tsInt, 1_000_000),
-                ($tsInt % 1_000_000 * 1_000) - (int)($tsFraction * 1_000_000_000),
+                ($tsInt % 1_000_000 * 1_000) - (int)($tsFraction * self::NANOS_PER_SECOND),
             ],
             TimeUnit::Nanosecond  => [
-                \intdiv($tsInt, 1_000_000_000),
-                $tsInt % 1_000_000_000,
+                \intdiv($tsInt, self::NANOS_PER_SECOND),
+                $tsInt % self::NANOS_PER_SECOND,
             ],
             TimeUnit::Minute => [
-                $tsInt * 60 + (int)($tsFraction * 60),
-                (int)(\fmod($tsFraction * 60, 1) * 1_000_000_000),
+                $tsInt * self::SECONDS_PER_MINUTE + (int)($tsFraction * self::SECONDS_PER_MINUTE),
+                (int)(\fmod($tsFraction * self::SECONDS_PER_MINUTE, 1) * self::NANOS_PER_SECOND),
             ],
             TimeUnit::Hour => [
-                $tsInt * 3600 + (int)($tsFraction * 3600),
-                (int)(\fmod($tsFraction * 3600, 1) * 1_000_000_000),
+                $tsInt * self::SECONDS_PER_HOUR + (int)($tsFraction * self::SECONDS_PER_HOUR),
+                (int)(\fmod($tsFraction * self::SECONDS_PER_HOUR, 1) * self::NANOS_PER_SECOND),
             ],
         };
 
         // Nanoseconds part must be positive
         if ($ns < 0) {
             $tsSec -= 1;
-            $ns = 1_000_000_000 + $ns;
+            $ns = self::NANOS_PER_SECOND + $ns;
         }
-        assert($ns >= 0 && $ns < 1_000_000_000);
+        assert($ns >= 0 && $ns < self::NANOS_PER_SECOND);
 
         return new self($tsSec, $ns);
     }
@@ -454,7 +460,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         $calendar = IsoCalendar::getInstance();
 
         $days = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
-        $secs = $hour * 3600 + $minute * 60 + $second;
+        $secs = $hour * self::SECONDS_PER_HOUR + $minute * self::SECONDS_PER_MINUTE + $second;
 
         if ($days > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
             || $days * self::SECONDS_PER_DAY > PHP_INT_MAX - $secs
@@ -464,7 +470,7 @@ final class Instant implements Instanted, Date, Time, Zoned
             )
         ) {
             $fmt = new DateTimeFormatter('Y-z H:i:sf');
-            $sf  = $second + $nanoOfSecond / 1_000_000_000;
+            $sf  = $second + $nanoOfSecond / self::NANOS_PER_SECOND;
             throw new RangeError(sprintf(
                 "An Instant must be between %s and %s, %s given",
                 $fmt->format(self::min()),
@@ -501,7 +507,7 @@ final class Instant implements Instanted, Date, Time, Zoned
         $calendar = IsoCalendar::getInstance();
 
         $days = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
-        $secs = $hour * 3600 + $minute * 60 + $second;
+        $secs = $hour * self::SECONDS_PER_HOUR + $minute * self::SECONDS_PER_MINUTE + $second;
 
         if ($days > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
             || $days * self::SECONDS_PER_DAY > PHP_INT_MAX - $secs

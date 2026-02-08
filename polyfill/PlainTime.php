@@ -2,17 +2,24 @@
 
 namespace time;
 
-final class PlainTime implements Time {
+final class PlainTime implements Time
+{
+    public const int SECONDS_PER_MINUTE = 60;
+    public const int SECONDS_PER_HOUR = 3600;
+    public const int NANOS_PER_SECOND = 1_000_000_000;
+    public const int MICROS_PER_SECOND = 1_000_000;
+    public const int MILLIS_PER_SECOND = 1_000;
+
     public int $hour {
-        get => \intdiv($this->secondsSinceMidnight, 3600) % 24;
+        get => \intdiv($this->secondsSinceMidnight, self::SECONDS_PER_HOUR) % 24;
     }
 
     public int $minute  {
-        get => \intdiv($this->secondsSinceMidnight, 60) % 60;
+        get => \intdiv($this->secondsSinceMidnight, self::SECONDS_PER_MINUTE) % self::SECONDS_PER_MINUTE;
     }
 
     public int $second  {
-        get => $this->secondsSinceMidnight % 60;
+        get => $this->secondsSinceMidnight % self::SECONDS_PER_MINUTE;
     }
 
     public int $milliOfSecond {
@@ -44,7 +51,7 @@ final class PlainTime implements Time {
         int $second,
         int $nanoOfSecond = 0
     ): self {
-        $secondsSinceMidnight = $hour * 3600 + $minute * 60 + $second;
+        $secondsSinceMidnight = $hour * self::SECONDS_PER_HOUR + $minute * self::SECONDS_PER_MINUTE + $second;
         return new self($secondsSinceMidnight, $nanoOfSecond);
     }
 }

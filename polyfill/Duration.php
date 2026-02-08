@@ -20,6 +20,12 @@ require_once __DIR__ . '/include.php';
  */
 final class Duration
 {
+    public const int SECONDS_PER_MINUTE = 60;
+    public const int SECONDS_PER_HOUR = 3600;
+    public const int NANOS_PER_SECOND = 1_000_000_000;
+    public const int MICROS_PER_SECOND = 1_000_000;
+    public const int MILLIS_PER_SECOND = 1_000;
+
     public bool $isZero {
         get => !($this->totalSeconds || $this->nanosOfSecond);
     }
@@ -29,23 +35,23 @@ final class Duration
     }
 
     public int $totalHours {
-        get => \intdiv($this->totalSeconds, 3_600);
+        get => \intdiv($this->totalSeconds, self::SECONDS_PER_HOUR);
     }
 
     public int $totalMinutes {
-        get => \intdiv($this->totalSeconds, 60);
+        get => \intdiv($this->totalSeconds, self::SECONDS_PER_MINUTE);
     }
 
     /** @var int<0,59> */
     public int $minutesOfHour {
-        get => \abs($this->totalMinutes % 60);
+        get => \abs($this->totalMinutes % self::SECONDS_PER_MINUTE);
     }
 
     public readonly int $totalSeconds;
 
     /** @var int<0,59> */
     public int $secondsOfMinute {
-        get => \abs($this->totalSeconds % 60);
+        get => \abs($this->totalSeconds % self::SECONDS_PER_MINUTE);
     }
 
     public int $totalMilliseconds {
@@ -84,24 +90,23 @@ final class Duration
         int $nanoseconds = 0,
     ) {
         $s = $seconds
-            + ($minutes * 60)
-            + ($hours * 3_600)
-            + \intdiv($milliseconds, 1_000)
-            + \intdiv($microseconds, 1_000_000)
-            + \intdiv($nanoseconds, 1_000_000_000);
+            + ($minutes * self::SECONDS_PER_MINUTE)
+            + ($hours * self::SECONDS_PER_HOUR)
+            + \intdiv($milliseconds, self::MILLIS_PER_SECOND)
+            + \intdiv($microseconds, self::MICROS_PER_SECOND)
+            + \intdiv($nanoseconds, self::NANOS_PER_SECOND);
+        $ns = ($nanoseconds % self::NANOS_PER_SECOND) + (($microseconds % self::MICROS_PER_SECOND) * 1_000);
+        $s += \intdiv($ns, self::NANOS_PER_SECOND);
+        $ns %= self::NANOS_PER_SECOND;
 
-        $ns = ($nanoseconds % 1_000_000_000) + (($microseconds % 1_000_000) * 1_000);
-        $s += \intdiv($ns, 1_000_000_000);
-        $ns %= 1_000_000_000;
-
-        $ns += ($milliseconds % 1_000) * 1_000_000;
-        $s += \intdiv($ns, 1_000_000_000);
-        $ns %= 1_000_000_000;
+        $ns += ($milliseconds % self::MILLIS_PER_SECOND) * 1_000_000;
+        $s += \intdiv($ns, self::NANOS_PER_SECOND);
+        $ns %= self::NANOS_PER_SECOND;
 
         // nanosOfSecond must be positive
         if ($ns < 0) {
             $s -= 1;
-            $ns += 1_000_000_000;
+            $ns += self::NANOS_PER_SECOND;
         }
 
         // @phpstan-ignore-next-line function.impossibleType booleanOr.alwaysFalse
@@ -126,8 +131,8 @@ final class Duration
     public function addToUnixTimestampTuple(array $tuple): array
     {
         $ns = $tuple[1] + $this->nanosOfSecond;
-        $s  = $tuple[0] + $this->totalSeconds + \intdiv($ns, 1_000_000_000);
-        $ns %= 1_000_000_000;
+        $s  = $tuple[0] + $this->totalSeconds + \intdiv($ns, self::NANOS_PER_SECOND);
+        $ns %= self::NANOS_PER_SECOND;
         /** @phpstan-var int<0,999999999> $ns */
         return [$s, $ns];
     }
@@ -231,15 +236,15 @@ final class Duration
             }
 
             $s = (int)$s;
-            $ns += (int)($f * 1_000_000_000);
+            $ns += (int)($f * self::NANOS_PER_SECOND);
         }
 
-        if ($ns >= 1_000_000_000) {
-            $s += (int)($ns / 1_000_000_000);
-            $ns = (int)$ns % 1_000_000_000;
+        if ($ns >= self::NANOS_PER_SECOND) {
+            $s += (int)($ns / self::NANOS_PER_SECOND);
+            $ns = (int)$ns % self::NANOS_PER_SECOND;
         } elseif ($ns < 0) {
-            $s -= (int)(\abs($ns) / 1_000_000_000) + 1;
-            $ns = 1_000_000_000 - ((int)\abs($ns) % 1_000_000_000);
+            $s -= (int)(\abs($ns) / self::NANOS_PER_SECOND) + 1;
+            $ns = self::NANOS_PER_SECOND - ((int)\abs($ns) % self::NANOS_PER_SECOND);
         } else {
             $ns = (int)$ns;
         }
@@ -278,15 +283,15 @@ final class Duration
             }
 
             $s = (int)$s;
-            $ns += (int)($f * 1_000_000_000);
+            $ns += (int)($f * self::NANOS_PER_SECOND);
         }
 
-        if ($ns >= 1_000_000_000) {
-            $s += (int)($ns / 1_000_000_000);
-            $ns = (int)$ns % 1_000_000_000;
+        if ($ns >= self::NANOS_PER_SECOND) {
+            $s += (int)($ns / self::NANOS_PER_SECOND);
+            $ns = (int)$ns % self::NANOS_PER_SECOND;
         } elseif ($ns < 0) {
-            $s -= (int)(\abs($ns) / 1_000_000_000) + 1;
-            $ns = 1_000_000_000 - ((int)\abs($ns) % 1_000_000_000);
+            $s -= (int)(\abs($ns) / self::NANOS_PER_SECOND) + 1;
+            $ns = self::NANOS_PER_SECOND - ((int)\abs($ns) % self::NANOS_PER_SECOND);
         } else {
             $ns = (int)$ns;
         }
@@ -318,15 +323,15 @@ final class Duration
             $s  = \fmod($this->totalSeconds, $divisor);
             $ns = \fmod($this->nanosOfSecond, $divisor);
 
-            $ns += (int)(\fmod($s, 1) * 1_000_000_000);
+            $ns += (int)(\fmod($s, 1) * self::NANOS_PER_SECOND);
             $s = (int)$s;
 
-            if ($ns >= 1_000_000_000) {
-                $s += (int)($ns / 1_000_000_000);
-                $ns = (int)$ns % 1_000_000_000;
+            if ($ns >= self::NANOS_PER_SECOND) {
+                $s += (int)($ns / self::NANOS_PER_SECOND);
+                $ns = (int)$ns % self::NANOS_PER_SECOND;
             } elseif ($ns < 0) {
-                $s -= (int)(\abs($ns) / 1_000_000_000) + 1;
-                $ns = 1_000_000_000 - ((int)\abs($ns) % 1_000_000_000);
+                $s -= (int)(\abs($ns) / self::NANOS_PER_SECOND) + 1;
+                $ns = self::NANOS_PER_SECOND - ((int)\abs($ns) % self::NANOS_PER_SECOND);
             } else {
                 $ns = (int)$ns;
             }
@@ -352,7 +357,7 @@ final class Duration
         $s  = $other->totalSeconds === 0 ? 0 : $this->totalSeconds % $other->totalSeconds;
         $ns = $other->nanosOfSecond === 0 ? 0 : $this->nanosOfSecond % $other->nanosOfSecond;
 
-        return $s + ($ns / 1_000_000_000);
+        return $s + ($ns / self::NANOS_PER_SECOND);
     }
 
     /**
@@ -384,7 +389,7 @@ final class Duration
 
         if ($ns) {
             $s -= 1;
-            $ns = 1_000_000_000 - $ns;
+            $ns = self::NANOS_PER_SECOND - $ns;
         }
 
         if (\is_float($s)) { // @phpstan-ignore function.impossibleType

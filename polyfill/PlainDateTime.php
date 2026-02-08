@@ -6,7 +6,13 @@ use IntlDateFormatter;
 
 final class PlainDateTime implements Date, Time
 {
-    public const int SECONDS_PER_DAY = 24 * 3600;
+    public const int SECONDS_PER_MINUTE = 60;
+    public const int SECONDS_PER_HOUR = 3600;
+    public const int SECONDS_PER_DAY = 86400;
+
+    public const int NANOS_PER_SECOND = 1_000_000_000;
+    public const int MICROS_PER_SECOND = 1_000_000;
+    public const int MILLIS_PER_SECOND = 1_000;
 
     /** @var array{int, int<1,99>, int<1,31>}  */
     private array $ymd {
@@ -48,26 +54,26 @@ final class PlainDateTime implements Date, Time
 
     public int $hour {
         get {
-            $remainder = $this->tsSec % 86400;
-            $remainder += ($remainder < 0) * 86400;
-            return \intdiv($remainder, 3600);
+            $remainder = $this->tsSec % self::SECONDS_PER_DAY;
+            $remainder += ($remainder < 0) * self::SECONDS_PER_DAY;
+            return \intdiv($remainder, self::SECONDS_PER_HOUR);
         }
     }
 
     public int $minute  {
         get {
-            $remainder = $this->tsSec % 86400;
-            $remainder += ($remainder < 0) * 86400;
-            $hours = \intdiv($remainder, 3600);
-            return \intdiv($remainder - $hours * 3600, 60);
+            $remainder = $this->tsSec % self::SECONDS_PER_DAY;
+            $remainder += ($remainder < 0) * self::SECONDS_PER_DAY;
+            $hours = \intdiv($remainder, self::SECONDS_PER_HOUR);
+            return \intdiv($remainder - $hours * self::SECONDS_PER_HOUR, self::SECONDS_PER_MINUTE);
         }
     }
 
     public int $second  {
         get {
-            $remainder = $this->tsSec % 86400;
-            $remainder += ($remainder < 0) * 86400;
-            return $remainder % 60;
+            $remainder = $this->tsSec % self::SECONDS_PER_DAY;
+            $remainder += ($remainder < 0) * self::SECONDS_PER_DAY;
+            return $remainder % self::SECONDS_PER_MINUTE;
         }
     }
 
@@ -156,7 +162,7 @@ final class PlainDateTime implements Date, Time
         $calendar ??= IsoCalendar::getInstance();
 
         $days = $calendar->getDaysSinceUnixEpochByYmd($year, $month, $dayOfMonth);
-        $secs = $hour * 3600 + $minute * 60 + $second;
+        $secs = $hour * self::SECONDS_PER_HOUR + $minute * self::SECONDS_PER_MINUTE + $second;
 
         if ($days > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
             || $days * self::SECONDS_PER_DAY > PHP_INT_MAX - $secs
@@ -166,7 +172,7 @@ final class PlainDateTime implements Date, Time
             )
         ) {
             $fmt = new DateTimeFormatter('Y-m-d H:i:sf');
-            $sf  = $second + $nanoOfSecond / 1_000_000_000;
+            $sf  = $second + $nanoOfSecond / self::NANOS_PER_SECOND;
             throw new RangeError(sprintf(
                 "A LocalDateTime of the %s must be between %s and %s, %s given",
                 $calendar::class,
@@ -205,7 +211,7 @@ final class PlainDateTime implements Date, Time
         $calendar ??= IsoCalendar::getInstance();
 
         $days = $calendar->getDaysSinceUnixEpochByYd($year, $dayOfYear);
-        $secs = $hour * 3600 + $minute * 60 + $second;
+        $secs = $hour * self::SECONDS_PER_HOUR + $minute * self::SECONDS_PER_MINUTE + $second;
 
         if ($days > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
             || $days * self::SECONDS_PER_DAY > PHP_INT_MAX - $secs
@@ -215,7 +221,7 @@ final class PlainDateTime implements Date, Time
             )
         ) {
             $fmt = new DateTimeFormatter('Y-z H:i:sf');
-            $sf  = $second + $nanoOfSecond / 1_000_000_000;
+            $sf  = $second + $nanoOfSecond / self::NANOS_PER_SECOND;
             throw new RangeError(sprintf(
                 "A LocalDateTime of the %s must be between %s and %s, %s given",
                 $calendar::class,
@@ -235,7 +241,7 @@ final class PlainDateTime implements Date, Time
     public static function fromDateTime(Date $date, Time $time): self
     {
         $days = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
-        $secs = $time->hour * 3600 + $time->minute * 60 + $time->second;
+        $secs = $time->hour * self::SECONDS_PER_HOUR + $time->minute * self::SECONDS_PER_MINUTE + $time->second;
 
         if ($days > \intdiv(PHP_INT_MAX, self::SECONDS_PER_DAY)
             || $days * self::SECONDS_PER_DAY > PHP_INT_MAX - $secs
