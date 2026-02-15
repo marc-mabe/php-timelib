@@ -1,5 +1,5 @@
 --TEST--
-Period->isEqual()
+Duration->isEqual()
 --FILE--
 <?php
 
