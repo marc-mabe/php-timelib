@@ -2,6 +2,8 @@
 
 namespace time;
 
+require_once __DIR__ . '/include.php';
+
 class StopWatch
 {
     /** @var null|array{int, int<0,999999999>}  */
@@ -65,15 +67,13 @@ class StopWatch
 
     public function getElapsedDuration(): Duration
     {
-        // take current time asap to prevent additional overhead
-        $now = $this->clock->takeUnixTimestampTuple();
-
-        if ($this->startedAt === null) {
+        if ($this->startedAt) {
+            $now = $this->clock->takeUnixTimestampTuple();
+            $s   = $this->elapsedPrev[0] + ($now[0] - $this->startedAt[0]);
+            $ns  = $this->elapsedPrev[1] + ($now[1] - $this->startedAt[1]);
+        } else {
             $s  = $this->elapsedPrev[0];
             $ns = $this->elapsedPrev[1];
-        } else {
-            $s  = $this->elapsedPrev[0] + ($now[0] - $this->startedAt[0]);
-            $ns = $this->elapsedPrev[1] + ($now[1] - $this->startedAt[1]);
         }
 
         return new Duration(seconds: $s, nanoseconds: $ns);
@@ -81,15 +81,10 @@ class StopWatch
 
     public function getElapsedTime(TimeUnit $unit = TimeUnit::Nanosecond, bool $fractions = true): int|float
     {
-        // take current time asap to prevent additional overhead
-        $now = $this->clock->takeUnixTimestampTuple();
-
-        if ($this->startedAt === null) {
-            $s  = $this->elapsedPrev[0];
-            $ns = $this->elapsedPrev[1];
-        } else {
-            $s  = $this->elapsedPrev[0] + ($now[0] - $this->startedAt[0]);
-            $ns = $this->elapsedPrev[1] + ($now[1] - $this->startedAt[1]);
+        if ($this->startedAt) {
+            $now = $this->clock->takeUnixTimestampTuple();
+            $s   = $this->elapsedPrev[0] + ($now[0] - $this->startedAt[0]);
+            $ns  = $this->elapsedPrev[1] + ($now[1] - $this->startedAt[1]);
 
             $s += \intdiv($ns, 1_000_000_000);
             $ns = $ns % 1_000_000_000;
@@ -100,6 +95,9 @@ class StopWatch
             }
 
             \assert($ns <= 1_000_000_000);
+        } else {
+            $s  = $this->elapsedPrev[0];
+            $ns = $this->elapsedPrev[1];
         }
 
         if ($fractions) {
@@ -117,9 +115,9 @@ class StopWatch
             TimeUnit::Hour        => \intdiv($s, 3600),
             TimeUnit::Minute      => \intdiv($s, 60),
             TimeUnit::Second      => $s,
-            TimeUnit::Millisecond => $s * 1_000,
-            TimeUnit::Microsecond => $s * 1_000_000,
-            TimeUnit::Nanosecond  => $s * 1_000_000_000,
+            TimeUnit::Millisecond => $s * 1_000 + intdiv($ns, 1_000_000),
+            TimeUnit::Microsecond => $s * 1_000_000 + intdiv($ns, 1_000),
+            TimeUnit::Nanosecond  => $s * 1_000_000_000 + $ns,
         };
     }
 }
