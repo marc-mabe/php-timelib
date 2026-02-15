@@ -361,18 +361,13 @@ final class Duration
     }
 
     /**
-     * Creates the difference of this duration and another duration.
+     * Computes the absolute distance between this and the other duration.
      */
     public function difference(self $other): self
     {
-        return new self(
-            seconds: \abs(_intSub(
-                $this->totalSeconds,
-                $other->totalSeconds,
-                'Total seconds overflowed during subtraction'
-            )),
-            nanoseconds: \abs($this->nanosOfSecond - $other->nanosOfSecond),
-        );
+        return $this->compare($other) >= 0
+            ? $this->subtractBy($other)
+            : $other->subtractBy($this);
     }
 
     /**
