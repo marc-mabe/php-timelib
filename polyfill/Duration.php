@@ -27,7 +27,7 @@ final class Duration
     public const int MILLIS_PER_SECOND = 1_000;
 
     public bool $isZero {
-        get => !($this->totalSeconds || $this->nanosOfSecond);
+        get => !$this->totalSeconds && !$this->nanosOfSecond;
     }
 
     public bool $isNegative {
@@ -221,8 +221,8 @@ final class Duration
             return $this;
         }
 
-        if (\is_nan($multiplier)) {
-            throw new \ValueError('Multiplier cannot be NaN');
+        if (!\is_finite($multiplier)) {
+            throw new \ValueError('Multiplier must be a finite number');
         }
 
         $s  = $this->totalSeconds * $multiplier;
@@ -254,44 +254,97 @@ final class Duration
 
     /**
      * Divides this duration by a divisor.
-     * 
+     *
+     * Returns a Duration if the divisor is a number.
+     * Returns a number if the divisor is a Duration.
+     *
+     * @return ($divisor is self ? int|float : self)
+     * @throws RangeError On overflow.
      * @throws \DivisionByZeroError If the divisor is zero.
      * @throws \ValueError If the divisor is NaN.
      */
-    public function divideBy(int|float $divisor): self
+    public function divideBy(int|float|self $divisor): self|int|float
     {
-        if ($divisor == 1) {
+        if ($divisor instanceof self) {
+            if ($divisor->isZero) {
+                throw new \DivisionByZeroError('Division by zero');
+            }
+
+            try {
+                if ($this->nanosOfSecond || $divisor->nanosOfSecond) {
+                    if ($this->nanosOfSecond % 1_000_000 || $divisor->nanosOfSecond % 1_000_000) {
+                        return $this->totalNanoseconds / $divisor->totalNanoseconds;
+                    } elseif ($this->nanosOfSecond % 1_000 || $divisor->nanosOfSecond % 1_000) {
+                        return $this->totalMicroseconds / $divisor->totalMicroseconds;
+                    }
+
+                    return $this->totalMilliseconds / $divisor->totalMilliseconds;
+                }
+
+                return $this->totalSeconds / $divisor->totalSeconds;
+            } catch (RangeError) {
+                // Fallback for very large values where total* accessors may overflow.
+                [$thisNegative, $thisAbs] = self::toAbsTotalNanoseconds($this->totalSeconds, $this->nanosOfSecond);
+                [$divNegative, $divAbs] = self::toAbsTotalNanoseconds($divisor->totalSeconds, $divisor->nanosOfSecond);
+                [$qAbs, $r] = self::decDivMod($thisAbs, $divAbs);
+                if ($r === '0') {
+                    $q = self::decToIntIfFits($qAbs, $thisNegative !== $divNegative);
+                    if ($q !== null) {
+                        return $q;
+                    }
+                }
+
+                return ($this->totalSeconds + ($this->nanosOfSecond / self::NANOS_PER_SECOND))
+                    / ($divisor->totalSeconds + ($divisor->nanosOfSecond / self::NANOS_PER_SECOND));
+            }
+        }
+
+        if (\is_int($divisor)) {
+            if ($divisor === 1) {
+                return $this;
+            } elseif ($divisor === 0) {
+                throw new \DivisionByZeroError('Division by zero');
+            } elseif ($this->isZero) {
+                return $this;
+            }
+
+            $s = \intdiv($this->totalSeconds, $divisor);
+            $sr = $this->totalSeconds % $divisor;
+            $ns = \intdiv($this->nanosOfSecond, $divisor)
+                + (int)(($sr / $divisor) * self::NANOS_PER_SECOND);
+
+            return new self(seconds: $s, nanoseconds: $ns);
+        }
+
+        // $divisor is a float
+        if ($divisor === 1.0) {
             return $this;
-        }
-
-        if (\is_nan($divisor)) {
-            throw new \ValueError('Divisor cannot be NaN');
-        }
-
-        if ($divisor == 0) {
+        } elseif ($divisor === 0.0) {
             throw new \DivisionByZeroError('Division by zero');
+        } elseif (\is_nan($divisor)) {
+            throw new \ValueError('Divisor can not be NaN');
+        } elseif ($this->isZero) {
+            return $this;
         }
 
         $s  = $this->totalSeconds / $divisor;
         $ns = $this->nanosOfSecond / $divisor;
 
-        if (\is_float($s)) {
-            $f = \fmod($s, 1);
-            $s -= $f;
-            if ($s > PHP_INT_MAX || $s < PHP_INT_MIN) {
-                throw new RangeError('Total seconds overflowed during multiplication');
-            }
-
-            $s = (int)$s;
-            $ns += (int)($f * self::NANOS_PER_SECOND);
+        $f = \fmod($s, 1);
+        $s -= $f;
+        if ($s > PHP_INT_MAX || $s < PHP_INT_MIN) {
+            throw new RangeError('Total seconds overflowed during division');
         }
+
+        $s = (int)$s;
+        $ns += (int)($f * self::NANOS_PER_SECOND);
 
         if ($ns >= self::NANOS_PER_SECOND) {
             $s += (int)($ns / self::NANOS_PER_SECOND);
             $ns = (int)$ns % self::NANOS_PER_SECOND;
         } elseif ($ns < 0) {
-            $s -= (int)(\abs($ns) / self::NANOS_PER_SECOND) + 1;
-            $ns = self::NANOS_PER_SECOND - ((int)\abs($ns) % self::NANOS_PER_SECOND);
+            $s -= (int)(-$ns / self::NANOS_PER_SECOND) + 1;
+            $ns = self::NANOS_PER_SECOND - ((int)-$ns % self::NANOS_PER_SECOND);
         } else {
             $ns = (int)$ns;
         }
@@ -301,63 +354,55 @@ final class Duration
 
     /**
      * Modulo of this duration by a divisor.
-     * 
+     *
+     * This will answer the following:
+     * - `THIS(duration) modulo OTHER(duration)`: What is the rest of the integer division of this duration by another duration?
+     *   - e.g. `5.5s mod 1.2s = 0.7s` as 1.2s fits 4 times into 5.5s and 0.7s is the remainder.
+     * - `THIS(duration) modulo NUMBER`: What is the remainder after dividing this duration into pieces?
+     *   - e.g. `5.5s mod 750 = 250ns` as 5.5s divided into 750 pieces gives you 7,333,333ns for each piece
+     *     with a reminder of 250ns. Means `5.5s = 750 * 7333333ns + 250ns`.
+     *
      * @throws \DivisionByZeroError If the divisor is zero.
      * @throws \ValueError If the divisor is NaN.
      */
-    public function moduloBy(int|float $divisor): self
+    public function moduloBy(int|float|self $divisor): self
     {
-        if ($divisor == 1) {
-            return $this;
-        }
+        if ($divisor instanceof self) {
+            if ($divisor->isZero) {
+                throw new \DivisionByZeroError('Modulo by zero');
+            }
 
-        if (\is_nan($divisor)) {
-            throw new \ValueError('Divisor cannot be NaN');
+            try {
+                if ($this->nanosOfSecond || $divisor->nanosOfSecond) {
+                    if ($this->nanosOfSecond % 1_000_000 || $divisor->nanosOfSecond % 1_000_000) {
+                        return new Duration(nanoseconds: $this->totalNanoseconds % $divisor->totalNanoseconds);
+                    } elseif ($this->nanosOfSecond % 1_000 || $divisor->nanosOfSecond % 1_000) {
+                        return new Duration(microseconds: $this->totalMicroseconds % $divisor->totalMicroseconds);
+                    }
+
+                    return new Duration(milliseconds: $this->totalMilliseconds % $divisor->totalMilliseconds);
+                }
+
+                return new Duration(seconds: $this->totalSeconds % $divisor->totalSeconds);
+            } catch (RangeError) {
+                // Fallback for very large values where total* accessors may overflow.
+                [$thisNegative, $thisAbs] = self::toAbsTotalNanoseconds($this->totalSeconds, $this->nanosOfSecond);
+                [, $divAbs] = self::toAbsTotalNanoseconds($divisor->totalSeconds, $divisor->nanosOfSecond);
+                [, $rAbs] = self::decDivMod($thisAbs, $divAbs);
+
+                return self::durationFromSignedNanoseconds($rAbs, $thisNegative);
+            }
         }
 
         if ($divisor == 0) {
             throw new \DivisionByZeroError('Modulo by zero');
         }
 
-        if (\is_float($divisor)) {
-            $s  = \fmod($this->totalSeconds, $divisor);
-            $ns = \fmod($this->nanosOfSecond, $divisor);
-
-            $ns += (int)(\fmod($s, 1) * self::NANOS_PER_SECOND);
-            $s = (int)$s;
-
-            if ($ns >= self::NANOS_PER_SECOND) {
-                $s += (int)($ns / self::NANOS_PER_SECOND);
-                $ns = (int)$ns % self::NANOS_PER_SECOND;
-            } elseif ($ns < 0) {
-                $s -= (int)(\abs($ns) / self::NANOS_PER_SECOND) + 1;
-                $ns = self::NANOS_PER_SECOND - ((int)\abs($ns) % self::NANOS_PER_SECOND);
-            } else {
-                $ns = (int)$ns;
-            }
-        } else {
-            $s  = $this->totalSeconds % $divisor;
-            $ns = $this->nanosOfSecond % $divisor;
+        if (!\is_finite($divisor)) {
+            throw new \ValueError('Divisor must be a Duration or a finite number');
         }
 
-        return new self(seconds: $s, nanoseconds: $ns);
-    }
-
-    /**
-     * Modulo of this duration by another duration.
-     * 
-     * @throws \DivisionByZeroError If the other duration is zero.
-     */
-    public function moduloOf(self $other): float
-    {
-        if ($other->isZero) {
-            throw new \DivisionByZeroError('Modulo by zero');
-        }
-
-        $s  = $other->totalSeconds === 0 ? 0 : $this->totalSeconds % $other->totalSeconds;
-        $ns = $other->nanosOfSecond === 0 ? 0 : $this->nanosOfSecond % $other->nanosOfSecond;
-
-        return $s + ($ns / self::NANOS_PER_SECOND);
+        return $this->subtractBy($this->divideBy($divisor)->multiplyBy($divisor));
     }
 
     /**
@@ -408,6 +453,146 @@ final class Duration
     public function negated(): self
     {
         return !$this->isNegative ? $this->inverted() : $this;
+    }
+
+    /**
+     * @return array{bool, string}
+     */
+    private static function toAbsTotalNanoseconds(int $seconds, int $nanos): array
+    {
+        if ($seconds >= 0) {
+            $abs = \ltrim((string)$seconds . \str_pad((string)$nanos, 9, '0', STR_PAD_LEFT), '0');
+            return [false, $abs === '' ? '0' : $abs];
+        }
+
+        $secondsAbs = \ltrim((string)$seconds, '-');
+        $base = $secondsAbs . '000000000';
+        if ($nanos === 0) {
+            return [true, $base];
+        }
+
+        return [true, self::decSub($base, (string)$nanos)];
+    }
+
+    private static function decCmp(string $a, string $b): int
+    {
+        $a = \ltrim($a, '0');
+        $b = \ltrim($b, '0');
+        $a = $a === '' ? '0' : $a;
+        $b = $b === '' ? '0' : $b;
+
+        return \strlen($a) === \strlen($b)
+            ? ($a <=> $b)
+            : (\strlen($a) <=> \strlen($b));
+    }
+
+    private static function decSub(string $a, string $b): string
+    {
+        $carry = 0;
+        $out = '';
+        $ia = \strlen($a) - 1;
+        $ib = \strlen($b) - 1;
+        while ($ia >= 0 || $ib >= 0) {
+            $da = $ia >= 0 ? (\ord($a[$ia]) - 48) : 0;
+            $db = $ib >= 0 ? (\ord($b[$ib]) - 48) : 0;
+            $d = $da - $db - $carry;
+            if ($d < 0) {
+                $d += 10;
+                $carry = 1;
+            } else {
+                $carry = 0;
+            }
+            $out = (string)$d . $out;
+            $ia--;
+            $ib--;
+        }
+
+        $out = \ltrim($out, '0');
+        return $out === '' ? '0' : $out;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    private static function decDivMod(string $dividend, string $divisor): array
+    {
+        $dividend = \ltrim($dividend, '0');
+        $divisor = \ltrim($divisor, '0');
+        $dividend = $dividend === '' ? '0' : $dividend;
+        $divisor = $divisor === '' ? '0' : $divisor;
+
+        if ($divisor === '0') {
+            throw new \DivisionByZeroError('Division by zero');
+        } elseif (self::decCmp($dividend, $divisor) < 0) {
+            return ['0', $dividend];
+        }
+
+        $q = '';
+        $r = '0';
+        $len = \strlen($dividend);
+        for ($i = 0; $i < $len; $i++) {
+            $r = \ltrim(($r === '0' ? '' : $r) . $dividend[$i], '0');
+            $r = $r === '' ? '0' : $r;
+
+            $digit = 0;
+            while (self::decCmp($r, $divisor) >= 0) {
+                $r = self::decSub($r, $divisor);
+                $digit++;
+            }
+
+            $q .= (string)$digit;
+        }
+
+        $q = \ltrim($q, '0');
+        return [$q === '' ? '0' : $q, $r];
+    }
+
+    private static function decToIntIfFits(string $abs, bool $negative): ?int
+    {
+        $abs = \ltrim($abs, '0');
+        $abs = $abs === '' ? '0' : $abs;
+
+        if (!$negative) {
+            $max = (string)PHP_INT_MAX;
+            if (self::decCmp($abs, $max) > 0) {
+                return null;
+            }
+            return (int)$abs;
+        }
+
+        $minAbs = \ltrim((string)PHP_INT_MIN, '-');
+        if (self::decCmp($abs, $minAbs) > 0) {
+            return null;
+        } elseif ($abs === $minAbs) {
+            return PHP_INT_MIN;
+        }
+
+        return -((int)$abs);
+    }
+
+    private static function durationFromSignedNanoseconds(string $absNanos, bool $negative): self
+    {
+        $absNanos = \ltrim($absNanos, '0');
+        if ($absNanos === '') {
+            return new self();
+        }
+
+        [$secondsAbs, $nanos] = self::decDivMod($absNanos, (string)self::NANOS_PER_SECOND);
+        $seconds = self::decToIntIfFits($secondsAbs, false);
+        if ($seconds === null) {
+            throw new RangeError('Total seconds overflowed during modulo');
+        }
+
+        if (!$negative) {
+            return new self(seconds: $seconds, nanoseconds: (int)$nanos);
+        } elseif ($nanos === '0') {
+            return new self(seconds: -$seconds);
+        }
+
+        return new self(
+            seconds: -($seconds + 1),
+            nanoseconds: self::NANOS_PER_SECOND - (int)$nanos
+        );
     }
 
     /**

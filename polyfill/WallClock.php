@@ -36,7 +36,7 @@ final class WallClock implements Clock
                 throw new LogicError('Resolution must not be zero');
             }
 
-            if ($resolution->moduloOf(self::MAX_RESOLUTION) !== 0.0) {
+            if (!$resolution->moduloBy(self::MAX_RESOLUTION)->isZero) {
                 throw new LogicError('Resolution must be a multiple of ' . self::class .  '::MAX_RESOLUTION');
             }
         }
