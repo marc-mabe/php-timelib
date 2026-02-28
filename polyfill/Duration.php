@@ -283,19 +283,14 @@ final class Duration
 
                 return $this->totalSeconds / $divisor->totalSeconds;
             } catch (RangeError) {
-                // Fallback for very large values where total* accessors may overflow.
-                [$thisNegative, $thisAbs] = self::toAbsTotalNanoseconds($this->totalSeconds, $this->nanosOfSecond);
-                [$divNegative, $divAbs] = self::toAbsTotalNanoseconds($divisor->totalSeconds, $divisor->nanosOfSecond);
-                [$qAbs, $r] = self::decDivMod($thisAbs, $divAbs);
-                if ($r === '0') {
-                    $q = self::decToIntIfFits($qAbs, $thisNegative !== $divNegative);
-                    if ($q !== null) {
-                        return $q;
-                    }
-                }
+                $thisTotalNsBe = self::toAbsTotalNanosecondsBe($this->totalSeconds, $this->nanosOfSecond);
+                $divisorTotalNsBe = self::toAbsTotalNanosecondsBe($divisor->totalSeconds, $divisor->nanosOfSecond);
 
-                return ($this->totalSeconds + ($this->nanosOfSecond / self::NANOS_PER_SECOND))
-                    / ($divisor->totalSeconds + ($divisor->nanosOfSecond / self::NANOS_PER_SECOND));
+                [$quotient, ] = _beUnsignedDiv($thisTotalNsBe, $divisorTotalNsBe);
+                $quotient = \str_pad($quotient, 8, "\x0", \STR_PAD_LEFT);
+                $result = \unpack('J', $quotient)[1];
+
+                return $this->isNegative !== $divisor->isNegative ? -$result : $result;
             }
         }
 
@@ -385,12 +380,12 @@ final class Duration
 
                 return new Duration(seconds: $this->totalSeconds % $divisor->totalSeconds);
             } catch (RangeError) {
-                // Fallback for very large values where total* accessors may overflow.
-                [$thisNegative, $thisAbs] = self::toAbsTotalNanoseconds($this->totalSeconds, $this->nanosOfSecond);
-                [, $divAbs] = self::toAbsTotalNanoseconds($divisor->totalSeconds, $divisor->nanosOfSecond);
-                [, $rAbs] = self::decDivMod($thisAbs, $divAbs);
+                $thisTotalNsBe = self::toAbsTotalNanosecondsBe($this->totalSeconds, $this->nanosOfSecond);
+                $divisorTotalNsBe = self::toAbsTotalNanosecondsBe($divisor->totalSeconds, $divisor->nanosOfSecond);
 
-                return self::durationFromSignedNanoseconds($rAbs, $thisNegative);
+                [, $remainderTotalNsBe] = _beUnsignedDiv($thisTotalNsBe, $divisorTotalNsBe);
+
+                return self::fromNanosecondsBe($remainderTotalNsBe, $this->isNegative);
             }
         }
 
@@ -456,142 +451,54 @@ final class Duration
     }
 
     /**
-     * @return array{bool, string}
+     * @return string Convert to absolute total nanoseconds as unsigned big-endian byte string.
      */
-    private static function toAbsTotalNanoseconds(int $seconds, int $nanos): array
+    private static function toAbsTotalNanosecondsBe(int $seconds, int $nanos): string
     {
+        $binNanosPerSec = \pack('J', self::NANOS_PER_SECOND);
+
         if ($seconds >= 0) {
-            $abs = \ltrim((string)$seconds . \str_pad((string)$nanos, 9, '0', STR_PAD_LEFT), '0');
-            return [false, $abs === '' ? '0' : $abs];
+            return _beUnsignedAdd(
+                _beUnsignedMul(\pack('J', $seconds), $binNanosPerSec),
+                \pack('J', $nanos)
+            );
         }
 
-        $secondsAbs = \ltrim((string)$seconds, '-');
-        $base = $secondsAbs . '000000000';
+        $absSec = $seconds === \PHP_INT_MIN ? \PHP_INT_MIN : -$seconds;
+        $secNs = _beUnsignedMul(\pack('J', $absSec), $binNanosPerSec);
+
         if ($nanos === 0) {
-            return [true, $base];
+            return $secNs;
         }
 
-        return [true, self::decSub($base, (string)$nanos)];
-    }
-
-    private static function decCmp(string $a, string $b): int
-    {
-        $a = \ltrim($a, '0');
-        $b = \ltrim($b, '0');
-        $a = $a === '' ? '0' : $a;
-        $b = $b === '' ? '0' : $b;
-
-        return \strlen($a) === \strlen($b)
-            ? ($a <=> $b)
-            : (\strlen($a) <=> \strlen($b));
-    }
-
-    private static function decSub(string $a, string $b): string
-    {
-        $carry = 0;
-        $out = '';
-        $ia = \strlen($a) - 1;
-        $ib = \strlen($b) - 1;
-        while ($ia >= 0 || $ib >= 0) {
-            $da = $ia >= 0 ? (\ord($a[$ia]) - 48) : 0;
-            $db = $ib >= 0 ? (\ord($b[$ib]) - 48) : 0;
-            $d = $da - $db - $carry;
-            if ($d < 0) {
-                $d += 10;
-                $carry = 1;
-            } else {
-                $carry = 0;
-            }
-            $out = (string)$d . $out;
-            $ia--;
-            $ib--;
-        }
-
-        $out = \ltrim($out, '0');
-        return $out === '' ? '0' : $out;
+        return _beUnsignedSub($secNs, \pack('J', $nanos));
     }
 
     /**
-     * @return array{string, string}
+     * Construct a Duration from absolute nanoseconds as unsigned big-endian byte string.
      */
-    private static function decDivMod(string $dividend, string $divisor): array
+    private static function fromNanosecondsBe(string $absNanosBin, bool $negative): self
     {
-        $dividend = \ltrim($dividend, '0');
-        $divisor = \ltrim($divisor, '0');
-        $dividend = $dividend === '' ? '0' : $dividend;
-        $divisor = $divisor === '' ? '0' : $divisor;
-
-        if ($divisor === '0') {
-            throw new \DivisionByZeroError('Division by zero');
-        } elseif (self::decCmp($dividend, $divisor) < 0) {
-            return ['0', $dividend];
-        }
-
-        $q = '';
-        $r = '0';
-        $len = \strlen($dividend);
-        for ($i = 0; $i < $len; $i++) {
-            $r = \ltrim(($r === '0' ? '' : $r) . $dividend[$i], '0');
-            $r = $r === '' ? '0' : $r;
-
-            $digit = 0;
-            while (self::decCmp($r, $divisor) >= 0) {
-                $r = self::decSub($r, $divisor);
-                $digit++;
-            }
-
-            $q .= (string)$digit;
-        }
-
-        $q = \ltrim($q, '0');
-        return [$q === '' ? '0' : $q, $r];
-    }
-
-    private static function decToIntIfFits(string $abs, bool $negative): ?int
-    {
-        $abs = \ltrim($abs, '0');
-        $abs = $abs === '' ? '0' : $abs;
-
-        if (!$negative) {
-            $max = (string)PHP_INT_MAX;
-            if (self::decCmp($abs, $max) > 0) {
-                return null;
-            }
-            return (int)$abs;
-        }
-
-        $minAbs = \ltrim((string)PHP_INT_MIN, '-');
-        if (self::decCmp($abs, $minAbs) > 0) {
-            return null;
-        } elseif ($abs === $minAbs) {
-            return PHP_INT_MIN;
-        }
-
-        return -((int)$abs);
-    }
-
-    private static function durationFromSignedNanoseconds(string $absNanos, bool $negative): self
-    {
-        $absNanos = \ltrim($absNanos, '0');
-        if ($absNanos === '') {
+        if (\ltrim($absNanosBin, "\x0") === '') {
             return new self();
         }
 
-        [$secondsAbs, $nanos] = self::decDivMod($absNanos, (string)self::NANOS_PER_SECOND);
-        $seconds = self::decToIntIfFits($secondsAbs, false);
-        if ($seconds === null) {
-            throw new RangeError('Total seconds overflowed during modulo');
-        }
+        [$secondsBin, $nanosBin] = _beUnsignedDiv($absNanosBin, \pack('J', self::NANOS_PER_SECOND));
+
+        $seconds = \unpack('J', \str_pad($secondsBin, 8, "\x0", \STR_PAD_LEFT))[1];
+        $nanos = \unpack('J', \str_pad($nanosBin, 8, "\x0", \STR_PAD_LEFT))[1];
 
         if (!$negative) {
-            return new self(seconds: $seconds, nanoseconds: (int)$nanos);
-        } elseif ($nanos === '0') {
+            return new self(seconds: $seconds, nanoseconds: $nanos);
+        }
+
+        if ($nanos === 0) {
             return new self(seconds: -$seconds);
         }
 
         return new self(
             seconds: -($seconds + 1),
-            nanoseconds: self::NANOS_PER_SECOND - (int)$nanos
+            nanoseconds: self::NANOS_PER_SECOND - $nanos
         );
     }
 
