@@ -40,8 +40,43 @@ try {
     echo $e::class . ': ' . $e->getMessage() . "\n";
 }
 
+$intMax = new time\Duration(seconds: PHP_INT_MAX, nanoseconds: 1000000);
+$intMin = new time\Duration(seconds: PHP_INT_MIN, nanoseconds: 1000000);
+
+// PHP_INT_MAX / PHP_INT_MAX = 1
+try {
+    echo stringify($intMax->divideBy($intMax)) . "\n";
+} catch (Throwable $e) {
+    echo $e::class . ': ' . $e->getMessage() . "\n";
+}
+
+// PHP_INT_MIN / PHP_INT_MIN = 1
+try {
+    echo stringify($intMin->divideBy($intMin)) . "\n";
+} catch (Throwable $e) {
+    echo $e::class . ': ' . $e->getMessage() . "\n";
+}
+
+// PHP_INT_MIN / PHP_INT_MAX = -1 (INT_MIN magnitude > INT_MAX magnitude)
+try {
+    echo stringify($intMin->divideBy($intMax)) . "\n";
+} catch (Throwable $e) {
+    echo $e::class . ': ' . $e->getMessage() . "\n";
+}
+
+// PHP_INT_MAX / PHP_INT_MIN = 0 (INT_MAX magnitude < INT_MIN magnitude)
+try {
+    echo stringify($intMax->divideBy($intMin)) . "\n";
+} catch (Throwable $e) {
+    echo $e::class . ': ' . $e->getMessage() . "\n";
+}
+
 --EXPECT--
 3
 -3
 -3
 3
+1
+1
+-1
+0
