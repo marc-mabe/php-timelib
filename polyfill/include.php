@@ -55,7 +55,7 @@ function _intSub(int|float $a, int|float $b, int|string $onOverflow): int
  *
  * @internal
  */
-\define('_BE_UNSIGNED_PACK_CODE', match (\PHP_INT_SIZE) {
+\define('time\\_BE_UNSIGNED_PACK_CODE', match (\PHP_INT_SIZE) {
     8 => 'J',
     4 => 'N',
     default => throw new \LogicException('Unsupported PHP_INT_SIZE'),
@@ -86,7 +86,9 @@ function _fromBeUnsigned(string $bytes): int
 
     $bytes = \str_pad($bytes, \PHP_INT_SIZE, "\0", \STR_PAD_LEFT);
 
-    return \unpack(_BE_UNSIGNED_PACK_CODE, $bytes)[1];
+    /** @var array{1: int} $unpacked */
+    $unpacked = \unpack(_BE_UNSIGNED_PACK_CODE, $bytes);
+    return $unpacked[1];
 }
 
 /**
@@ -213,12 +215,16 @@ function _beUnsignedDiv(string $dividend, string $divisor): array
 
         if (\ord($dividend[$byteIdx]) & (1 << $bitIdx)) {
             $lastIdx = \strlen($rem) - 1;
-            $rem[$lastIdx] = \chr(\ord($rem[$lastIdx]) | 1);
+            /** @var int<1,255> $codepoint */
+            $codepoint = \ord($rem[$lastIdx]) | 1;
+            $rem[$lastIdx] = \chr($codepoint);
         }
 
         if (_beUnsignedCmp($rem, $divisor) >= 0) {
             $rem = _beUnsignedSub($rem, $divisor);
-            $quotient[$byteIdx] = \chr(\ord($quotient[$byteIdx]) | (1 << $bitIdx));
+            /** @var int<0,255> $codepoint */
+            $codepoint = \ord($quotient[$byteIdx]) | (1 << $bitIdx);
+            $quotient[$byteIdx] = \chr($codepoint);
         }
     }
 

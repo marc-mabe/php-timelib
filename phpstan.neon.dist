@@ -2,3 +2,11 @@ parameters:
     paths:
         - ./polyfill
     level: max
+    dynamicConstantNames:
+        - PHP_VERSION_ID
+        - PHP_INT_MAX
+        - PHP_INT_MIN
+        - PHP_INT_SIZE
+    ignoreErrors:
+        # https://github.com/phpstan/phpstan/issues/14216
+        - '#Match arm comparison between [4|8] and [4|8] is always true#'
