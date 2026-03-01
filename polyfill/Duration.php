@@ -287,8 +287,7 @@ final class Duration
                 $divisorTotalNsBe = self::toAbsTotalNanosecondsBe($divisor->totalSeconds, $divisor->nanosOfSecond);
 
                 [$quotient, ] = _beUnsignedDiv($thisTotalNsBe, $divisorTotalNsBe);
-                $quotient = \str_pad($quotient, 8, "\x0", \STR_PAD_LEFT);
-                $result = \unpack('J', $quotient)[1];
+                $result = _fromBeUnsigned($quotient);
 
                 return $this->isNegative !== $divisor->isNegative ? -$result : $result;
             }
@@ -455,23 +454,23 @@ final class Duration
      */
     private static function toAbsTotalNanosecondsBe(int $seconds, int $nanos): string
     {
-        $binNanosPerSec = \pack('J', self::NANOS_PER_SECOND);
+        $binNanosPerSec = _toBeUnsigned(self::NANOS_PER_SECOND);
 
         if ($seconds >= 0) {
             return _beUnsignedAdd(
-                _beUnsignedMul(\pack('J', $seconds), $binNanosPerSec),
-                \pack('J', $nanos)
+                _beUnsignedMul(_toBeUnsigned($seconds), $binNanosPerSec),
+                _toBeUnsigned($nanos)
             );
         }
 
         $absSec = $seconds === \PHP_INT_MIN ? \PHP_INT_MIN : -$seconds;
-        $secNs = _beUnsignedMul(\pack('J', $absSec), $binNanosPerSec);
+        $secNs = _beUnsignedMul(_toBeUnsigned($absSec), $binNanosPerSec);
 
         if ($nanos === 0) {
             return $secNs;
         }
 
-        return _beUnsignedSub($secNs, \pack('J', $nanos));
+        return _beUnsignedSub($secNs, _toBeUnsigned($nanos));
     }
 
     /**
@@ -479,14 +478,14 @@ final class Duration
      */
     private static function fromNanosecondsBe(string $absNanosBin, bool $negative): self
     {
-        if (\ltrim($absNanosBin, "\x0") === '') {
+        if (\ltrim($absNanosBin, "\0") === '') {
             return new self();
         }
 
-        [$secondsBin, $nanosBin] = _beUnsignedDiv($absNanosBin, \pack('J', self::NANOS_PER_SECOND));
+        [$secondsBin, $nanosBin] = _beUnsignedDiv($absNanosBin, _toBeUnsigned(self::NANOS_PER_SECOND));
 
-        $seconds = \unpack('J', \str_pad($secondsBin, 8, "\x0", \STR_PAD_LEFT))[1];
-        $nanos = \unpack('J', \str_pad($nanosBin, 8, "\x0", \STR_PAD_LEFT))[1];
+        $seconds = _fromBeUnsigned($secondsBin);
+        $nanos = _fromBeUnsigned($nanosBin);
 
         if (!$negative) {
             return new self(seconds: $seconds, nanoseconds: $nanos);

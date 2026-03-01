@@ -51,6 +51,45 @@ function _intSub(int|float $a, int|float $b, int|string $onOverflow): int
 }
 
 /**
+ * Pack code for unsigned integer machine dependent size, big endian byte order.
+ *
+ * @internal
+ */
+\define('_BE_UNSIGNED_PACK_CODE', match (\PHP_INT_SIZE) {
+    8 => 'J',
+    4 => 'N',
+    default => throw new \LogicException('Unsupported PHP_INT_SIZE'),
+});
+
+/**
+ * Converts an unsigned integer to a big-endian byte string.
+ *
+ * @internal
+ */
+function _toBeUnsigned(int $num): string
+{
+    return \pack(_BE_UNSIGNED_PACK_CODE, $num);
+}
+
+/**
+ * Converts an unsigned byte string to unsigned integer.
+ *
+ * @internal
+ */
+function _fromBeUnsigned(string $bytes): int
+{
+    $bytes = \ltrim($bytes, "\0") ?: "\0";
+
+    if (\strlen($bytes) > \PHP_INT_SIZE) {
+        throw new RangeError('Integer overflow');
+    }
+
+    $bytes = \str_pad($bytes, \PHP_INT_SIZE, "\0", \STR_PAD_LEFT);
+
+    return \unpack(_BE_UNSIGNED_PACK_CODE, $bytes)[1];
+}
+
+/**
  * Add two unsigned big-endian byte strings.
  *
  * @return string Sum as unsigned big-endian byte string
@@ -58,13 +97,15 @@ function _intSub(int|float $a, int|float $b, int|string $onOverflow): int
  */
 function _beUnsignedAdd(string $a, string $b): string
 {
-    $len = \max(\strlen($a), \strlen($b));
-    $a = \str_pad($a, $len, "\x0", \STR_PAD_LEFT);
-    $b = \str_pad($b, $len, "\x0", \STR_PAD_LEFT);
+    $a = \ltrim($a, "\0") ?: "\0";
+    $b = \ltrim($b, "\0") ?: "\0";
+    $l = \max(\strlen($a), \strlen($b));
+    $a = \str_pad($a, $l, "\0", \STR_PAD_LEFT);
+    $b = \str_pad($b, $l, "\0", \STR_PAD_LEFT);
     $carry = 0;
-    $result = \str_repeat("\x0", $len);
+    $result = \str_repeat("\0", $l);
 
-    for ($i = $len - 1; $i >= 0; $i--) {
+    for ($i = $l - 1; $i >= 0; $i--) {
         $sum = \ord($a[$i]) + \ord($b[$i]) + $carry;
         $result[$i] = \chr($sum & 0xFF);
         $carry = $sum >> 8;
@@ -74,7 +115,7 @@ function _beUnsignedAdd(string $a, string $b): string
         $result = "\x01" . $result;
     }
 
-    return \ltrim($result, "\x0") ?: "\x0";
+    return \ltrim($result, "\0") ?: "\0";
 }
 
 /**
@@ -87,13 +128,15 @@ function _beUnsignedAdd(string $a, string $b): string
  */
 function _beUnsignedSub(string $a, string $b): string
 {
-    $len = \max(\strlen($a), \strlen($b));
-    $a = \str_pad($a, $len, "\x0", \STR_PAD_LEFT);
-    $b = \str_pad($b, $len, "\x0", \STR_PAD_LEFT);
+    $a = \ltrim($a, "\0") ?: "\0";
+    $b = \ltrim($b, "\0") ?: "\0";
+    $l = \max(\strlen($a), \strlen($b));
+    $a = \str_pad($a, $l, "\0", \STR_PAD_LEFT);
+    $b = \str_pad($b, $l, "\0", \STR_PAD_LEFT);
     $borrow = 0;
-    $result = \str_repeat("\x0", $len);
+    $result = \str_repeat("\0", $l);
 
-    for ($i = $len - 1; $i >= 0; $i--) {
+    for ($i = $l - 1; $i >= 0; $i--) {
         $diff = \ord($a[$i]) - \ord($b[$i]) - $borrow;
         if ($diff < 0) {
             $diff += 256;
@@ -104,7 +147,7 @@ function _beUnsignedSub(string $a, string $b): string
         $result[$i] = \chr($diff);
     }
 
-    return \ltrim($result, "\x0") ?: "\x0";
+    return \ltrim($result, "\0") ?: "\0";
 }
 
 /**
@@ -115,9 +158,11 @@ function _beUnsignedSub(string $a, string $b): string
  */
 function _beUnsignedMul(string $a, string $b): string
 {
+    $a = \ltrim($a, "\0") ?: "\0";
+    $b = \ltrim($b, "\0") ?: "\0";
     $la = \strlen($a);
     $lb = \strlen($b);
-    $result = \str_repeat("\x0", $la + $lb);
+    $result = \str_repeat("\0", $la + $lb);
 
     for ($i = $la - 1; $i >= 0; $i--) {
         $carry = 0;
@@ -137,7 +182,7 @@ function _beUnsignedMul(string $a, string $b): string
         }
     }
 
-    return \ltrim($result, "\x0") ?: "\x0";
+    return \ltrim($result, "\0") ?: "\0";
 }
 
 /**
@@ -150,13 +195,16 @@ function _beUnsignedMul(string $a, string $b): string
  */
 function _beUnsignedDiv(string $dividend, string $divisor): array
 {
-    if (\ltrim($divisor, "\x0") === '') {
+    $dividend = \ltrim($dividend, "\0") ?: "\0";
+    $divisor = \ltrim($divisor, "\0") ?: "\0";
+
+    if ($divisor === "\0") {
         throw new \DivisionByZeroError('Division by zero');
     }
 
     $bitLen = \strlen($dividend) * 8;
-    $quotient = \str_repeat("\x0", \strlen($dividend));
-    $rem = "\x0";
+    $quotient = \str_repeat("\0", \strlen($dividend));
+    $rem = "\0";
 
     for ($i = 0; $i < $bitLen; $i++) {
         $rem = _beShiftLeft1($rem);
@@ -175,8 +223,8 @@ function _beUnsignedDiv(string $dividend, string $divisor): array
     }
 
     return [
-        \ltrim($quotient, "\x0") ?: "\x0",
-        \ltrim($rem, "\x0") ?: "\x0",
+        \ltrim($quotient, "\0") ?: "\0",
+        \ltrim($rem, "\0") ?: "\0",
     ];
 }
 
@@ -189,7 +237,7 @@ function _beShiftLeft1(string $be): string
 {
     $len = \strlen($be);
     $carry = 0;
-    $result = \str_repeat("\x0", $len);
+    $result = \str_repeat("\0", $len);
 
     for ($i = $len - 1; $i >= 0; $i--) {
         $byte = \ord($be[$i]);
@@ -212,8 +260,8 @@ function _beShiftLeft1(string $be): string
  */
 function _beUnsignedCmp(string $a, string $b): int
 {
-    $a = \ltrim($a, "\x0") ?: "\x0";
-    $b = \ltrim($b, "\x0") ?: "\x0";
+    $a = \ltrim($a, "\0") ?: "\0";
+    $b = \ltrim($b, "\0") ?: "\0";
     $la = \strlen($a);
     $lb = \strlen($b);
 
