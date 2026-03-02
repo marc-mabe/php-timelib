@@ -235,6 +235,47 @@ function _beUnsignedDiv(string $dividend, string $divisor): array
 }
 
 /**
+ * Calculate the decimal value of the result of `_beUnsignedDiv()`.
+ *
+ * @param string $quotient Quotient as unsigned big-endian byte string
+ * @param string $remainder Remainder as unsigned big-endian byte string
+ * @param string $divisor Divisor as unsigned big-endian byte string
+ */
+function _beUnsignedDivDecimal(string $quotient, string $remainder, string $divisor): int|float
+{
+    $remainder = \ltrim($remainder, "\0") ?: "\0";
+    $divisor = \ltrim($divisor, "\0") ?: "\0";
+
+    if ($divisor === "\0") {
+        throw new \DivisionByZeroError('Division by zero');
+    }
+
+    $intResult = _fromBeUnsigned($quotient);
+    $result = $intResult;
+
+    if ($remainder !== "\0") {
+        $scaleBe = _toBeUnsigned(1_000_000_000);
+        $scale = 1.0;
+        do {
+            $scaledRemainder = _beUnsignedMul($remainder, $scaleBe);
+            [$digitsBe, $remainder] = _beUnsignedDiv($scaledRemainder, $divisor);
+            $scale *= 1e9;
+            $newResult = $result + (_fromBeUnsigned($digitsBe) / $scale);
+            if ($newResult === $result) {
+                break;
+            }
+            $result = $newResult;
+        } while ($remainder !== "\0");
+
+        if ($result == $intResult) {
+            $result = $intResult;
+        }
+    }
+
+    return $result;
+}
+
+/**
  * Shift an unsigned big-endian byte string left by 1 bit.
  *
  * @internal

@@ -286,8 +286,8 @@ final class Duration
                 $thisTotalNsBe = self::toAbsTotalNanosecondsBe($this->totalSeconds, $this->nanosOfSecond);
                 $divisorTotalNsBe = self::toAbsTotalNanosecondsBe($divisor->totalSeconds, $divisor->nanosOfSecond);
 
-                [$quotient, ] = _beUnsignedDiv($thisTotalNsBe, $divisorTotalNsBe);
-                $result = _fromBeUnsigned($quotient);
+                [$quotient, $remainder] = _beUnsignedDiv($thisTotalNsBe, $divisorTotalNsBe);
+                $result = _beUnsignedDivDecimal($quotient, $remainder, $divisorTotalNsBe);
 
                 return $this->isNegative !== $divisor->isNegative ? -$result : $result;
             }
