@@ -58,7 +58,6 @@ function _intSub(int|float $a, int|float $b, int|string $onOverflow): int
 \define('time\\_BE_UNSIGNED_PACK_CODE', match (\PHP_INT_SIZE) {
     8 => 'J',
     4 => 'N',
-    default => throw new \LogicException('Unsupported PHP_INT_SIZE'),
 });
 
 /**
@@ -78,7 +77,8 @@ function _toBeUnsigned(int $num): string
  */
 function _fromBeUnsigned(string $bytes): int
 {
-    $bytes = \ltrim($bytes, "\0") ?: "\0";
+    $bytes = \ltrim($bytes, "\0");
+    $bytes = $bytes !== '' ? $bytes : "\0";
 
     if (\strlen($bytes) > \PHP_INT_SIZE) {
         throw new RangeError('Integer overflow');
@@ -99,8 +99,10 @@ function _fromBeUnsigned(string $bytes): int
  */
 function _beUnsignedAdd(string $a, string $b): string
 {
-    $a = \ltrim($a, "\0") ?: "\0";
-    $b = \ltrim($b, "\0") ?: "\0";
+    $a = \ltrim($a, "\0");
+    $a = $a !== '' ? $a : "\0";
+    $b = \ltrim($b, "\0");
+    $b = $b !== '' ? $b : "\0";
     $l = \max(\strlen($a), \strlen($b));
     $a = \str_pad($a, $l, "\0", \STR_PAD_LEFT);
     $b = \str_pad($b, $l, "\0", \STR_PAD_LEFT);
@@ -117,7 +119,8 @@ function _beUnsignedAdd(string $a, string $b): string
         $result = "\x01" . $result;
     }
 
-    return \ltrim($result, "\0") ?: "\0";
+    $result = \ltrim($result, "\0");
+    return $result !== '' ? $result : "\0";
 }
 
 /**
@@ -130,8 +133,10 @@ function _beUnsignedAdd(string $a, string $b): string
  */
 function _beUnsignedSub(string $a, string $b): string
 {
-    $a = \ltrim($a, "\0") ?: "\0";
-    $b = \ltrim($b, "\0") ?: "\0";
+    $a = \ltrim($a, "\0");
+    $a = $a !== '' ? $a : "\0";
+    $b = \ltrim($b, "\0");
+    $b = $b !== '' ? $b : "\0";
     $l = \max(\strlen($a), \strlen($b));
     $a = \str_pad($a, $l, "\0", \STR_PAD_LEFT);
     $b = \str_pad($b, $l, "\0", \STR_PAD_LEFT);
@@ -149,7 +154,8 @@ function _beUnsignedSub(string $a, string $b): string
         $result[$i] = \chr($diff);
     }
 
-    return \ltrim($result, "\0") ?: "\0";
+    $result = \ltrim($result, "\0");
+    return $result !== '' ? $result : "\0";
 }
 
 /**
@@ -160,8 +166,10 @@ function _beUnsignedSub(string $a, string $b): string
  */
 function _beUnsignedMul(string $a, string $b): string
 {
-    $a = \ltrim($a, "\0") ?: "\0";
-    $b = \ltrim($b, "\0") ?: "\0";
+    $a = \ltrim($a, "\0");
+    $a = $a !== '' ? $a : "\0";
+    $b = \ltrim($b, "\0");
+    $b = $b !== '' ? $b : "\0";
     $la = \strlen($a);
     $lb = \strlen($b);
     $result = \str_repeat("\0", $la + $lb);
@@ -184,7 +192,8 @@ function _beUnsignedMul(string $a, string $b): string
         }
     }
 
-    return \ltrim($result, "\0") ?: "\0";
+    $result = \ltrim($result, "\0");
+    return $result !== '' ? $result : "\0";
 }
 
 /**
@@ -197,8 +206,10 @@ function _beUnsignedMul(string $a, string $b): string
  */
 function _beUnsignedDiv(string $dividend, string $divisor): array
 {
-    $dividend = \ltrim($dividend, "\0") ?: "\0";
-    $divisor = \ltrim($divisor, "\0") ?: "\0";
+    $dividend = \ltrim($dividend, "\0");
+    $dividend = $dividend !== '' ? $dividend : "\0";
+    $divisor = \ltrim($divisor, "\0");
+    $divisor = $divisor !== '' ? $divisor : "\0";
 
     if ($divisor === "\0") {
         throw new \DivisionByZeroError('Division by zero');
@@ -228,10 +239,28 @@ function _beUnsignedDiv(string $dividend, string $divisor): array
         }
     }
 
+    $quotient = \ltrim($quotient, "\0");
+    $rem = \ltrim($rem, "\0");
     return [
-        \ltrim($quotient, "\0") ?: "\0",
-        \ltrim($rem, "\0") ?: "\0",
+        $quotient !== '' ? $quotient : "\0",
+        $rem !== '' ? $rem : "\0",
     ];
+}
+
+/**
+ * Converts an unsigned big-endian byte string to float.
+ *
+ * @internal
+ */
+function _beUnsignedToFloat(string $bytes): float
+{
+    $bytes = \ltrim($bytes, "\0") ?: "\0";
+    $result = 0.0;
+    $len = \strlen($bytes);
+    for ($i = 0; $i < $len; $i++) {
+        $result = $result * 256.0 + \ord($bytes[$i]);
+    }
+    return $result;
 }
 
 /**
@@ -243,36 +272,25 @@ function _beUnsignedDiv(string $dividend, string $divisor): array
  */
 function _beUnsignedDivDecimal(string $quotient, string $remainder, string $divisor): int|float
 {
-    $remainder = \ltrim($remainder, "\0") ?: "\0";
-    $divisor = \ltrim($divisor, "\0") ?: "\0";
+    $remainder = \ltrim($remainder, "\0");
+    $remainder = $remainder !== '' ? $remainder : "\0";
+    $divisor = \ltrim($divisor, "\0");
+    $divisor = $divisor !== '' ? $divisor : "\0";
 
     if ($divisor === "\0") {
         throw new \DivisionByZeroError('Division by zero');
     }
 
     $intResult = _fromBeUnsigned($quotient);
-    $result = $intResult;
 
-    if ($remainder !== "\0") {
-        $scaleBe = _toBeUnsigned(1_000_000_000);
-        $scale = 1.0;
-        do {
-            $scaledRemainder = _beUnsignedMul($remainder, $scaleBe);
-            [$digitsBe, $remainder] = _beUnsignedDiv($scaledRemainder, $divisor);
-            $scale *= 1e9;
-            $newResult = $result + (_fromBeUnsigned($digitsBe) / $scale);
-            if ($newResult === $result) {
-                break;
-            }
-            $result = $newResult;
-        } while ($remainder !== "\0");
-
-        if ($result == $intResult) {
-            $result = $intResult;
-        }
+    if ($remainder === "\0") {
+        return $intResult;
     }
 
-    return $result;
+    // Use float division for the fractional part to get the same precision
+    // as native float division, rather than building up digits iteratively
+    // which accumulates rounding errors.
+    return (float)$intResult + (_beUnsignedToFloat($remainder) / _beUnsignedToFloat($divisor));
 }
 
 /**
@@ -307,8 +325,10 @@ function _beShiftLeft1(string $be): string
  */
 function _beUnsignedCmp(string $a, string $b): int
 {
-    $a = \ltrim($a, "\0") ?: "\0";
-    $b = \ltrim($b, "\0") ?: "\0";
+    $a = \ltrim($a, "\0");
+    $a = $a !== '' ? $a : "\0";
+    $b = \ltrim($b, "\0");
+    $b = $b !== '' ? $b : "\0";
     $la = \strlen($a);
     $lb = \strlen($b);
 
