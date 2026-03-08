@@ -3,6 +3,14 @@
 !/.gitignore
 !/.github
 
+# PHPT Tests
+/tests/*.diff
+/tests/*.exp
+/tests/*.log
+/tests/*.out
+/tests/*.php
+/tests/*.sh
+
 # composer
 /vendor
 /composer.lock
