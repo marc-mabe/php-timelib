@@ -1,5 +1,5 @@
 --TEST--
-DateTimeFormatter->format with Instanted
+LagacyDateTimeFormatter->format with Instanted
 --FILE--
 <?php
 
@@ -21,13 +21,13 @@ $instantedWithZone = new class($instant, $zoneNy) implements time\Instanted, tim
 };
 
 echo "Formatter without zone:\n";
-$formatter = new \time\DateTimeFormatter('D Y-m-d H:i:sf P [e]');
+$formatter = new \time\LagacyDateTimeFormatter('D Y-m-d H:i:sf P [e]');
 echo "  " . stringify($zdt) . ' = ' . $formatter->format($zdt) . "\n";
 echo "  Instanted(".stringify($instantedWithZone->instant).")+Zoned(" . stringify($instantedWithZone->zone) . ') = ' . $formatter->format($instantedWithZone) . "\n";
 echo "  " . stringify($instant) . ' = ' . $formatter->format($instant) . "\n";
 
 echo "Formatter with zone:\n";
-$formatter = new \time\DateTimeFormatter('D Y-m-d H:i:sf P [e]', zone: $zoneBln);
+$formatter = new \time\LagacyDateTimeFormatter('D Y-m-d H:i:sf P [e]', zone: $zoneBln);
 echo "  " . stringify($zdt) . ' = ' . $formatter->format($zdt) . "\n";
 echo "  Instanted(".stringify($instantedWithZone->instant).")+Zoned(" . stringify($instantedWithZone->zone) . ') = ' . $formatter->format($instantedWithZone) . "\n";
 echo "  " . stringify($instant) . ' = ' . $formatter->format($instant) . "\n";

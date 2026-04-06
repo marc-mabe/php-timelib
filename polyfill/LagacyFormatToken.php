@@ -2,7 +2,7 @@
 
 namespace time;
 
-enum FormatToken:string
+enum LagacyFormatToken:string
 {
     // Year
     case IsLeapYear = 'L';

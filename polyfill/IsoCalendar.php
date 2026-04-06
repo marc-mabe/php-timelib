@@ -13,6 +13,48 @@ final class IsoCalendar implements Calendar
     private const array DAYS_OF_YEAR_BY_MONTH_COMMON = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];
     private const array DAYS_OF_YEAR_BY_MONTH_LEAP   = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
 
+    /**
+     * English civil month names shared by ISO, Gregorian, and Julian calendars in this library.
+     *
+     * @var array<int<1,12>, non-empty-string>
+     */
+    private const array MONTH_LABEL_WIDE = [
+        1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June',
+        7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
+    ];
+
+    /** @var array<int<1,12>, non-empty-string> */
+    private const array MONTH_LABEL_ABBREVIATION = [
+        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun',
+        7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec',
+    ];
+
+    /** @var array<int<1,12>, non-empty-string> */
+    private const array MONTH_LABEL_NARROW = [
+        1 => 'J', 2 => 'F', 3 => 'M', 4 => 'A', 5 => 'M', 6 => 'J',
+        7 => 'J', 8 => 'A', 9 => 'S', 10 => 'O', 11 => 'N', 12 => 'D',
+    ];
+
+    /** ISO 8601 weekday: 1 = Monday … 7 = Sunday. @var array<int<1,7>, non-empty-string> */
+    private const array DAY_OF_WEEK_LABEL_WIDE = [
+        1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday',
+    ];
+
+    /** @var array<int<1,7>, non-empty-string> */
+    private const array DAY_OF_WEEK_LABEL_ABBREVIATION = [
+        1 => 'Mon', 2 => 'Tue', 3 => 'Wed', 4 => 'Thu', 5 => 'Fri', 6 => 'Sat', 7 => 'Sun',
+    ];
+
+    /** @var array<int<1,7>, non-empty-string> */
+    private const array DAY_OF_WEEK_LABEL_SHORT = [
+        1 => 'Mo', 2 => 'Tu', 3 => 'We', 4 => 'Th', 5 => 'Fr', 6 => 'Sa', 7 => 'Su',
+    ];
+
+    /** @var array<int<1,7>, non-empty-string> */
+    private const array DAY_OF_WEEK_LABEL_NARROW = [
+        1 => 'M', 2 => 'T', 3 => 'W', 4 => 'T', 5 => 'F', 6 => 'S', 7 => 'S',
+    ];
+
     private const int HINNANT_YEARS_PER_ERA = 400;
 
     private const int HINNANT_LEAP_YEARS_PER_ERA = 97;
@@ -70,29 +112,25 @@ final class IsoCalendar implements Calendar
         return 12;
     }
 
-    /** @param int<1,12> $month */
     public function getMonthName(int $year, int $month): string
     {
-        return match ($month) {
-            1 => 'January',
-            2 => 'February',
-            3 => 'March',
-            4 => 'April',
-            5 => 'May',
-            6 => 'June',
-            7 => 'July',
-            8 => 'August',
-            9 => 'September',
-            10 => 'October',
-            11 => 'November',
-            12 => 'December',
-        };
+        $this->assertMonthInYear($year, $month);
+
+        return self::MONTH_LABEL_WIDE[$month];
     }
 
-    /** @param int<1,12> $month */
     public function getMonthAbbreviation(int $year, int $month): string
     {
-        return \substr($this->getMonthName($year, $month), 0, 3);
+        $this->assertMonthInYear($year, $month);
+
+        return self::MONTH_LABEL_ABBREVIATION[$month];
+    }
+
+    public function getMonthNarrow(int $year, int $month): string
+    {
+        $this->assertMonthInYear($year, $month);
+
+        return self::MONTH_LABEL_NARROW[$month];
     }
 
     /**
@@ -297,34 +335,101 @@ final class IsoCalendar implements Calendar
         return $dow;
     }
 
-    /**
-     * Get the name of the given day-of-week.
-     *
-     * @param int<1,7> $dayOfWeek 1: Mon, ... 7: Sun
-     * @return non-empty-string
-     */
     public function getDayOfWeekName(int $dayOfWeek): string
     {
-        return match ($dayOfWeek) {
-            1 => 'Monday',
-            2 => 'Tuesday',
-            3 => 'Wednesday',
-            4 => 'Thursday',
-            5 => 'Friday',
-            6 => 'Saturday',
-            7 => 'Sunday',
-        };
+        $this->assertIsoDayOfWeek($dayOfWeek);
+
+        return self::DAY_OF_WEEK_LABEL_WIDE[$dayOfWeek];
+    }
+
+    public function getDayOfWeekAbbreviation(int $dayOfWeek): string
+    {
+        $this->assertIsoDayOfWeek($dayOfWeek);
+
+        return self::DAY_OF_WEEK_LABEL_ABBREVIATION[$dayOfWeek];
+    }
+
+    public function getDayOfWeekShort(int $dayOfWeek): string
+    {
+        $this->assertIsoDayOfWeek($dayOfWeek);
+
+        return self::DAY_OF_WEEK_LABEL_SHORT[$dayOfWeek];
+    }
+
+    public function getDayOfWeekNarrow(int $dayOfWeek): string
+    {
+        $this->assertIsoDayOfWeek($dayOfWeek);
+
+        return self::DAY_OF_WEEK_LABEL_NARROW[$dayOfWeek];
     }
 
     /**
-     * Get the abbreviation of the given day-of-week.
+     * @param int $referenceYear Unused for ISO; required by {@see Calendar}.
      *
-     * @param int<1,7> $dayOfWeek
-     * @return non-empty-string
+     * @return array<int<1,12>, non-empty-string>
      */
-    public function getDayOfWeekAbbreviation(int $dayOfWeek): string
+    public function getMonthNameMap(int $referenceYear): array
     {
-        return \substr($this->getDayOfWeekName($dayOfWeek), 0, 3);
+        return self::MONTH_LABEL_WIDE;
+    }
+
+    /**
+     * @param int $referenceYear Unused for ISO; required by {@see Calendar}.
+     *
+     * @return array<int<1,12>, non-empty-string>
+     */
+    public function getMonthAbbreviationMap(int $referenceYear): array
+    {
+        return self::MONTH_LABEL_ABBREVIATION;
+    }
+
+    /**
+     * @param int $referenceYear Unused for ISO; required by {@see Calendar}.
+     *
+     * @return array<int<1,12>, non-empty-string>
+     */
+    public function getMonthNarrowMap(int $referenceYear): array
+    {
+        return self::MONTH_LABEL_NARROW;
+    }
+
+    /** @return array<int<1,7>, non-empty-string> */
+    public function getDayOfWeekAbbreviationMap(): array
+    {
+        return self::DAY_OF_WEEK_LABEL_ABBREVIATION;
+    }
+
+    /** @return array<int<1,7>, non-empty-string> */
+    public function getDayOfWeekNameMap(): array
+    {
+        return self::DAY_OF_WEEK_LABEL_WIDE;
+    }
+
+    /** @return array<int<1,7>, non-empty-string> */
+    public function getDayOfWeekNarrowMap(): array
+    {
+        return self::DAY_OF_WEEK_LABEL_NARROW;
+    }
+
+    /** @return array<int<1,7>, non-empty-string> */
+    public function getDayOfWeekShortMap(): array
+    {
+        return self::DAY_OF_WEEK_LABEL_SHORT;
+    }
+
+    private function assertMonthInYear(int $year, int $month): void
+    {
+        $max = $this->getMonthsInYear($year);
+        if ($month < 1 || $month > $max) {
+            throw new InvalidValueException("Month must be within 1 and {$max}, {$month} given.");
+        }
+    }
+
+    private function assertIsoDayOfWeek(int $dayOfWeek): void
+    {
+        if ($dayOfWeek < 1 || $dayOfWeek > 7) {
+            throw new InvalidValueException("Day of week must be within 1 and 7, {$dayOfWeek} given.");
+        }
     }
 
     /**

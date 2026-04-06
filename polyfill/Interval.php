@@ -90,7 +90,7 @@ final readonly class Interval
     public function toIso8601(string $separator = '/'): string
     {
         $inToEx = $this->withBoundaryAdjustedInstant(Boundary::InclusiveToExclusive);
-        $fmt = new DateTimeFormatter('Y-m-d\\TH:i:sfp');
+        $fmt = new LagacyDateTimeFormatter('Y-m-d\\TH:i:sfp');
 
         $iso = $fmt->format($inToEx->start);
         $iso .= $separator;
@@ -99,7 +99,7 @@ final readonly class Interval
         return $iso;
     }
 
-    public function toIso80000(DateTimeFormatter $formatter = new DateTimeFormatter('Y-m-d\\TH:i:sfp')): string
+    public function toIso80000(LagacyDateTimeFormatter $formatter = new LagacyDateTimeFormatter('Y-m-d\\TH:i:sfp')): string
     {
         $iso = $this->boundary->isStartInclusive() ? self::ISO80000_SIGN_START_INCLUSIVE : self::ISO80000_SIGN_START_EXCLUSIVE;
         $iso .= $formatter->format($this->start);

@@ -71,7 +71,21 @@ final class GregorianCalendar implements Calendar
     /** @param int<1,12> $month */
     public function getMonthAbbreviation(int $year, int $month): string
     {
-        return \substr($this->getMonthName($year, $month), 0, 3);
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
+        return IsoCalendar::getInstance()->getMonthAbbreviation($year < 0 ? $year + 1 : $year, $month);
+    }
+
+    /** @param int<1,12> $month */
+    public function getMonthNarrow(int $year, int $month): string
+    {
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
+        return IsoCalendar::getInstance()->getMonthNarrow($year < 0 ? $year + 1 : $year, $month);
     }
 
     /**
@@ -252,29 +266,41 @@ final class GregorianCalendar implements Calendar
         return $dow <= 0 ? $dow + 7 : $dow;
     }
 
-    /**
-     * Get the name of the given day-of-week.
-     *
-     * @param int<1,7> $dayOfWeek
-     * @return non-empty-string
-     */
+    /** @param int<1,7> $dayOfWeek */
     public function getDayOfWeekName(int $dayOfWeek): string
     {
-        $iso = $dayOfWeek + ($this->firstDayOfIsoWeek - 1);
-        $iso = $iso > 7 ? $iso - 7 : $iso;
+        return IsoCalendar::getInstance()->getDayOfWeekName($this->localDayOfWeekToIso($dayOfWeek));
+    }
 
-        return IsoCalendar::getInstance()->getDayOfWeekName($iso);
+    /** @param int<1,7> $dayOfWeek */
+    public function getDayOfWeekAbbreviation(int $dayOfWeek): string
+    {
+        return IsoCalendar::getInstance()->getDayOfWeekAbbreviation($this->localDayOfWeekToIso($dayOfWeek));
+    }
+
+    /** @param int<1,7> $dayOfWeek */
+    public function getDayOfWeekShort(int $dayOfWeek): string
+    {
+        return IsoCalendar::getInstance()->getDayOfWeekShort($this->localDayOfWeekToIso($dayOfWeek));
+    }
+
+    /** @param int<1,7> $dayOfWeek */
+    public function getDayOfWeekNarrow(int $dayOfWeek): string
+    {
+        return IsoCalendar::getInstance()->getDayOfWeekNarrow($this->localDayOfWeekToIso($dayOfWeek));
     }
 
     /**
-     * Get the abbreviation of the given day-of-week.
-     *
      * @param int<1,7> $dayOfWeek
-     * @return non-empty-string
+     * @return int<1,7>
      */
-    public function getDayOfWeekAbbreviation(int $dayOfWeek): string
+    private function localDayOfWeekToIso(int $dayOfWeek): int
     {
-        return \substr($this->getDayOfWeekName($dayOfWeek), 0, 3);
+        $iso = $dayOfWeek + ($this->firstDayOfIsoWeek - 1);
+        $iso = $iso > 7 ? $iso - 7 : $iso;
+        /** @var int<1,7> $iso */
+
+        return $iso;
     }
 
     /**
@@ -338,5 +364,76 @@ final class GregorianCalendar implements Calendar
 
         $year = $year < 0 ? $year + 1 : $year;
         return IsoCalendar::getInstance()->getJdnByYmd($year, $month, $dayOfMonth);
+    }
+
+    public function getMonthNameMap(int $referenceYear): array
+    {
+        if ($referenceYear === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
+        return IsoCalendar::getInstance()->getMonthNameMap($referenceYear < 0 ? $referenceYear + 1 : $referenceYear);
+    }
+
+    public function getMonthAbbreviationMap(int $referenceYear): array
+    {
+        if ($referenceYear === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
+        return IsoCalendar::getInstance()->getMonthAbbreviationMap($referenceYear < 0 ? $referenceYear + 1 : $referenceYear);
+    }
+
+    public function getMonthNarrowMap(int $referenceYear): array
+    {
+        if ($referenceYear === 0) {
+            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        }
+
+        return IsoCalendar::getInstance()->getMonthNarrowMap($referenceYear < 0 ? $referenceYear + 1 : $referenceYear);
+    }
+
+    public function getDayOfWeekAbbreviationMap(): array
+    {
+        $iso = IsoCalendar::getInstance()->getDayOfWeekAbbreviationMap();
+        $map = [];
+        for ($dayOfWeek = 1; $dayOfWeek <= 7; $dayOfWeek++) {
+            $map[$dayOfWeek] = $iso[$this->localDayOfWeekToIso($dayOfWeek)];
+        }
+
+        return $map;
+    }
+
+    public function getDayOfWeekNameMap(): array
+    {
+        $iso = IsoCalendar::getInstance()->getDayOfWeekNameMap();
+        $map = [];
+        for ($dayOfWeek = 1; $dayOfWeek <= 7; $dayOfWeek++) {
+            $map[$dayOfWeek] = $iso[$this->localDayOfWeekToIso($dayOfWeek)];
+        }
+
+        return $map;
+    }
+
+    public function getDayOfWeekNarrowMap(): array
+    {
+        $iso = IsoCalendar::getInstance()->getDayOfWeekNarrowMap();
+        $map = [];
+        for ($dayOfWeek = 1; $dayOfWeek <= 7; $dayOfWeek++) {
+            $map[$dayOfWeek] = $iso[$this->localDayOfWeekToIso($dayOfWeek)];
+        }
+
+        return $map;
+    }
+
+    public function getDayOfWeekShortMap(): array
+    {
+        $iso = IsoCalendar::getInstance()->getDayOfWeekShortMap();
+        $map = [];
+        for ($dayOfWeek = 1; $dayOfWeek <= 7; $dayOfWeek++) {
+            $map[$dayOfWeek] = $iso[$this->localDayOfWeekToIso($dayOfWeek)];
+        }
+
+        return $map;
     }
 }

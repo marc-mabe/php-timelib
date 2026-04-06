@@ -23,28 +23,28 @@ function stringifyEnum(UnitEnum $enum) {
 }
 
 function stringifyInstant(Instant $instant) {
-    $fmt   = new time\DateTimeFormatter('D Y-m-d H:i:sf');
+    $fmt   = new time\LagacyDateTimeFormatter('D Y-m-d H:i:sf');
     $tuple = $instant->toUnixTimestampTuple();
     return "Instant('{$fmt->format($instant)}', {$tuple[0]}, {$tuple[1]})";
 }
 
 function stringifyPlainDate(PlainDate $date) {
-    $fmt = new time\DateTimeFormatter('D Y-m-d');
+    $fmt = new time\LagacyDateTimeFormatter('D Y-m-d');
     return "PlainDate('{$fmt->format($date)}')";
 }
 
 function stringifyPlainTime(PlainTime $time) {
-    $fmt = new time\DateTimeFormatter('H:i:sf');
+    $fmt = new time\LagacyDateTimeFormatter('H:i:sf');
     return "PlainTime('{$fmt->format($time)}')";
 }
 
 function stringifyPlainDateTime(PlainDateTime $dt) {
-    $fmt = new time\DateTimeFormatter('D Y-m-d H:i:sf');
+    $fmt = new time\LagacyDateTimeFormatter('D Y-m-d H:i:sf');
     return "PlainDateTime('{$fmt->format($dt)}')";
 }
 
 function stringifyZonedDateTime(ZonedDateTime $dt) {
-    $fmt = new time\DateTimeFormatter('D Y-m-d H:i:sf P [e]');
+    $fmt = new time\LagacyDateTimeFormatter('D Y-m-d H:i:sf P [e]');
     return "ZonedDateTime('{$fmt->format($dt)}')";
 }
 

@@ -1,5 +1,5 @@
 --TEST--
-DateTimeFormatter->format month
+LagacyDateTimeFormatter->format month
 --FILE--
 <?php
 
@@ -29,10 +29,10 @@ $dates = [
 ];
 
 $formatters = [
-    new \time\DateTimeFormatter(\time\FormatToken::Month->value),
-    new \time\DateTimeFormatter(\time\FormatToken::MonthWithLeadingZeros->value),
-    new \time\DateTimeFormatter(\time\FormatToken::MonthName->value),
-    new \time\DateTimeFormatter(\time\FormatToken::MonthAbbreviation->value),
+    new \time\LagacyDateTimeFormatter(\time\LagacyFormatToken::Month->value),
+    new \time\LagacyDateTimeFormatter(\time\LagacyFormatToken::MonthWithLeadingZeros->value),
+    new \time\LagacyDateTimeFormatter(\time\LagacyFormatToken::MonthName->value),
+    new \time\LagacyDateTimeFormatter(\time\LagacyFormatToken::MonthAbbreviation->value),
 ];
 
 echo "Date\t\t\t\tNum\tZero\tName\tAbbr\n";

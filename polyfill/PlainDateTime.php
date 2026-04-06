@@ -171,7 +171,7 @@ final class PlainDateTime implements Date, Time
                 && $secs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
             )
         ) {
-            $fmt = new DateTimeFormatter('Y-m-d H:i:sf');
+            $fmt = new LagacyDateTimeFormatter('Y-m-d H:i:sf');
             $sf  = $second + $nanoOfSecond / self::NANOS_PER_SECOND;
             throw new RangeError(sprintf(
                 "A LocalDateTime of the %s must be between %s and %s, %s given",
@@ -220,7 +220,7 @@ final class PlainDateTime implements Date, Time
                 && $secs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
             )
         ) {
-            $fmt = new DateTimeFormatter('Y-z H:i:sf');
+            $fmt = new LagacyDateTimeFormatter('Y-z H:i:sf');
             $sf  = $second + $nanoOfSecond / self::NANOS_PER_SECOND;
             throw new RangeError(sprintf(
                 "A LocalDateTime of the %s must be between %s and %s, %s given",
@@ -250,14 +250,14 @@ final class PlainDateTime implements Date, Time
                 && $secs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
             )
         ) {
-            $fmt = new DateTimeFormatter('Y-m-d H:i:sf');
+            $fmt = new LagacyDateTimeFormatter('Y-m-d H:i:sf');
             throw new RangeError(sprintf(
                 "A LocalDateTime of the %s must be between %s and %s, %s %s given",
                 $date->calendar::class,
                 $fmt->format(self::min($date->calendar)),
                 $fmt->format(self::max($date->calendar)),
-                new DateTimeFormatter('Y-m-d')->format($date),
-                new DateTimeFormatter('H:i:sf')->format($time),
+                new LagacyDateTimeFormatter('Y-m-d')->format($date),
+                new LagacyDateTimeFormatter('H:i:sf')->format($time),
             ));
         }
 

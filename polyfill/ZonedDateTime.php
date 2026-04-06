@@ -253,7 +253,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
                 && $localSecs < Instant::SECONDS_PER_DAY + PHP_INT_MIN % Instant::SECONDS_PER_DAY
             )
         ) {
-            $fmt = new DateTimeFormatter('Y-m-d H:i:sfP');
+            $fmt = new LagacyDateTimeFormatter('Y-m-d H:i:sfP');
             $sf  = $second + $nanoOfSecond / Instant::NANOS_PER_SECOND;
             throw new RangeError(sprintf(
                 "A ZonedDateTime of the %s must be between %s and %s, %s given",
@@ -314,7 +314,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
                 && $localSecs < Instant::SECONDS_PER_DAY + PHP_INT_MIN % Instant::SECONDS_PER_DAY
             )
         ) {
-            $fmt = new DateTimeFormatter('Y-z H:i:sfP');
+            $fmt = new LagacyDateTimeFormatter('Y-z H:i:sfP');
             $sf  = $second + $nanoOfSecond / Instant::NANOS_PER_SECOND;
             throw new RangeError(sprintf(
                 "A ZonedDateTime of the %s must be between %s and %s, %s given",
@@ -363,14 +363,14 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
                 && $localSecs < Instant::SECONDS_PER_DAY + PHP_INT_MIN % Instant::SECONDS_PER_DAY
             )
         ) {
-            $fmt = new DateTimeFormatter('Y-m-d H:i:sfP');
+            $fmt = new LagacyDateTimeFormatter('Y-m-d H:i:sfP');
             $sf  = $second + $nanoOfSecond / Instant::NANOS_PER_SECOND;
             throw new RangeError(sprintf(
                 "A ZonedDateTime of the %s must be between %s and %s, %s %s given",
                 $date->calendar::class,
                 $fmt->format(self::min(zone: $zone, calendar: $date->calendar)),
                 $fmt->format(self::max(zone: $zone, calendar: $date->calendar)),
-                new DateTimeFormatter('Y-m-d')->format($date),
+                new LagacyDateTimeFormatter('Y-m-d')->format($date),
                 "{$hour}:{$minute}:{$sf} {$zone->identifier}",
             ));
         }
@@ -425,7 +425,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
                     Disambiguation::COMPATIBLE => $minTran->offset,
                     Disambiguation::REJECT     => throw new AmbiguousValueException(sprintf(
                         "Ambiguous date-time '%s' for zone '%s'",
-                        new DateTimeFormatter('Y-m-d H:i:s')->format(Instant::fromUnixTimestampTuple([$localTs, 0])),
+                        new LagacyDateTimeFormatter('Y-m-d H:i:s')->format(Instant::fromUnixTimestampTuple([$localTs, 0])),
                         $zone->identifier
                     )),
                 };
@@ -441,7 +441,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
                 Disambiguation::COMPATIBLE => $minTran->offset,
                 Disambiguation::REJECT     => throw new InvalidValueException(sprintf(
                     "Invalid date-time '%s' for zone '%s'",
-                    new DateTimeFormatter('Y-m-d H:i:s')->format(Instant::fromUnixTimestampTuple([$localTs, 0])),
+                    new LagacyDateTimeFormatter('Y-m-d H:i:s')->format(Instant::fromUnixTimestampTuple([$localTs, 0])),
                     $zone->identifier
                 )),
             };

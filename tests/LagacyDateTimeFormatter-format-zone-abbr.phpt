@@ -1,11 +1,11 @@
 --TEST--
-DateTimeFormatter->format zone abbreviation of offset
+LagacyDateTimeFormatter->format zone abbreviation of offset
 --FILE--
 <?php
 
 include __DIR__ . '/include.php';
 
-$fmt = new \time\DateTimeFormatter('T');
+$fmt = new \time\LagacyDateTimeFormatter('T');
 
 $dt  = time\Instant::fromYmd(2000, 1, 1);
 echo stringify($dt) . ' = ' . $fmt->format($dt) . "\n";

@@ -23,6 +23,29 @@ final class ZoneAbbreviation
     }
 
     /**
+     * Find zone by abbreviation from text prefix.
+     *
+     * @return null|array<string, string> Map of abbreviation => zoneId if found
+     */
+    public static function findZoneByAbbreviation(string $text): ?array
+    {
+        $registry = self::registry();
+        $textUpper = \strtoupper($text);
+
+        foreach ($registry as $abbrId => $abbrInfos) {
+            if (\str_starts_with($textUpper, $abbrId)) {
+                foreach ($abbrInfos as $abbrInfo) {
+                    if ($abbrInfo['zoneId'] !== null) {
+                        return [$abbrId => $abbrInfo['zoneId']];
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @return array<string, non-empty-list<array{offset: int, dst: bool, zoneId: null|string}>>
      */
     private static function registry(): array

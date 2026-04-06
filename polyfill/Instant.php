@@ -469,7 +469,7 @@ final class Instant implements Instanted, Date, Time, Zoned
                 && $secs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
             )
         ) {
-            $fmt = new DateTimeFormatter('Y-z H:i:sf');
+            $fmt = new LagacyDateTimeFormatter('Y-z H:i:sf');
             $sf  = $second + $nanoOfSecond / self::NANOS_PER_SECOND;
             throw new RangeError(sprintf(
                 "An Instant must be between %s and %s, %s given",
@@ -516,7 +516,7 @@ final class Instant implements Instanted, Date, Time, Zoned
                 && $secs < self::SECONDS_PER_DAY + PHP_INT_MIN % self::SECONDS_PER_DAY
             )
         ) {
-            $fmt = new DateTimeFormatter('Y-m-d H:i:sf');
+            $fmt = new LagacyDateTimeFormatter('Y-m-d H:i:sf');
             $sf  = $second + $nanoOfSecond / 1_000_000_000;
             throw new RangeError(sprintf(
                 "An Instant must be between %s and %s, %s given",

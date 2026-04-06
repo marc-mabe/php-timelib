@@ -94,7 +94,7 @@ final class RepeatingInterval implements \IteratorAggregate
      */
     public function toIso8601(string $separator = '/'): string
     {
-        $fmt = new DateTimeFormatter('Y-m-d\\TH:i:sfp');
+        $fmt = new LagacyDateTimeFormatter('Y-m-d\\TH:i:sfp');
 
         $iso = 'R' . $this->repetitions;
         if ($this->durationOrPeriod->isNegative) {

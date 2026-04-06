@@ -49,6 +49,14 @@ interface Calendar
     public function getMonthAbbreviation(int $year, int $month): string;
 
     /**
+     * Returns a narrow english month label (CLDR-style; letters may repeat).
+     *
+     * @param int<1,99> $month
+     * @return non-empty-string
+     */
+    public function getMonthNarrow(int $year, int $month): string;
+
+    /**
      * Calculates the year, month and day of month from the given number of days since unix epoch.
      *
      * @return array{int, int<1,99>, int<1,31>}
@@ -130,6 +138,22 @@ interface Calendar
     public function getDayOfWeekAbbreviation(int $dayOfWeek): string;
 
     /**
+     * Returns a short english weekday label (e.g. Mo, Tu).
+     *
+     * @param int<1,max> $dayOfWeek
+     * @return non-empty-string
+     */
+    public function getDayOfWeekShort(int $dayOfWeek): string;
+
+    /**
+     * Returns a narrow single-letter weekday label (CLDR-style; not unique).
+     *
+     * @param int<1,max> $dayOfWeek
+     * @return non-empty-string
+     */
+    public function getDayOfWeekNarrow(int $dayOfWeek): string;
+
+    /**
      * Calculates the day of week from the given days since unix epoch.
      *
      * @return int<1,max>
@@ -150,6 +174,46 @@ interface Calendar
      * @param int<1,31> $dayOfMonth
      */
     public function getJdnByYmd(int $year, int $month, int $dayOfMonth): int;
+
+    /**
+     * Full month names (wide style) keyed by calendar month index (1 … getMonthsInYear).
+     * `referenceYear` selects a year for calendars where month metadata can depend on year.
+     *
+     * @return array<int<1,max>, non-empty-string>
+     */
+    public function getMonthNameMap(int $referenceYear): array;
+
+    /**
+     * @return array<int<1,max>, non-empty-string>
+     */
+    public function getMonthAbbreviationMap(int $referenceYear): array;
+
+    /**
+     * @return array<int<1,max>, non-empty-string>
+     */
+    public function getMonthNarrowMap(int $referenceYear): array;
+
+    /**
+     * Weekday abbreviations keyed by this calendar’s local day-of-week index (same as {@see getDayOfWeekAbbreviation}).
+     *
+     * @return array<int<1,max>, non-empty-string>
+     */
+    public function getDayOfWeekAbbreviationMap(): array;
+
+    /**
+     * @return array<int<1,max>, non-empty-string>
+     */
+    public function getDayOfWeekNameMap(): array;
+
+    /**
+     * @return array<int<1,max>, non-empty-string>
+     */
+    public function getDayOfWeekNarrowMap(): array;
+
+    /**
+     * @return array<int<1,max>, non-empty-string>
+     */
+    public function getDayOfWeekShortMap(): array;
 
     /**
      * Adds the given period to the given calendar date field values.
