@@ -116,6 +116,11 @@ final class Instant implements Instanted, Date, Time, Zoned
         get => $this->calendar->getYearOfWeekByYmd(...$this->ymd);
     }
 
+    /** @var int<0,max> */
+    public int $weekOfMonth {
+        get => $this->calendar->getWeekOfMonthByYmd($this->year, $this->month, $this->dayOfMonth);
+    }
+
     /** @param int<0,999999999> $nanoOfSecond */
     private function __construct(
         private readonly int $tsSec,

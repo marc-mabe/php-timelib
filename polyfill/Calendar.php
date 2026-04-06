@@ -110,6 +110,15 @@ interface Calendar
     public function getWeekOfYearByYmd(int $year, int $month, int $dayOfMonth): int;
 
     /**
+     * Calculates the week-of-month of the given date.
+     *
+     * @param int<1,99> $month
+     * @param int<1,31> $dayOfMonth
+     * @return int<0,max>
+     */
+    public function getWeekOfMonthByYmd(int $year, int $month, int $dayOfMonth): int;
+
+    /**
      * Calculates the year-of-week of the given date.
      *
      * @param int<1,99> $month

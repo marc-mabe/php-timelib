@@ -214,6 +214,32 @@ final class JulianCalendar implements Calendar
     /**
      * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
+     * @return int<0,max>
+     */
+    public function getWeekOfMonthByYmd(int $year, int $month, int $dayOfMonth): int
+    {
+        $firstDow = $this->getDayOfWeekByYmd($year, $month, 1);
+        $daysInWeek = $this->getDaysInWeekByYmd($year, $month, $dayOfMonth);
+        $firstDowIso = $this->localDayOfWeekToIso($firstDow);
+        $firstWeekStartDay = (($this->firstDayOfWeekIso - $firstDowIso + $daysInWeek) % $daysInWeek) + 1;
+        $daysBeforeFirstWeek = $firstWeekStartDay - 1;
+
+        $weekOfMonth = match (true) {
+            $this->minDaysInFirstWeek === 1 && $firstWeekStartDay === 1 => intdiv($dayOfMonth - 1, $daysInWeek) + 1,
+            $this->minDaysInFirstWeek === 1 && $dayOfMonth < $firstWeekStartDay => 1,
+            $this->minDaysInFirstWeek === 1 => intdiv($dayOfMonth - $firstWeekStartDay, $daysInWeek) + 2,
+            $firstWeekStartDay === 1 => intdiv($dayOfMonth - 1, $daysInWeek) + 1,
+            default => $dayOfMonth <= $daysBeforeFirstWeek ? 0 : intdiv($dayOfMonth - $firstWeekStartDay, $daysInWeek) + 1,
+        };
+
+        \assert($weekOfMonth >= 0);
+
+        return $weekOfMonth;
+    }
+
+    /**
+     * @param int<1,12> $month
+     * @param int<1,31> $dayOfMonth
      */
     public function getYearOfWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {

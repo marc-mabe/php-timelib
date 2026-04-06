@@ -100,6 +100,11 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         get => $this->calendar->getYearOfWeekByYmd(...$this->ymd);
     }
 
+    /** @var int<0,max> */
+    public int $weekOfMonth {
+        get => $this->calendar->getWeekOfMonthByYmd(...$this->ymd);
+    }
+
     public readonly ZoneOffset $offset;
 
     private readonly int $adjustedSec;

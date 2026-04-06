@@ -24,6 +24,9 @@ interface Date {
 
     public int $yearOfWeek { get; }
 
+    /** @var int<0,max> */
+    public int $weekOfMonth { get; }
+
     public function add(Period $period): self;
     public function sub(Period $period): self;
 }

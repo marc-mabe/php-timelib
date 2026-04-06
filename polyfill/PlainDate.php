@@ -40,6 +40,11 @@ final class PlainDate implements Date
         get => $this->calendar->getYearOfWeekByYmd($this->year, $this->month, $this->dayOfMonth);
     }
 
+    /** @var int<0,max> */
+    public int $weekOfMonth {
+        get => $this->calendar->getWeekOfMonthByYmd($this->year, $this->month, $this->dayOfMonth);
+    }
+
     private function __construct(
         private readonly int $daysSinceEpoch,
         public readonly Calendar $calendar,

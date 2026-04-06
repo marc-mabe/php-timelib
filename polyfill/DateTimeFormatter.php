@@ -358,10 +358,7 @@ class DateTimeFormatter
     private function formatWeekOfMonth(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
     {
         $date = $this->requireDate(FormatPatternSymbol::WEEK_OF_MONTH, $dateTimeZone);
-        $daysInWeek = $date->calendar->getDaysInWeekByYmd($date->year, $date->month, $date->dayOfMonth);
-        $weekOfMonth = \intdiv($date->dayOfMonth - 1, $daysInWeek) + 1;
-
-        return (string)$weekOfMonth;
+        return (string)$date->weekOfMonth;
     }
 
     // === Day ===

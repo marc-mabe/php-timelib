@@ -102,6 +102,11 @@ final class PlainDateTime implements Date, Time
         get => $this->calendar->getYearOfWeekByYmd(...$this->ymd);
     }
 
+    /** @var int<0,max> */
+    public int $weekOfMonth {
+        get => $this->calendar->getWeekOfMonthByYmd(...$this->ymd);
+    }
+
     /**
      * @param int<0,999999999> $nanoOfSecond
      */
