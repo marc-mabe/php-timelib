@@ -95,6 +95,11 @@ final class IsoCalendar implements Calendar
             : self::DAYS_PER_YEAR_COMMON;
     }
 
+    public function hasYearZero(): bool
+    {
+        return true;
+    }
+
     /**
      * @param int<1,12> $month
      * @return int<28,31>

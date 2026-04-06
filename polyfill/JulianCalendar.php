@@ -48,6 +48,11 @@ final class JulianCalendar implements Calendar
             : self::DAYS_PER_YEAR_COMMON;
     }
 
+    public function hasYearZero(): bool
+    {
+        return false;
+    }
+
     /**
      * @param int<1,12> $month
      * @return int<28,31>

@@ -214,57 +214,80 @@ class DateTimeFormatter
 
     private function formatExtractedYear(int $year, int $count, bool $twoDigitsWhenCountIsTwo = false): string
     {
-        if ($twoDigitsWhenCountIsTwo && $count === 2) {
-            $twoDigit = \abs($year) % 100;
-            $padded = \str_pad((string)$twoDigit, 2, '0', STR_PAD_LEFT);
-
-            return $year < 0 ? '-' . $padded : $padded;
-        }
-
         $yearStr = (string)\abs($year);
-        if ($year < 0) {
-            $yearStr = '-' . $yearStr;
+
+        if ($twoDigitsWhenCountIsTwo && $count === 2) {
+            $yearStr = \substr($yearStr, -2);
         }
 
         if (\strlen($yearStr) < $count) {
-            if ($year < 0) {
-                $yearStr = '-' . \str_pad((string)\abs($year), $count, '0', STR_PAD_LEFT);
-            } else {
-                $yearStr = \str_pad($yearStr, $count, '0', STR_PAD_LEFT);
-            }
+            $yearStr = \str_pad($yearStr, $count, '0', STR_PAD_LEFT);
+        }
+
+        if ($year < 0) {
+            $yearStr = '-' . $yearStr;
         }
 
         return $yearStr;
     }
 
     /**
+     * Formats the calendar year used by pattern symbol {@see FormatPatternSymbol::YEAR} (`y`).
+     *
+     * `y` represents the calendar year in absolute form (for example, BCE years are formatted without a minus sign).
+     * This intentionally uses `abs()` so that year numbering follows the same convention as IntlDateFormatter's `y`.
+     * Year-zero handling follows the calendar storage rules used by the source date object.
+     *
      * @throws InvalidValueException
      */
     private function formatYear(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
     {
         $date = $this->requireDate(FormatPatternSymbol::YEAR, $dateTimeZone);
+        $year = \abs($date->year);
 
-        return $this->formatExtractedYear($date->year, $count, twoDigitsWhenCountIsTwo: true);
+        return $this->formatExtractedYear($year, $count, twoDigitsWhenCountIsTwo: true);
     }
 
     /**
+     * Formats the week-based year used by pattern symbol {@see FormatPatternSymbol::WEEK_BASED_YEAR} (`Y`).
+     *
+     * Negative week-year values are only adjusted when the calendar does not define a year zero.
+     * In that case, values are shifted by `+1` (for example, `-1 -> 0`, `-100 -> -99`) to match ICU/IntlDateFormatter behavior.
+     * Calendars with year zero keep their native week-year sign and magnitude.
+     *
      * @throws InvalidValueException
      */
     private function formatWeekBasedYear(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
     {
         $date = $this->requireDate(FormatPatternSymbol::WEEK_BASED_YEAR, $dateTimeZone);
+        $year = $date->yearOfWeek;
 
-        return $this->formatExtractedYear($date->yearOfWeek, $count, twoDigitsWhenCountIsTwo: true);
+        if ($year <= 0 && !$date->calendar->hasYearZero()) {
+            $year += 1;
+        }
+
+        return $this->formatExtractedYear($year, $count, twoDigitsWhenCountIsTwo: true);
     }
 
     /**
+     * Formats an Extended Year value used by pattern symbol {@see FormatPatternSymbol::EXTENDED_YEAR} (`u`).
+     *
+     * Unlike calendar year (`y`), extended year uses ICU-style proleptic numbering without a year 0.
+     * Negative astronomical years are converted by adding 1 (for example, -1 -> 0, -10000 -> -9999)
+     * so the output matches ICU/IntlDateFormatter behavior.
+     *
      * @throws InvalidValueException
      */
     private function formatExtendedYear(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
     {
         $date = $this->requireDate(FormatPatternSymbol::EXTENDED_YEAR, $dateTimeZone);
+        $year = $date->year;
 
-        return $this->formatExtractedYear($date->year, $count);
+        if ($year <= 0 && !$date->calendar->hasYearZero()) {
+            $year += 1;
+        }
+
+        return $this->formatExtractedYear($year, $count);
     }
 
     /**

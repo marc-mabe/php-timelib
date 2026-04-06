@@ -35,6 +35,11 @@ final class GregorianCalendar implements Calendar
         return IsoCalendar::getInstance()->getDaysInYear($year < 0 ? $year + 1 : $year);
     }
 
+    public function hasYearZero(): bool
+    {
+        return false;
+    }
+
     /**
      * @param int<1,12> $month
      * @return int<28,31>

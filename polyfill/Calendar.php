@@ -19,6 +19,11 @@ interface Calendar
     public function getDaysInYear(int $year): int;
 
     /**
+     * Indicates whether the calendar defines a year zero.
+     */
+    public function hasYearZero(): bool;
+
+    /**
      * Calculates the number of days in the given month.
      *
      * @param int<1,99> $month
