@@ -88,7 +88,8 @@ class DateTimeFormatter
 
             // Weekday
             FormatPatternSymbol::WEEKDAY => $this->formatWeekday($count, $dateTimeZone),
-            FormatPatternSymbol::LOCAL_DAY_OF_WEEK, FormatPatternSymbol::LOCAL_DAY_OF_WEEK_STANDALONE => $this->formatLocalDayOfWeek($count, $dateTimeZone),
+            FormatPatternSymbol::LOCAL_DAY_OF_WEEK => $this->formatLocalDayOfWeek($count, $dateTimeZone, standalone: false),
+            FormatPatternSymbol::LOCAL_DAY_OF_WEEK_STANDALONE => $this->formatLocalDayOfWeek($count, $dateTimeZone, standalone: true),
 
             // Period
             FormatPatternSymbol::PERIOD => $this->formatPeriod($count, $dateTimeZone),
@@ -324,6 +325,15 @@ class DateTimeFormatter
     // === Month ===
 
     /**
+     * Formats month values for CLDR month symbols.
+     *
+     * Used by:
+     * - {@see FormatPatternSymbol::MONTH} (`M`, `MM`, `MMM`, `MMMM`, `MMMMM`)
+     * - {@see FormatPatternSymbol::MONTH_STANDALONE} (`L`, `LL`, `LLL`, `LLLL`, `LLLLL`)
+     *
+     * Behavior:
+     * - `1`/`2` => numeric month (padded to requested width for count 2)
+     * - `3`/`4`/default => abbreviated, wide and narrow month names from calendar data
      * @throws InvalidValueException
      */
     private function formatMonth(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
@@ -344,6 +354,12 @@ class DateTimeFormatter
     // === Week ===
 
     /**
+     * Formats the week-of-year number for CLDR week symbols.
+     *
+     * Used by {@see FormatPatternSymbol::WEEK_OF_YEAR} (`w`, `ww`).
+     *
+     * Delegates to the date object's `weekOfYear` property and zero-pads
+     * to the requested width when needed.
      * @throws InvalidValueException
      */
     private function formatWeekOfYear(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
@@ -353,6 +369,12 @@ class DateTimeFormatter
     }
 
     /**
+     * Formats the week-of-month number for CLDR week symbols.
+     *
+     * Used by {@see FormatPatternSymbol::WEEK_OF_MONTH} (`W`).
+     *
+     * Week-of-month is derived from the calendar's locale-specific week rules via
+     * the `weekOfMonth` date property and is returned as a plain decimal value.
      * @throws InvalidValueException
      */
     private function formatWeekOfMonth(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
@@ -364,6 +386,11 @@ class DateTimeFormatter
     // === Day ===
 
     /**
+     * Formats day-of-month for CLDR day-of-month symbols.
+     *
+     * Used by {@see FormatPatternSymbol::DAY_OF_MONTH} (`d`, `dd`, `ddd`, `...`).
+     *
+     * Always uses calendar day-of-month and left-pads with zeros up to the requested width.
      * @throws InvalidValueException
      */
     private function formatDayOfMonth(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
@@ -373,6 +400,11 @@ class DateTimeFormatter
     }
 
     /**
+     * Formats day-of-year for CLDR day-of-year symbols.
+     *
+     * Used by {@see FormatPatternSymbol::DAY_OF_YEAR} (`D`, `DD`, `DDD`).
+     *
+     * Uses the ordinal day within the year and zero-pads to the requested width.
      * @throws InvalidValueException
      */
     private function formatDayOfYear(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
@@ -382,6 +414,12 @@ class DateTimeFormatter
     }
 
     /**
+     * Formats day-of-week-in-month for CLDR symbol.
+     *
+     * Used by {@see FormatPatternSymbol::DAY_OF_WEEK_IN_MONTH} (`F`).
+     *
+     * Computes the ordinal occurrence of the weekday within the month
+     * (e.g. 1st Friday = 1, 2nd Friday = 2, etc.) and returns it as a decimal string.
      * @throws InvalidValueException
      */
     private function formatDayOfWeekInMonth(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
@@ -402,19 +440,29 @@ class DateTimeFormatter
     }
 
     /**
+     * Formats the modified Julian Day value for CLDR symbol {@see FormatPatternSymbol::MODIFIED_JULIAN_DAY} (`g`).
+     *
+     * Uses the calendar's Julian day number for the current date and formats it with optional
+     * zero padding to the requested width.
+     *
      * @throws InvalidValueException
      */
     private function formatModifiedJulianDay(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
     {
         $date = $this->requireDate(FormatPatternSymbol::MODIFIED_JULIAN_DAY, $dateTimeZone);
         $jdn = $date->calendar->getJdnByYmd($date->year, $date->month, $date->dayOfMonth);
-        $mjd = $jdn - 2400001;
-        return \str_pad((string)$mjd, $count, '0', STR_PAD_LEFT);
+        return \str_pad((string)$jdn, $count, '0', STR_PAD_LEFT);
     }
 
     // === Weekday ===
 
     /**
+     * Formats weekday text names for CLDR weekday symbols.
+     *
+     * Used by {@see FormatPatternSymbol::WEEKDAY} (`E`, `EE`, `EEE`, `EEEE`, `EEEEE`, `...`).
+     *
+     * Returns abbreviations for short counts, wide names for 4, narrow for 5,
+     * and fallback short names for larger counts.
      * @throws InvalidValueException
      */
     private function formatWeekday(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
@@ -432,9 +480,18 @@ class DateTimeFormatter
     }
 
     /**
+     * Formats localized numeric/text weekday for CLDR local-day-of-week symbols.
+     *
+     * Used by:
+     * - {@see FormatPatternSymbol::LOCAL_DAY_OF_WEEK} (`e`, `ee`, `eee`, `eeee`, `eeeee`, ...)
+     * - {@see FormatPatternSymbol::LOCAL_DAY_OF_WEEK_STANDALONE} (`c`, `cc`, `ccc`, `cccc`, `ccccc`, ...)
+     *
+     * `e` uses locale-independent numeric day-of-week (padded for `ee`).
+     * `c`/standalone uses text forms from count 3+ and keeps `cc` numeric unpadded
+     * to match Intl behavior.
      * @throws InvalidValueException
      */
-    private function formatLocalDayOfWeek(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
+    private function formatLocalDayOfWeek(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone, bool $standalone): string
     {
         $date = $this->requireDate(FormatPatternSymbol::LOCAL_DAY_OF_WEEK, $dateTimeZone);
         $dow = $date->dayOfWeek;
@@ -442,7 +499,7 @@ class DateTimeFormatter
 
         return match (true) {
             $count === 1 => (string)$dow,
-            $count === 2 => \str_pad((string)$dow, 2, '0', STR_PAD_LEFT),
+            $count === 2 => $standalone ? (string)$dow : \str_pad((string)$dow, 2, '0', STR_PAD_LEFT),
             $count === 3 => $cal->getDayOfWeekAbbreviation($dow),
             $count === 4 => $cal->getDayOfWeekName($dow),
             $count === 5 => $cal->getDayOfWeekNarrow($dow),
