@@ -105,7 +105,7 @@ enum FormatPatternSymbol: string
             self::DAY_OF_MONTH => 'day of month',
             self::DAY_OF_YEAR => 'day of year',
             self::DAY_OF_WEEK_IN_MONTH => 'day of week in month',
-            self::MODIFIED_JULIAN_DAY => 'modified Julian day',
+            self::MODIFIED_JULIAN_DAY => 'julian day number (CLDR: modified Julian day)',
 
             // Weekday
             self::WEEKDAY => 'weekday',

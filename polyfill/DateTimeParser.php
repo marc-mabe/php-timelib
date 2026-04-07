@@ -17,6 +17,7 @@ namespace time;
  *     weekOfYear?: int,
  *     weekOfMonth?: int,
  *     quarter?: int,
+ *     jdn?: int,
  *     hour?: int,
  *     minute?: int,
  *     second?: int,
@@ -460,7 +461,8 @@ class DateTimeParser
                 break;
 
             case FormatPatternSymbol::MODIFIED_JULIAN_DAY:
-                [, $consumed] = $this->parseNumber($count, 10, $text, $pos);
+                // Intl documents this as "modified Julian day", but this project parses it as a JDN for compatibility.
+                [$result['jdn'], $consumed] = $this->parseJulianDayNumber($count, $text, $pos);
                 break;
 
             // Weekday
@@ -802,6 +804,14 @@ class DateTimeParser
         }
 
         return $this->parseDayOfWeek($count, $text, $pos);
+    }
+
+    /**
+     * @return array{int, int}
+     */
+    private function parseJulianDayNumber(int $count, string $text, int $pos): array
+    {
+        return $this->parseNumber($count, 10, $text, $pos);
     }
 
     /**

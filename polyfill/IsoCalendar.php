@@ -70,6 +70,7 @@ final class IsoCalendar implements Calendar
     private const int MIN_DAYS_IN_FIRST_WEEK = 4;
 
     private const int JDN_OFFSET = 32045;
+    private const int MODIFIED_JULIAN_DAY_OFFSET = 2400001;
 
     private static ?self $instance = null;
 
@@ -576,5 +577,16 @@ final class IsoCalendar implements Calendar
             + \intdiv(($month * $daysPer5Month + 2), 5)
             + $dayOfMonth
             - self::JDN_OFFSET;
+    }
+
+    /** @param int<1,12> $month */
+    public function getMjdByYmd(int $year, int $month, int $dayOfMonth): float
+    {
+        return $this->getJdnByYmd($year, $month, $dayOfMonth) - self::MODIFIED_JULIAN_DAY_OFFSET;
+    }
+
+    public function getYmdByMjd(int|float $modifiedJulianDay): array
+    {
+        return $this->getYmdByJdn($modifiedJulianDay + self::MODIFIED_JULIAN_DAY_OFFSET);
     }
 }

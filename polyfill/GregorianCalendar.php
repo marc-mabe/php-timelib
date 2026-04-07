@@ -4,6 +4,8 @@ namespace time;
 
 final class GregorianCalendar implements Calendar
 {
+    private const int MODIFIED_JULIAN_DAY_OFFSET = 2400001;
+
     /**
      * @param int<1,7> $firstDayOfIsoWeek  Defines the first day of the week using ISO numbering system
      *                                     (1: Mon, ... 7: Sun).
@@ -399,6 +401,17 @@ final class GregorianCalendar implements Calendar
 
         $year = $year < 0 ? $year + 1 : $year;
         return IsoCalendar::getInstance()->getJdnByYmd($year, $month, $dayOfMonth);
+    }
+
+    /** @param int<1,12> $month */
+    public function getMjdByYmd(int $year, int $month, int $dayOfMonth): float
+    {
+        return $this->getJdnByYmd($year, $month, $dayOfMonth) - self::MODIFIED_JULIAN_DAY_OFFSET;
+    }
+
+    public function getYmdByMjd(int|float $modifiedJulianDay): array
+    {
+        return $this->getYmdByJdn($modifiedJulianDay + self::MODIFIED_JULIAN_DAY_OFFSET);
     }
 
     public function getMonthNameMap(int $referenceYear): array

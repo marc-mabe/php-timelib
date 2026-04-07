@@ -84,7 +84,8 @@ class DateTimeFormatter
             FormatPatternSymbol::DAY_OF_MONTH => $this->formatDayOfMonth($count, $dateTimeZone),
             FormatPatternSymbol::DAY_OF_YEAR => $this->formatDayOfYear($count, $dateTimeZone),
             FormatPatternSymbol::DAY_OF_WEEK_IN_MONTH => $this->formatDayOfWeekInMonth($count, $dateTimeZone),
-            FormatPatternSymbol::MODIFIED_JULIAN_DAY => $this->formatModifiedJulianDay($count, $dateTimeZone),
+            // CLDR names this as "modified Julian day", but this project uses Julian Day Number.
+            FormatPatternSymbol::MODIFIED_JULIAN_DAY => $this->formatJulianDayNumber($count, $dateTimeZone),
 
             // Weekday
             FormatPatternSymbol::WEEKDAY => $this->formatWeekday($count, $dateTimeZone),
@@ -440,14 +441,17 @@ class DateTimeFormatter
     }
 
     /**
-     * Formats the modified Julian Day value for CLDR symbol {@see FormatPatternSymbol::MODIFIED_JULIAN_DAY} (`g`).
+     * Formats the Julian Day Number for CLDR symbol {@see FormatPatternSymbol::MODIFIED_JULIAN_DAY} (`g`).
+     *
+     * CLDR labels this field as "modified Julian day", but for compatibility with
+     * current Intl behavior this implementation emits the Julian Day Number.
      *
      * Uses the calendar's Julian day number for the current date and formats it with optional
      * zero padding to the requested width.
      *
      * @throws InvalidValueException
      */
-    private function formatModifiedJulianDay(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
+    private function formatJulianDayNumber(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
     {
         $date = $this->requireDate(FormatPatternSymbol::MODIFIED_JULIAN_DAY, $dateTimeZone);
         $jdn = $date->calendar->getJdnByYmd($date->year, $date->month, $date->dayOfMonth);

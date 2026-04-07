@@ -4,6 +4,8 @@ namespace time;
 
 final class JulianCalendar implements Calendar
 {
+    private const int MODIFIED_JULIAN_DAY_OFFSET = 2400001;
+
     private const int DAYS_PER_5_MONTHS = 153;
     private const int DAYS_PER_4_YEARS = 1461;
 
@@ -456,6 +458,17 @@ final class JulianCalendar implements Calendar
             + \intdiv($month * self::DAYS_PER_5_MONTHS + 2, 5)
             + $dayOfMonth
             - self::JDN_OFFSET;
+    }
+
+    /** @param int<1,12> $month */
+    public function getMjdByYmd(int $year, int $month, int $dayOfMonth): float
+    {
+        return $this->getJdnByYmd($year, $month, $dayOfMonth) - self::MODIFIED_JULIAN_DAY_OFFSET;
+    }
+
+    public function getYmdByMjd(int|float $modifiedJulianDay): array
+    {
+        return $this->getYmdByJdn($modifiedJulianDay + self::MODIFIED_JULIAN_DAY_OFFSET);
     }
 
     public function getMonthNameMap(int $referenceYear): array

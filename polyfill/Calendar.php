@@ -8,7 +8,7 @@ interface Calendar
      * Calculates if the given year is a leap year.
      *
      * A leap year differs in the number of days in a year.
-     * Depending on the calendar it may differ in the number of days in a specific month of the year
+     * Depending on the calendar, it may differ in the number of days in a specific month of the year
      * or in the number of months of the year.
      */
     public function isLeapYear(int $year): bool;
@@ -175,19 +175,54 @@ interface Calendar
     public function getDayOfWeekByDaysSinceUnixEpoch(int $days): int;
 
     /**
-     * Converts a julian day number into a date [year, month, dayOfMonth].
+     * Converts a Julian day number into a date [year, month, dayOfMonth].
+     *
+     * Calendar APIs are date-based (integer days at midnight), while
+     * Julian day numbers are traditionally anchored at noon. This conversion
+     * follows the project convention used by this interface's existing JDN methods,
+     * where a calendar date corresponds to the same integer boundary expected by
+     * {@see Calendar::getJdnByYmd()}.
      *
      * @return array{int, int<1,99>, int<1,31>}
      */
     public function getYmdByJdn(int|float $julianDay): array;
 
     /**
-     * Converts the date [year, month, dayOfMonth] into a julian day number.
+     * Converts the date [year, month, dayOfMonth] into a Julian day number.
+     *
+     * The returned value follows this implementation's calendar-day convention:
+     * it represents the calendar day boundary with the astronomical noon
+     * convention shifted by 0.5 (i.e. midnight aligns to the "JDN-0.5" boundary).
+     * For example, 1970-01-01 maps to 2440588 in this API.
+     *
+     * @param int<1,99> $month
+     * @param int<1,31> $dayOfMonth
+     * @return int
+     */
+    public function getJdnByYmd(int $year, int $month, int $dayOfMonth): int;
+
+    /**
+     * Converts a date [year, month, dayOfMonth] into the real modified Julian day.
+     *
+     * The real modified Julian day is `JD - 2400000.5`, which means that
+     * midnight corresponds to an integer value and noon to the next half step.
+     * This method follows that convention, so midnight for 1970-01-01 returns 40587.
      *
      * @param int<1,99> $month
      * @param int<1,31> $dayOfMonth
      */
-    public function getJdnByYmd(int $year, int $month, int $dayOfMonth): int;
+    public function getMjdByYmd(int $year, int $month, int $dayOfMonth): float;
+
+    /**
+     * Converts a real modified Julian day into a date [year, month, dayOfMonth].
+     *
+     * A real MJD value is accepted here; when a fractional value is supplied,
+     * the underlying date conversion works from the represented boundary and treats
+     * the value as date-focused input.
+     *
+     * @return array{int, int<1,99>, int<1,31>}
+     */
+    public function getYmdByMjd(int|float $modifiedJulianDay): array;
 
     /**
      * Full month names (wide style) keyed by calendar month index (1 … getMonthsInYear).
