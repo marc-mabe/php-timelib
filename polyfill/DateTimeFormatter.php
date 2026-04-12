@@ -514,41 +514,59 @@ class DateTimeFormatter
     // === Period ===
 
     /**
+     * Handles the `a` period symbol (AM/PM marker).
+     *
+     * Formats the period based on the time-of-day:
+     * - count < 5: "AM" or "PM"
+     * - count >= 5: narrow marker "a" or "p"
+     *
      * @throws InvalidValueException
      */
     private function formatPeriod(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
     {
         $time = $this->requireTime(FormatPatternSymbol::PERIOD, $dateTimeZone);
-        return $time->hour < 12 ? 'AM' : 'PM';
+
+        return match (true) {
+            $count >= 5 => $time->hour < 12 ? 'a' : 'p',
+            default => $time->hour < 12 ? 'AM' : 'PM',
+        };
     }
 
     /**
+     * Handles the `b` period symbol (AM/PM with noon midnight alternatives).
+     *
+     * Formats period text using AM/PM-like terms:
+     * - exact midnight hour (00:xx) uses "AM" for count < 5, or "a" for count >= 5
+     * - exact noon hour (12:xx) uses "noon" for count < 5, or "n" for count >= 5
+     * - all other hours use AM/PM for count < 5, or "a"/"p" for count >= 5
+     *
      * @throws InvalidValueException
      */
     private function formatPeriodExtended(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
     {
         $time = $this->requireTime(FormatPatternSymbol::PERIOD_EXTENDED, $dateTimeZone);
 
-        if ($time->hour === 12 && $time->minute === 0 && $time->second === 0) {
-            return match (true) {
-                $count <= 3 => 'noon',
-                $count === 4 => 'noon',
-                default => 'n',
-            };
+        if ($time->hour === 12) {
+            return $count >= 5 ? 'n' : 'noon';
         }
 
-        if ($time->hour === 0 && $time->minute === 0 && $time->second === 0) {
-            return match (true) {
-                $count <= 3 => 'midnight',
-                $count === 4 => 'midnight',
-                default => 'mi',
-            };
+        if ($time->hour === 0) {
+            return $count >= 5 ? 'a' : 'AM';
         }
 
-        return $time->hour < 12 ? 'AM' : 'PM';
+        return $count >= 5 ? ($time->hour < 12 ? 'a' : 'p') : ($time->hour < 12 ? 'AM' : 'PM');
     }
 
     /**
+     * Handles the `B` period symbol (flexible day period).
+     *
+     * Formats extended day-part phrases:
+     * - hour < 6 or >= 21: "at night"
+     * - hour < 12: "in the morning"
+     * - hour 12: "noon" for count < 5, or "n" for count >= 5
+     * - hour < 18: "in the afternoon"
+     * - otherwise: "in the evening"
+     *
      * @throws InvalidValueException
      */
     private function formatPeriodFlexible(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
@@ -557,7 +575,8 @@ class DateTimeFormatter
         $hour = $time->hour;
 
         $period = match (true) {
-            $hour < 6 => 'at night',
+            $hour === 12 => $count >= 5 ? 'n' : 'noon',
+            $hour < 6 || $hour >= 21 => 'at night',
             $hour < 12 => 'in the morning',
             $hour < 18 => 'in the afternoon',
             default => 'in the evening',
