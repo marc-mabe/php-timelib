@@ -3,7 +3,7 @@ ZonedDateTime->fromDateTime
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $utc  = time\Zone::fromIdentifier('UTC');
 $bln  = time\Zone::fromIdentifier('Europe/Berlin');

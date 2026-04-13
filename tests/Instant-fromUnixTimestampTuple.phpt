@@ -3,7 +3,7 @@ Instant::fromUnixTimestampTuple
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 echo "fromUnixTimestampTuple([1738599906, 123456789])\n";
 echo '  ' . stringify(time\Instant::fromUnixTimestampTuple([1738599906, 123456789])) . "\n";

@@ -3,7 +3,7 @@ Interval->toIso8601()
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $intervals = [
     new time\Interval(

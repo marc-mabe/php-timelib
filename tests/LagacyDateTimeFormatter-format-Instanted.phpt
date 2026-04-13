@@ -3,7 +3,7 @@ LagacyDateTimeFormatter->format with Instanted
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $zoneBln = time\Zone::fromIdentifier('Europe/Berlin');
 $zoneNy  = time\Zone::fromIdentifier('America/New_York');

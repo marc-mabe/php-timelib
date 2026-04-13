@@ -3,7 +3,7 @@ new Duration
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 echo "new Duration()\n";
 $duration = new time\Duration();

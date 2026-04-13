@@ -3,7 +3,7 @@ Duration->divideBy(Duration) large numbers overflow fallback
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $divisorSeconds = intdiv(PHP_INT_MAX, 3) - 1;
 

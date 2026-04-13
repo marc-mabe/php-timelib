@@ -3,7 +3,7 @@ Instant::fromUnixTimestamp
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 echo "fromUnixTimestamp(PHP_INT_MAX)\n";
 echo '  ' . stringify(time\Instant::fromUnixTimestamp(PHP_INT_MAX)) . "\n";

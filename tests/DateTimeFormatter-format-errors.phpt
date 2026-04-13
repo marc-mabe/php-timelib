@@ -3,7 +3,7 @@ DateTimeFormatter format errors
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 function formatError(string $pattern) {
     try {

@@ -3,7 +3,7 @@ LagacyDateTimeFormatter->format zone abbreviation of offset
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $fmt = new \time\LagacyDateTimeFormatter('T');
 

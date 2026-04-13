@@ -3,7 +3,7 @@ Period->subtractBy()
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $periods = [
     new time\Period(),

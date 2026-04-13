@@ -3,7 +3,7 @@ IsoCalendar->getMonthsInYear()
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $cal = time\IsoCalendar::getInstance();
 

@@ -3,7 +3,7 @@ PlainDate::fromXXX
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 echo "PlainDate::fromYmd\n";
 

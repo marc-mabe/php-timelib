@@ -3,7 +3,7 @@ Period->withNormalizedMonthsIntoYears
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $periods = [
     new time\Period(years: 123, months: 11, days: 789),

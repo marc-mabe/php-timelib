@@ -3,7 +3,7 @@ WallClock->takeUnixTimestamp
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $clock = new time\WallClock();
 echo stringify($clock) . "\n\n";

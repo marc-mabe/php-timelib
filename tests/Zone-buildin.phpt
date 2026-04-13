@@ -5,7 +5,7 @@ This test fails on 32bit because of PHP bug https://github.com/php/php-src/issue
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $instants = [
     time\Instant::fromUnixTimestampTuple([0, 0]),

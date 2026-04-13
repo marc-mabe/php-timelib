@@ -3,7 +3,7 @@ LagacyDateTimeFormatter->format month
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $dates = [
     time\PlainDate::fromYmd(2000, 1, 1),

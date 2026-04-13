@@ -3,7 +3,7 @@ DateTimeParser parse errors
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 function parseError(string $pattern, string $text) {
     try {

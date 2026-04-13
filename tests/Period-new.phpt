@@ -3,7 +3,7 @@ new Period
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 echo "new Period()\n";
 $period = new time\Period();

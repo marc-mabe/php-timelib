@@ -3,7 +3,7 @@ Period->toIso
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $period = new time\Period(years: 12, months: 34, weeks: 56, days: 78);
 var_dump($period);

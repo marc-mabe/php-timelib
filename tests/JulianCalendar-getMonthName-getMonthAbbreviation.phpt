@@ -3,7 +3,7 @@ JulianCalendar->getMonthName() & getMonthAbbreviation()
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $cal = new time\JulianCalendar();
 

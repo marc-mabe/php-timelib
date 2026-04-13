@@ -3,7 +3,7 @@ PlainDateTime->add() and PlainDateTime->sub() with Period
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $plainDateTimes = [
     time\PlainDateTime::fromYmd(1970, 1, 1),

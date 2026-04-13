@@ -3,7 +3,7 @@ Duration->multiplyBy()
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $durations = [
     new time\Duration(),

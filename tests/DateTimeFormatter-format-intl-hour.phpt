@@ -5,8 +5,8 @@ DateTimeFormatter hour symbols compared with IntlDateFormatter (en-US)
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
-include __DIR__ . '/include-intl.php';
+include __DIR__ . '/include.inc';
+include __DIR__ . '/include-intl.inc';
 
 $patterns = [
     'H',

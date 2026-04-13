@@ -3,7 +3,7 @@ ZoneOffset min/max range
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $min = new time\ZoneOffset(time\ZoneOffset::MIN_TOTAL_SECONDS);
 echo 'Min ZoneOffset = ' . stringify($min) . "\n";

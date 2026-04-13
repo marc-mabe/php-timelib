@@ -3,7 +3,7 @@ Instant->add() and Instant->sub()
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $instants = [
     time\Instant::fromYmd(1969, 12, 25, 1),

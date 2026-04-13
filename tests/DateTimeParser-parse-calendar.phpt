@@ -3,7 +3,7 @@ DateTimeParser->parse with injected calendar
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $calendar = new time\JulianCalendar();
 

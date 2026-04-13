@@ -3,7 +3,7 @@ Instant->toUnixTimestamp() and Instant->toUnixTimestampTuple()
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 const INT32_MAX = 2147483647;
 const INT32_MIN = -2147483647 - 1;

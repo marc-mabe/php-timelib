@@ -3,7 +3,7 @@ RepeatingInterval->end
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $intervals = [
     new time\RepeatingInterval(

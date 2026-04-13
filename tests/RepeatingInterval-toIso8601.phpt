@@ -3,7 +3,7 @@ RepeatingInterval->toIso8601()
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $intervals = [
     'endless repetitions' => new time\RepeatingInterval(

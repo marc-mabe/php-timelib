@@ -3,7 +3,7 @@ PlainTime::fromHms
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 echo "fromHms(0, 0, 0)\n";
 echo '  ' . stringify(\time\PlainTime::fromHms(0, 0, 0)) . "\n";

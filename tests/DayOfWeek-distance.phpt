@@ -3,7 +3,7 @@ DayOfWeek->distance
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 foreach (time\DayOfWeek::cases() as $dow) {
     foreach (time\DayOfWeek::cases() as $other) {

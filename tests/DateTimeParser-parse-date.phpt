@@ -3,7 +3,7 @@ DateTimeParser->parse date patterns
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 function parseDate(string $pattern, string $text) {
     try {

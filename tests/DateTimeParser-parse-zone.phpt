@@ -3,7 +3,7 @@ DateTimeParser->parse zone patterns
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 function parseZdt(string $pattern, string $text) {
     try {

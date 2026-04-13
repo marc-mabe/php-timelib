@@ -3,7 +3,7 @@ new Duration - overflow detection
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 var_dump(new time\Duration(seconds: PHP_INT_MAX, nanoseconds: 999999999));
 var_dump(new time\Duration(seconds: PHP_INT_MAX-1, nanoseconds: 1999999999));

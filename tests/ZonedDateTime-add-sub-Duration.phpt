@@ -3,7 +3,7 @@ ZonedDateTime->add() and Instant->sub() with Duration
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $tzBln = time\Zone::fromIdentifier('Europe/Berlin');
 

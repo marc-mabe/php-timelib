@@ -3,7 +3,7 @@ ZonedDateTime->add() and Instant->sub() with Period
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $bln = time\Zone::fromIdentifier('Europe/Berlin');
 $p1m = new time\Period(months: 1);

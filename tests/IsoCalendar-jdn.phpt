@@ -3,7 +3,7 @@ IsoCalendar: Julian day number conversion
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 const JDN_OFFSET = 32045;
 

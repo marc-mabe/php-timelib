@@ -3,7 +3,7 @@ LagacyDateTimeFormatter->format unix timestamp
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 function format(string $format, time\Date|time\Time|time\Zone|time\Zoned $dateTimeZone) {
     $formatter = new \time\LagacyDateTimeFormatter($format);

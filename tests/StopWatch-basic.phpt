@@ -3,7 +3,7 @@ StopWatch: basic functionalities
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 echo 'Measure 1s in MonotonicClock: ';
 $watch = new time\StopWatch();

@@ -3,7 +3,7 @@ WallClock->resolution
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 echo "WallClock::MAX_RESOLUTION: " . stringify(time\WallClock::MAX_RESOLUTION) . "\n\n";
 

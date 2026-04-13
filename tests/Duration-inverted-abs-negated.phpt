@@ -3,7 +3,7 @@ Duration->isNegative, Duration->inverted(), Duration->abs() and Duration->negate
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $durations = [
     new time\Duration(),

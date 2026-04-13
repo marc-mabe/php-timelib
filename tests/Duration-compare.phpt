@@ -3,7 +3,7 @@ Duration->compare()
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $zero = new time\Duration();
 

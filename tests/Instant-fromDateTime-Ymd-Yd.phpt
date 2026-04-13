@@ -3,7 +3,7 @@ Instant::fromDateTime, fromYmd and fromYd
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $min = time\PlainDateTime::min();
 

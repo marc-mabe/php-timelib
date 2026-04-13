@@ -3,7 +3,7 @@ Duration->moduloBy(Duration) large nanoseconds overflow fallback
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $divisorSeconds = intdiv(PHP_INT_MAX, 3) - 1;
 

@@ -3,7 +3,7 @@ GregorianCalendar->getWeekOfYearByYmd() & getYearOfWeekByYmd()
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $calendars = [
     new time\GregorianCalendar(),     // ISO

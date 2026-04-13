@@ -3,7 +3,7 @@ Interval->contains()
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 $interval = new time\Interval(
     time\Instant::fromYmd(2000, 1, 1),

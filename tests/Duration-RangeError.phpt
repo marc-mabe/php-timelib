@@ -3,7 +3,7 @@ Duration - RangeError
 --FILE--
 <?php
 
-include __DIR__ . '/include.php';
+include __DIR__ . '/include.inc';
 
 try {
     $duration1 = new time\Duration(seconds: PHP_INT_MAX);
