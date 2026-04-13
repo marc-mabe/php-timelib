@@ -6,6 +6,7 @@ DateTimeFormatter period symbols compared with IntlDateFormatter (en-US)
 <?php
 
 include __DIR__ . '/include.php';
+include __DIR__ . '/include-intl.php';
 
 $patterns = [
     'a',
@@ -25,88 +26,42 @@ $patterns = [
     'BBBBB',
 ];
 
-$gregorianUs = new time\GregorianCalendar(7, 1);
-
 $samples = [
     'instantMidnight' => time\ZonedDateTime::fromInstant(
         time\Instant::fromYmd(2024, 3, 15, 0, 0, 0),
         time\Zone::fromIdentifier('UTC'),
-        $gregorianUs,
     ),
     'instantBoundaryMidnightPlusOne' => time\ZonedDateTime::fromInstant(
         time\Instant::fromYmd(2024, 3, 15, 0, 0, 1),
         time\Zone::fromIdentifier('UTC'),
-        $gregorianUs,
     ),
     'instantBeforeNoon' => time\ZonedDateTime::fromInstant(
         time\Instant::fromYmd(2024, 3, 15, 11, 59, 59),
         time\Zone::fromIdentifier('UTC'),
-        $gregorianUs,
     ),
     'instantNoonExact' => time\ZonedDateTime::fromInstant(
         time\Instant::fromYmd(2024, 3, 15, 12, 0, 0),
         time\Zone::fromIdentifier('UTC'),
-        $gregorianUs,
     ),
     'instantEvening' => time\ZonedDateTime::fromInstant(
         time\Instant::fromYmd(2024, 3, 15, 18, 0, 0),
         time\Zone::fromIdentifier('UTC'),
-        $gregorianUs,
     ),
     'instantNewYorkEveningFromUtcMidnight' => time\ZonedDateTime::fromInstant(
         time\Instant::fromYmd(2024, 3, 15, 0, 0, 1),
         time\Zone::fromIdentifier('America/New_York'),
-        $gregorianUs,
     ),
     'instantKolkataMorningFromUtcMidnight' => time\ZonedDateTime::fromInstant(
         time\Instant::fromYmd(2024, 3, 15, 0, 0, 1),
         time\Zone::fromIdentifier('Asia/Kolkata'),
-        $gregorianUs,
     ),
     'instantKiritimatiAfternoonFromUtcEvening' => time\ZonedDateTime::fromInstant(
         time\Instant::fromYmd(2024, 3, 15, 23, 30, 0),
         time\Zone::fromIdentifier('Pacific/Kiritimati'),
-        $gregorianUs,
     ),
     'plainTimeFutureLate' => time\PlainTime::fromHms(23, 59, 0),
     'plainTimePastNoon' => time\PlainTime::fromHms(12, 0, 0),
 ];
-
-function timestampForIntl(time\Date|time\Time $date): int|float
-{
-    if ($date instanceof time\Time && !($date instanceof time\Date)) {
-        return ($date->hour * 3600) + ($date->minute * 60) + $date->second;
-    }
-
-    if ($date instanceof time\Instanted) {
-        try {
-            return $date->toUnixTimestampTuple()[0];
-        } catch (Throwable) {
-            // Fallback to calendar-based conversion for non-32-bit-safe inputs.
-        }
-    }
-
-    $days = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
-    $timestamp = $days * 86400;
-
-    if ($date instanceof time\Time) {
-        $timestamp += ($date->hour * 3600) + ($date->minute * 60) + $date->second;
-    }
-
-    if ($date instanceof time\ZonedDateTime) {
-        $timestamp -= $date->offset->totalSeconds;
-    }
-
-    return $timestamp;
-}
-
-function timezoneForIntl(time\Date|time\Time $date): string
-{
-    return match (true) {
-        $date instanceof time\ZonedDateTime => $date->zone->identifier,
-        default => 'UTC',
-    };
-}
 
 $intl = new IntlDateFormatter(
     'en_US',

@@ -6,6 +6,7 @@ DateTimeFormatter month patterns compared with IntlDateFormatter (en-US)
 <?php
 
 include __DIR__ . '/include.php';
+include __DIR__ . '/include-intl.php';
 
 $patterns = [
     'M',
@@ -52,38 +53,6 @@ $samples = [
     'plainDateFuture' => time\PlainDate::fromYmd(10000, 12, 31, $gregorianUs),
 ];
 
-function timestampForIntl(time\Date $date): int|float
-{
-    if ($date instanceof time\Instanted) {
-        try {
-            return $date->toUnixTimestampTuple()[0];
-        } catch (Throwable) {
-            // Fallback to calendar-based conversion for non-32-bit-safe inputs.
-        }
-    }
-
-    $days = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
-    $timestamp = $days * 86400;
-
-    if ($date instanceof time\Time) {
-        $timestamp += ($date->hour * 3600) + ($date->minute * 60) + $date->second;
-    }
-
-    if ($date instanceof time\ZonedDateTime) {
-        $timestamp -= $date->offset->totalSeconds;
-    }
-
-    return $timestamp;
-}
-
-function timezoneForIntl(time\Date $date): string
-{
-    return match (true) {
-        $date instanceof time\ZonedDateTime => $date->zone->identifier,
-        default => 'UTC',
-    };
-}
-
 $intl = new IntlDateFormatter(
     'en_US',
     IntlDateFormatter::NONE,
@@ -93,16 +62,16 @@ $intl = new IntlDateFormatter(
 );
 
 foreach ($samples as $label => $sample) {
-    $timezone = timezoneForIntl($sample);
-    $timestamp = timestampForIntl($sample);
+    $intlTimeZone = timezoneForIntl($sample);
+    $intlTimestamp = timestampForIntl($sample);
 
     foreach ($patterns as $pattern) {
         $formatter = new time\DateTimeFormatter($pattern);
         $timeValue = $formatter->format($sample);
 
         $intl->setPattern($pattern);
-        $intl->setTimeZone($timezone);
-        $intlValue = $intl->format($timestamp);
+        $intl->setTimeZone($intlTimeZone);
+        $intlValue = $intl->format($intlTimestamp);
 
         echo "{$label} pattern {$pattern}\n";
         echo "\ttimelib={$timeValue}\tintl={$intlValue}\n";

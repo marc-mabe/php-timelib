@@ -6,6 +6,7 @@ DateTimeFormatter week symbols compared with IntlDateFormatter (en-GB)
 <?php
 
 include __DIR__ . '/include.php';
+include __DIR__ . '/include-intl.php';
 
 $patterns = [
     "'w:'w 'YYYY:'YYYY",
@@ -44,38 +45,6 @@ $samples = [
     'plainDateYearEndToNextWeek' => time\PlainDate::fromYmd(2024, 12, 30, $gregorianGb),
     'plainDateYearStartLastWeekPrev' => time\PlainDate::fromYmd(2022, 1, 1, $gregorianGb),
 ];
-
-function timestampForIntl(time\Date $date): int|float
-{
-    if ($date instanceof time\Instanted) {
-        try {
-            return $date->toUnixTimestampTuple()[0];
-        } catch (Throwable) {
-            // Fallback to calendar-based conversion for non-32-bit-safe inputs.
-        }
-    }
-
-    $days = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
-    $timestamp = $days * 86400;
-
-    if ($date instanceof time\Time) {
-        $timestamp += ($date->hour * 3600) + ($date->minute * 60) + $date->second;
-    }
-
-    if ($date instanceof time\ZonedDateTime) {
-        $timestamp -= $date->offset->totalSeconds;
-    }
-
-    return $timestamp;
-}
-
-function timezoneForIntl(time\Date $date): string
-{
-    return match (true) {
-        $date instanceof time\ZonedDateTime => $date->zone->identifier,
-        default => 'UTC',
-    };
-}
 
 $intl = new IntlDateFormatter(
     'en_GB',

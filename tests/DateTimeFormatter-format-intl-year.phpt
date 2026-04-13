@@ -6,6 +6,7 @@ DateTimeFormatter year patterns compared with IntlDateFormatter (en-US)
 <?php
 
 include __DIR__ . '/include.php';
+include __DIR__ . '/include-intl.php';
 
 $patterns = [
     'u',
@@ -54,38 +55,6 @@ $samples = [
     'plainDate1BCE' => time\PlainDate::fromYmd(-1, 1, 1, $gregorianUs),
     'plainDatePast' => time\PlainDate::fromYmd(-10000, 1, 1, $gregorianUs),
 ];
-
-function timestampForIntl(time\Date $date): int|float
-{
-    if ($date instanceof time\Instanted) {
-        try {
-            return $date->toUnixTimestampTuple()[0];
-        } catch (Throwable) {
-            // Fallback to calendar-based conversion for non-32-bit-safe inputs.
-        }
-    }
-
-    $days = $date->calendar->getDaysSinceUnixEpochByYmd($date->year, $date->month, $date->dayOfMonth);
-    $timestamp = $days * 86400;
-
-    if ($date instanceof time\Time) {
-        $timestamp += ($date->hour * 3600) + ($date->minute * 60) + $date->second;
-    }
-
-    if ($date instanceof time\ZonedDateTime) {
-        $timestamp -= $date->offset->totalSeconds;
-    }
-
-    return $timestamp;
-}
-
-function timezoneForIntl(time\Date $date): string
-{
-    return match (true) {
-        $date instanceof time\ZonedDateTime => $date->zone->identifier,
-        default => 'UTC',
-    };
-}
 
 $intl = new IntlDateFormatter(
     'en_US',
