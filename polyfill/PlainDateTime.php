@@ -198,11 +198,12 @@ final class PlainDateTime implements Date, Time
     }
 
     /**
-     * @param int<1,366> $dayOfYear
+     * @param int<1,max> $dayOfYear
      * @param int<0,23> $hour
      * @param int<0,59> $minute
      * @param int<0,59> $second
      * @param int<0,999999999> $nanoOfSecond
+     * @throws InvalidValueException
      */
     public static function fromYd(
         int $year,

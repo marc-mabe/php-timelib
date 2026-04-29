@@ -283,7 +283,7 @@ class DateTimeParser
 
     /**
      * @param ParsedFields $parsed
-     * @return int<1,366>
+     * @return int<1,max>
      */
     private function extractDayOfYear(array $parsed): int
     {

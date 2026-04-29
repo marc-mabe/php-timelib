@@ -30,11 +30,13 @@ final class JulianCalendar implements Calendar
         public readonly int $minDaysInFirstWeek = 4,
     ) {}
 
+    /**
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @throws InvalidValueException
+     */
     public function isLeapYear(int $year): bool
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
-        }
+        $this->assertYear($year);
 
         $year = $year < 0 ? $year + 1 : $year;
         return $year % 4 === 0;
@@ -50,58 +52,70 @@ final class JulianCalendar implements Calendar
             : self::DAYS_PER_YEAR_COMMON;
     }
 
-    public function hasYearZero(): bool
+    public function hasYearZero(): false
     {
         return false;
     }
 
     /**
-     * @param int<1,12> $month
      * @return int<28,31>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getDaysInMonth(int $year, int $month): int
     {
+        $this->assertMonthInYear($month);
+
         return $this->isLeapYear($year)
             ? self::DAYS_IN_MONTH_LEAP[$month]
             : self::DAYS_IN_MONTH_COMMON[$month];
     }
 
-    /** @return int<1,12> */
+    /**
+     * @return int<12,12>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     */
     public function getMonthsInYear(int $year): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
-        }
+        $this->assertYear($year);
 
         return 12;
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMonthName(int $year, int $month): string
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
-        }
+        $this->assertYear($year);
 
         return IsoCalendar::getInstance()->getMonthName($year, $month);
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMonthAbbreviation(int $year, int $month): string
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
-        }
+        $this->assertYear($year);
 
         return IsoCalendar::getInstance()->getMonthAbbreviation($year, $month);
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMonthNarrow(int $year, int $month): string
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
-        }
+        $this->assertYear($year);
 
         return IsoCalendar::getInstance()->getMonthNarrow($year, $month);
     }
@@ -118,8 +132,10 @@ final class JulianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getDaysSinceUnixEpochByYmd(int $year, int $month, int $dayOfMonth): int
     {
@@ -130,10 +146,22 @@ final class JulianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,366> $dayOfYear
+     * @param int<1,max> $dayOfYear
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
      */
     public function getDaysSinceUnixEpochByYd(int $year, int $dayOfYear): int
     {
+        $daysInYear = $this->getDaysInYear($year);
+        if ($dayOfYear > $daysInYear) {
+            throw new InvalidValueException(sprintf(
+                'Day of year must be between 1 and %d for Julian year %d, %d given.',
+                $daysInYear,
+                $year,
+                $dayOfYear,
+            ));
+        }
+
         $month       = 1;
         $dayOfMonth  = $dayOfYear;
         $daysInMonth = $this->getDaysInMonth($year, $month);
@@ -152,12 +180,16 @@ final class JulianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<1,366>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getDayOfYearByYmd(int $year, int $month, int $dayOfMonth): int
     {
+        $this->assertMonthInYear($month);
+
         return ($this->isLeapYear($year)
             ? self::DAYS_OF_YEAR_BY_MONTH_LEAP[$month - 1]
             : self::DAYS_OF_YEAR_BY_MONTH_COMMON[$month - 1]
@@ -165,23 +197,26 @@ final class JulianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<7,7>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getDaysInWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         return 7;
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<1,53>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getWeekOfYearByYmd(int $year, int $month, int $dayOfMonth): int
     {
@@ -214,9 +249,11 @@ final class JulianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<0,max>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getWeekOfMonthByYmd(int $year, int $month, int $dayOfMonth): int
     {
@@ -240,8 +277,10 @@ final class JulianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getYearOfWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
@@ -273,9 +312,11 @@ final class JulianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<1,7>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getDayOfWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
@@ -335,9 +376,11 @@ final class JulianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return array{int, int<1,12>, int<1,31>}
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function addPeriodToYmd(
         Period $period,
@@ -345,9 +388,8 @@ final class JulianCalendar implements Calendar
         int $month,
         int $dayOfMonth,
     ): array {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         $year   = $year < 0 ? $year + 1 : $year;
         $bias   = $period->isNegative ? -1 : 1;
@@ -399,7 +441,7 @@ final class JulianCalendar implements Calendar
             || $julianDay <= -self::JDN_OFFSET
         ) {
             throw new RangeError(\sprintf(
-                'The julian day number must be between %s and %s',
+                'The Julian day number must be between %s and %s',
                 -self::JDN_OFFSET + 1,
                 \intdiv(PHP_INT_MAX - self::JDN_OFFSET * 4 + 1, 4)
             ));
@@ -434,12 +476,15 @@ final class JulianCalendar implements Calendar
         return [$year, $month, $dom];
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
+     */
     public function getJdnByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         $year = $year < 0 ? $year + 1 : $year;
 
@@ -460,7 +505,11 @@ final class JulianCalendar implements Calendar
             - self::JDN_OFFSET;
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMjdByYmd(int $year, int $month, int $dayOfMonth): float
     {
         return $this->getJdnByYmd($year, $month, $dayOfMonth) - self::MODIFIED_JULIAN_DAY_OFFSET;
@@ -471,31 +520,37 @@ final class JulianCalendar implements Calendar
         return $this->getYmdByJdn($modifiedJulianDay + self::MODIFIED_JULIAN_DAY_OFFSET);
     }
 
-    public function getMonthNameMap(int $referenceYear): array
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     */
+    public function getMonthNameMap(int $year): array
     {
-        if ($referenceYear === 0) {
-            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
-        }
+        $this->assertYear($year);
 
-        return IsoCalendar::getInstance()->getMonthNameMap($referenceYear < 0 ? $referenceYear + 1 : $referenceYear);
+        return IsoCalendar::getInstance()->getMonthNameMap($year < 0 ? $year + 1 : $year);
     }
 
-    public function getMonthAbbreviationMap(int $referenceYear): array
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     */
+    public function getMonthAbbreviationMap(int $year): array
     {
-        if ($referenceYear === 0) {
-            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
-        }
+        $this->assertYear($year);
 
-        return IsoCalendar::getInstance()->getMonthAbbreviationMap($referenceYear < 0 ? $referenceYear + 1 : $referenceYear);
+        return IsoCalendar::getInstance()->getMonthAbbreviationMap($year < 0 ? $year + 1 : $year);
     }
 
-    public function getMonthNarrowMap(int $referenceYear): array
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     */
+    public function getMonthNarrowMap(int $year): array
     {
-        if ($referenceYear === 0) {
-            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
-        }
+        $this->assertYear($year);
 
-        return IsoCalendar::getInstance()->getMonthNarrowMap($referenceYear < 0 ? $referenceYear + 1 : $referenceYear);
+        return IsoCalendar::getInstance()->getMonthNarrowMap($year < 0 ? $year + 1 : $year);
     }
 
     public function getDayOfWeekAbbreviationMap(): array
@@ -540,5 +595,27 @@ final class JulianCalendar implements Calendar
         }
 
         return $map;
+    }
+
+    /**
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @throws InvalidValueException
+     */
+    private function assertYear(int $year): void
+    {
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the Julian calendar');
+        }
+    }
+
+    /**
+     * @phpstan-assert int<1,12> $month
+     * @throws InvalidValueException
+     */
+    private function assertMonthInYear(int $month): void
+    {
+        if ($month < 1 || $month > 12) {
+            throw new InvalidValueException("Month must be within 1 and 12, {$month} given.");
+        }
     }
 }

@@ -13,7 +13,7 @@ interface Date {
     /** @var int<1,31> $dayOfMonth */
     public int $dayOfMonth { get; }
 
-    /** @var int<1,366> $dayOfYear */
+    /** @var int<1,max> $dayOfYear */
     public int $dayOfYear { get; }
 
     /** @var int<1,max> */

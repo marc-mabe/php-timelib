@@ -16,81 +16,95 @@ final class GregorianCalendar implements Calendar
         public readonly int $minDaysInFirstWeek = 4,
     ) {}
 
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     */
     public function isLeapYear(int $year): bool
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
 
         return IsoCalendar::getInstance()->isLeapYear($year < 0 ? $year + 1 : $year);
     }
 
     /**
      * @return int<365,366>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
      */
     public function getDaysInYear(int $year): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
 
         return IsoCalendar::getInstance()->getDaysInYear($year < 0 ? $year + 1 : $year);
     }
 
-    public function hasYearZero(): bool
+    public function hasYearZero(): false
     {
         return false;
     }
 
     /**
-     * @param int<1,12> $month
      * @return int<28,31>
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
+     * @phpstan-assert int<min,-1>|int<1,max> $year
      */
     public function getDaysInMonth(int $year, int $month): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         return IsoCalendar::getInstance()->getDaysInMonth($year < 0 ? $year + 1 : $year, $month);
     }
 
-    /** @return int<1,12> */
+    /**
+     * @return int<12,12>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     */
     public function getMonthsInYear(int $year): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
 
         return 12;
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMonthName(int $year, int $month): string
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         return IsoCalendar::getInstance()->getMonthName($year < 0 ? $year + 1 : $year, $month);
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMonthAbbreviation(int $year, int $month): string
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         return IsoCalendar::getInstance()->getMonthAbbreviation($year < 0 ? $year + 1 : $year, $month);
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMonthNarrow(int $year, int $month): string
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         return IsoCalendar::getInstance()->getMonthNarrow($year < 0 ? $year + 1 : $year, $month);
     }
@@ -107,14 +121,15 @@ final class GregorianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getDaysSinceUnixEpochByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear( $year);
+        $this->assertMonthInYear($month);
 
         $year = $year < 0 ? $year + 1 : $year;
 
@@ -122,29 +137,38 @@ final class GregorianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,366> $dayOfYear
+     * @param int<1,max> $dayOfYear
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,366> $dayOfYear
      */
     public function getDaysSinceUnixEpochByYd(int $year, int $dayOfYear): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
+        $daysInYear = $this->getDaysInYear($year);
+        if ($dayOfYear > $daysInYear) {
+            throw new InvalidValueException(sprintf(
+                'Day of year must be between 1 and %d for Gregorian year %d, %d given.',
+                $daysInYear,
+                $year,
+                $dayOfYear,
+            ));
         }
 
         $year = $year < 0 ? $year + 1 : $year;
-
         return IsoCalendar::getInstance()->getDaysSinceUnixEpochByYd($year, $dayOfYear);
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<1,366>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getDayOfYearByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         $year = $year < 0 ? $year + 1 : $year;
 
@@ -152,30 +176,29 @@ final class GregorianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<7,7>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getDaysInWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         return 7;
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<1,53>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getWeekOfYearByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
-
         $firstDate = [$year, 1, 1];
         $firstDow  = $this->getDayOfWeekByYmd(...$firstDate);
 
@@ -209,16 +232,14 @@ final class GregorianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<0,max>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getWeekOfMonthByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
-
         $firstDow = $this->getDayOfWeekByYmd($year, $month, 1);
         $daysInWeek = $this->getDaysInWeekByYmd($year, $month, $dayOfMonth);
         $firstDowIso = $this->localDayOfWeekToIso($firstDow);
@@ -239,15 +260,13 @@ final class GregorianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getYearOfWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
-
         $firstDate = [$year, 1, 1];
         $firstDow  = $this->getDayOfWeekByYmd(...$firstDate);
 
@@ -276,15 +295,16 @@ final class GregorianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<1,7>
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function getDayOfWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         $year = $year < 0 ? $year + 1 : $year;
 
@@ -303,25 +323,37 @@ final class GregorianCalendar implements Calendar
         return $dow <= 0 ? $dow + 7 : $dow;
     }
 
-    /** @param int<1,7> $dayOfWeek */
+    /**
+     * @param int<1,7> $dayOfWeek
+     * @throws InvalidValueException
+     */
     public function getDayOfWeekName(int $dayOfWeek): string
     {
         return IsoCalendar::getInstance()->getDayOfWeekName($this->localDayOfWeekToIso($dayOfWeek));
     }
 
-    /** @param int<1,7> $dayOfWeek */
+    /**
+     * @param int<1,7> $dayOfWeek
+     * @throws InvalidValueException
+     */
     public function getDayOfWeekAbbreviation(int $dayOfWeek): string
     {
         return IsoCalendar::getInstance()->getDayOfWeekAbbreviation($this->localDayOfWeekToIso($dayOfWeek));
     }
 
-    /** @param int<1,7> $dayOfWeek */
+    /**
+     * @param int<1,7> $dayOfWeek
+     * @throws InvalidValueException
+     */
     public function getDayOfWeekShort(int $dayOfWeek): string
     {
         return IsoCalendar::getInstance()->getDayOfWeekShort($this->localDayOfWeekToIso($dayOfWeek));
     }
 
-    /** @param int<1,7> $dayOfWeek */
+    /**
+     * @param int<1,7> $dayOfWeek
+     * @throws InvalidValueException
+     */
     public function getDayOfWeekNarrow(int $dayOfWeek): string
     {
         return IsoCalendar::getInstance()->getDayOfWeekNarrow($this->localDayOfWeekToIso($dayOfWeek));
@@ -341,9 +373,11 @@ final class GregorianCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return array{int, int<1,12>, int<1,31>}
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
      */
     public function addPeriodToYmd(
         Period $period,
@@ -351,9 +385,8 @@ final class GregorianCalendar implements Calendar
         int $month,
         int $dayOfMonth,
     ): array {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         if ($year < 0) {
             $year += 1;
@@ -392,18 +425,25 @@ final class GregorianCalendar implements Calendar
         return $ymd;
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
+     */
     public function getJdnByYmd(int $year, int $month, int $dayOfMonth): int
     {
-        if ($year === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
+        $this->assertMonthInYear($month);
 
         $year = $year < 0 ? $year + 1 : $year;
         return IsoCalendar::getInstance()->getJdnByYmd($year, $month, $dayOfMonth);
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMjdByYmd(int $year, int $month, int $dayOfMonth): float
     {
         return $this->getJdnByYmd($year, $month, $dayOfMonth) - self::MODIFIED_JULIAN_DAY_OFFSET;
@@ -414,31 +454,37 @@ final class GregorianCalendar implements Calendar
         return $this->getYmdByJdn($modifiedJulianDay + self::MODIFIED_JULIAN_DAY_OFFSET);
     }
 
-    public function getMonthNameMap(int $referenceYear): array
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     */
+    public function getMonthNameMap(int $year): array
     {
-        if ($referenceYear === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
 
-        return IsoCalendar::getInstance()->getMonthNameMap($referenceYear < 0 ? $referenceYear + 1 : $referenceYear);
+        return IsoCalendar::getInstance()->getMonthNameMap($year < 0 ? $year + 1 : $year);
     }
 
-    public function getMonthAbbreviationMap(int $referenceYear): array
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     */
+    public function getMonthAbbreviationMap(int $year): array
     {
-        if ($referenceYear === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
 
-        return IsoCalendar::getInstance()->getMonthAbbreviationMap($referenceYear < 0 ? $referenceYear + 1 : $referenceYear);
+        return IsoCalendar::getInstance()->getMonthAbbreviationMap($year < 0 ? $year + 1 : $year);
     }
 
-    public function getMonthNarrowMap(int $referenceYear): array
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     */
+    public function getMonthNarrowMap(int $year): array
     {
-        if ($referenceYear === 0) {
-            throw new InvalidValueException('Year zero does not exist in the gregorian calendar');
-        }
+        $this->assertYear($year);
 
-        return IsoCalendar::getInstance()->getMonthNarrowMap($referenceYear < 0 ? $referenceYear + 1 : $referenceYear);
+        return IsoCalendar::getInstance()->getMonthNarrowMap($year < 0 ? $year + 1 : $year);
     }
 
     public function getDayOfWeekAbbreviationMap(): array
@@ -483,5 +529,27 @@ final class GregorianCalendar implements Calendar
         }
 
         return $map;
+    }
+
+    /**
+     * @phpstan-assert int<min,-1>|int<1,max> $year
+     * @throws InvalidValueException
+     */
+    private function assertYear(int $year): void
+    {
+        if ($year === 0) {
+            throw new InvalidValueException('Year zero does not exist in the Gregorian calendar');
+        }
+    }
+
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
+     */
+    private function assertMonthInYear(int $month): void
+    {
+        if ($month < 1 || $month > 12) {
+            throw new InvalidValueException("Month must be within 1 and 12, {$month} given.");
+        }
     }
 }

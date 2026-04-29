@@ -287,7 +287,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     }
 
     /**
-     * @param int<1,366> $dayOfYear
+     * @param int<1,max> $dayOfYear
      * @param int<0,23> $hour
      * @param int<0,59> $minute
      * @param int<0,59> $second

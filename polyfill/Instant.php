@@ -40,10 +40,12 @@ final class Instant implements Instanted, Date, Time, Zoned
         get => $this->ymd[1];
     }
 
+    /** @var int<28,31> */
     public int $dayOfMonth {
         get => $this->ymd[2];
     }
 
+    /** @var int<355,366> */
     public int $dayOfYear {
         get => $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
     }

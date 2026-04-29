@@ -96,45 +96,60 @@ final class IsoCalendar implements Calendar
             : self::DAYS_PER_YEAR_COMMON;
     }
 
-    public function hasYearZero(): bool
+    public function hasYearZero(): true
     {
         return true;
     }
 
     /**
-     * @param int<1,12> $month
      * @return int<28,31>
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
      */
     public function getDaysInMonth(int $year, int $month): int
     {
+        $this->assertMonthInYear($month);
+
         return $this->isLeapYear($year)
             ? self::DAYS_IN_MONTH_LEAP[$month]
             : self::DAYS_IN_MONTH_COMMON[$month];
     }
 
-    /** @return int<1,12> */
+    /** @return int<12,12> */
     public function getMonthsInYear(int $year): int
     {
         return 12;
     }
 
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMonthName(int $year, int $month): string
     {
-        $this->assertMonthInYear($year, $month);
+        $this->assertMonthInYear($month);
 
         return self::MONTH_LABEL_WIDE[$month];
     }
 
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMonthAbbreviation(int $year, int $month): string
     {
-        $this->assertMonthInYear($year, $month);
+        $this->assertMonthInYear($month);
 
         return self::MONTH_LABEL_ABBREVIATION[$month];
     }
 
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMonthNarrow(int $year, int $month): string
     {
-        $this->assertMonthInYear($year, $month);
+        $this->assertMonthInYear($month);
 
         return self::MONTH_LABEL_NARROW[$month];
     }
@@ -178,11 +193,14 @@ final class IsoCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
      */
     public function getDaysSinceUnixEpochByYmd(int $year, int $month, int $dayOfMonth): int
     {
+        $this->assertMonthInYear($month);
+
         // adjust leap days to the end of the year and month between 0 and 11
         if ($month <= 2) {
             $year -= 1;
@@ -205,10 +223,21 @@ final class IsoCalendar implements Calendar
     }
 
     /**
-     * @param int<1,366> $dayOfYear
+     * @param int<1,max> $dayOfYear
+     * @phpstan-assert int<1,366> $dayOfYear
      */
     public function getDaysSinceUnixEpochByYd(int $year, int $dayOfYear): int
     {
+        $daysInYear = $this->getDaysInYear($year);
+        if ($dayOfYear > $daysInYear) {
+            throw new InvalidValueException(sprintf(
+                'Day of year must be between 1 and %d for ISO year %d, %d given.',
+                $daysInYear,
+                $year,
+                $dayOfYear,
+            ));
+        }
+
         $daysOfYearByMonth = self::isLeapYear($year)
             ? self::DAYS_OF_YEAR_BY_MONTH_LEAP
             : self::DAYS_OF_YEAR_BY_MONTH_COMMON;
@@ -228,12 +257,15 @@ final class IsoCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<1,366>
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
      */
     public function getDayOfYearByYmd(int $year, int $month, int $dayOfMonth): int
     {
+        $this->assertMonthInYear($month);
+
         return ($this->isLeapYear($year)
             ? self::DAYS_OF_YEAR_BY_MONTH_LEAP[$month - 1]
             : self::DAYS_OF_YEAR_BY_MONTH_COMMON[$month - 1]
@@ -241,22 +273,28 @@ final class IsoCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<7,7>
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
      */
     public function getDaysInWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
+        $this->assertMonthInYear($month);
+
         return 7;
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<1,53>
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
      */
     public function getWeekOfYearByYmd(int $year, int $month, int $dayOfMonth): int
     {
+        $this->assertMonthInYear($month);
+
         $firstDate = [$year, 1, 1];
         $firstDow  = $this->getDayOfWeekByYmd(...$firstDate);
 
@@ -286,9 +324,10 @@ final class IsoCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<0,max>
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
      */
     public function getWeekOfMonthByYmd(int $year, int $month, int $dayOfMonth): int
     {
@@ -308,8 +347,9 @@ final class IsoCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
      */
     public function getYearOfWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
@@ -341,9 +381,10 @@ final class IsoCalendar implements Calendar
     }
 
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return int<1,7>
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
      */
     public function getDayOfWeekByYmd(int $year, int $month, int $dayOfMonth): int
     {
@@ -363,6 +404,10 @@ final class IsoCalendar implements Calendar
         return $dow;
     }
 
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,7> $dayOfWeek
+     */
     public function getDayOfWeekName(int $dayOfWeek): string
     {
         $this->assertIsoDayOfWeek($dayOfWeek);
@@ -370,6 +415,10 @@ final class IsoCalendar implements Calendar
         return self::DAY_OF_WEEK_LABEL_WIDE[$dayOfWeek];
     }
 
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,7> $dayOfWeek
+     */
     public function getDayOfWeekAbbreviation(int $dayOfWeek): string
     {
         $this->assertIsoDayOfWeek($dayOfWeek);
@@ -377,6 +426,10 @@ final class IsoCalendar implements Calendar
         return self::DAY_OF_WEEK_LABEL_ABBREVIATION[$dayOfWeek];
     }
 
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,7> $dayOfWeek
+     */
     public function getDayOfWeekShort(int $dayOfWeek): string
     {
         $this->assertIsoDayOfWeek($dayOfWeek);
@@ -384,6 +437,10 @@ final class IsoCalendar implements Calendar
         return self::DAY_OF_WEEK_LABEL_SHORT[$dayOfWeek];
     }
 
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,7> $dayOfWeek
+     */
     public function getDayOfWeekNarrow(int $dayOfWeek): string
     {
         $this->assertIsoDayOfWeek($dayOfWeek);
@@ -392,31 +449,31 @@ final class IsoCalendar implements Calendar
     }
 
     /**
-     * @param int $referenceYear Unused for ISO; required by {@see Calendar}.
+     * @param int $year Unused for ISO; required by {@see Calendar}.
      *
      * @return array<int<1,12>, non-empty-string>
      */
-    public function getMonthNameMap(int $referenceYear): array
+    public function getMonthNameMap(int $year): array
     {
         return self::MONTH_LABEL_WIDE;
     }
 
     /**
-     * @param int $referenceYear Unused for ISO; required by {@see Calendar}.
+     * @param int $year Unused for ISO; required by {@see Calendar}.
      *
      * @return array<int<1,12>, non-empty-string>
      */
-    public function getMonthAbbreviationMap(int $referenceYear): array
+    public function getMonthAbbreviationMap(int $year): array
     {
         return self::MONTH_LABEL_ABBREVIATION;
     }
 
     /**
-     * @param int $referenceYear Unused for ISO; required by {@see Calendar}.
+     * @param int $year Unused for ISO; required by {@see Calendar}.
      *
      * @return array<int<1,12>, non-empty-string>
      */
-    public function getMonthNarrowMap(int $referenceYear): array
+    public function getMonthNarrowMap(int $year): array
     {
         return self::MONTH_LABEL_NARROW;
     }
@@ -445,25 +502,11 @@ final class IsoCalendar implements Calendar
         return self::DAY_OF_WEEK_LABEL_SHORT;
     }
 
-    private function assertMonthInYear(int $year, int $month): void
-    {
-        $max = $this->getMonthsInYear($year);
-        if ($month < 1 || $month > $max) {
-            throw new InvalidValueException("Month must be within 1 and {$max}, {$month} given.");
-        }
-    }
-
-    private function assertIsoDayOfWeek(int $dayOfWeek): void
-    {
-        if ($dayOfWeek < 1 || $dayOfWeek > 7) {
-            throw new InvalidValueException("Day of week must be within 1 and 7, {$dayOfWeek} given.");
-        }
-    }
-
     /**
-     * @param int<1,12> $month
      * @param int<1,31> $dayOfMonth
      * @return array{int, int<1,12>, int<1,31>}
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
      */
     public function addPeriodToYmd(
         Period $period,
@@ -471,6 +514,8 @@ final class IsoCalendar implements Calendar
         int $month,
         int $dayOfMonth,
     ): array {
+        $this->assertMonthInYear($month);
+
         $bias   = $period->isNegative ? -1 : 1;
         $year   = $year + $period->years * $bias;
         $month  = $month + $period->months * $bias;
@@ -555,9 +600,14 @@ final class IsoCalendar implements Calendar
         return [$year, $month, $dom];
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
+     */
     public function getJdnByYmd(int $year, int $month, int $dayOfMonth): int
     {
+        $this->assertMonthInYear($month);
+
         $daysPer5Month = 153;
         $daysPer4Years = 1461;
 
@@ -579,7 +629,10 @@ final class IsoCalendar implements Calendar
             - self::JDN_OFFSET;
     }
 
-    /** @param int<1,12> $month */
+    /**
+     * @throws InvalidValueException
+     * @phpstan-assert int<1,12> $month
+     */
     public function getMjdByYmd(int $year, int $month, int $dayOfMonth): float
     {
         return $this->getJdnByYmd($year, $month, $dayOfMonth) - self::MODIFIED_JULIAN_DAY_OFFSET;
@@ -588,5 +641,27 @@ final class IsoCalendar implements Calendar
     public function getYmdByMjd(int|float $modifiedJulianDay): array
     {
         return $this->getYmdByJdn($modifiedJulianDay + self::MODIFIED_JULIAN_DAY_OFFSET);
+    }
+
+    /**
+     * @phpstan-assert int<1,12> $month
+     * @throws InvalidValueException
+     */
+    private function assertMonthInYear(int $month): void
+    {
+        if ($month < 1 || $month > 12) {
+            throw new InvalidValueException("Month must be within 1 and 12, {$month} given.");
+        }
+    }
+
+    /**
+     * @phpstan-assert int<1,7> $dayOfWeek
+     * @throws InvalidValueException
+     */
+    private function assertIsoDayOfWeek(int $dayOfWeek): void
+    {
+        if ($dayOfWeek < 1 || $dayOfWeek > 7) {
+            throw new InvalidValueException("Day of week must be within 1 and 7, {$dayOfWeek} given.");
+        }
     }
 }

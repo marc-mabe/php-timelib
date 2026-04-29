@@ -87,7 +87,8 @@ final class PlainDate implements Date
     }
 
     /**
-     * @param int<1,366> $dayOfYear
+     * @param int<1,max> $dayOfYear
+     * @throws InvalidValueException
      */
     public static function fromYd(
         int $year,

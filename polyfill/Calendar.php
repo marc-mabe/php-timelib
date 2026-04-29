@@ -38,7 +38,7 @@ interface Calendar
     public function getMonthsInYear(int $year): int;
 
     /**
-     * Returns the english name of the given month.
+     * Returns the English name of the given month.
      *
      * @param int<1,99> $month
      * @return non-empty-string
@@ -46,7 +46,7 @@ interface Calendar
     public function getMonthName(int $year, int $month): string;
 
     /**
-     * Returns the english abbreviation of the given month.
+     * Returns the English abbreviation of the given month.
      *
      * @param int<1,99> $month
      * @return non-empty-string
@@ -54,7 +54,7 @@ interface Calendar
     public function getMonthAbbreviation(int $year, int $month): string;
 
     /**
-     * Returns a narrow english month label (CLDR-style; letters may repeat).
+     * Returns a narrow English month label (CLDR-style; letters may repeat).
      *
      * @param int<1,99> $month
      * @return non-empty-string
@@ -62,7 +62,7 @@ interface Calendar
     public function getMonthNarrow(int $year, int $month): string;
 
     /**
-     * Calculates the year, month and day of month from the given number of days since unix epoch.
+     * Calculates the year, month, and day of month from the given number of days since unix epoch.
      *
      * @return array{int, int<1,99>, int<1,31>}
      */
@@ -79,7 +79,7 @@ interface Calendar
 
     /**
      * @param int $year
-     * @param int<1,366> $dayOfYear
+     * @param int<1,max> $dayOfYear
      * @return int
      */
     public function getDaysSinceUnixEpochByYd(int $year, int $dayOfYear): int;
@@ -87,7 +87,7 @@ interface Calendar
     /**
      * @param int<1,99> $month
      * @param int<1,31> $dayOfMonth
-     * @return int<1,366>
+     * @return int<1,max>
      */
     public function getDayOfYearByYmd(int $year, int $month, int $dayOfMonth): int;
 
@@ -136,7 +136,7 @@ interface Calendar
     public function getDayOfWeekByYmd(int $year, int $month, int $dayOfMonth): int;
 
     /**
-     * Returns the english name of the given day-of-week.
+     * Returns the English name of the given day-of-week.
      *
      * @param int<1,max> $dayOfWeek
      * @return non-empty-string
@@ -144,7 +144,7 @@ interface Calendar
     public function getDayOfWeekName(int $dayOfWeek): string;
 
     /**
-     * Returns the english abbreviation of the given day-of-week.
+     * Returns the English abbreviation of the given day-of-week.
      *
      * @param int<1,max> $dayOfWeek
      * @return non-empty-string
@@ -152,7 +152,7 @@ interface Calendar
     public function getDayOfWeekAbbreviation(int $dayOfWeek): string;
 
     /**
-     * Returns a short english weekday label (e.g. Mo, Tu).
+     * Returns a short English weekday label (e.g. Mo, Tu).
      *
      * @param int<1,max> $dayOfWeek
      * @return non-empty-string
@@ -230,17 +230,17 @@ interface Calendar
      *
      * @return array<int<1,max>, non-empty-string>
      */
-    public function getMonthNameMap(int $referenceYear): array;
+    public function getMonthNameMap(int $year): array;
 
     /**
      * @return array<int<1,max>, non-empty-string>
      */
-    public function getMonthAbbreviationMap(int $referenceYear): array;
+    public function getMonthAbbreviationMap(int $year): array;
 
     /**
      * @return array<int<1,max>, non-empty-string>
      */
-    public function getMonthNarrowMap(int $referenceYear): array;
+    public function getMonthNarrowMap(int $year): array;
 
     /**
      * Weekday abbreviations keyed by this calendar’s local day-of-week index (same as {@see getDayOfWeekAbbreviation}).
