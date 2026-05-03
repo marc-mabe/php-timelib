@@ -9,11 +9,6 @@ class Zone
     /** @var array<string, Zone> Registered zones by identifier */
     private static array $registry = [];
 
-    public string $name {
-        // FIXME: How to detect the human readable name of a time zone?
-        get => $this->identifier;
-    }
-
     /**
      * The time offset in case the zone is based on a fixed offset
      */
