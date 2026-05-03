@@ -6,7 +6,7 @@ require_once __DIR__ . '/include.php';
 
 class Zone
 {
-    /** @var array<string, Zone> Registered zones by identifier */
+    /** @var array<non-empty-string, Zone> Registered zones by identifier */
     private static array $registry = [];
 
     /**
@@ -16,6 +16,9 @@ class Zone
         get => $this->info->fixedOffset;
     }
 
+    /**
+     * @param non-empty-string $identifier
+     */
     protected function __construct(
         public readonly string $identifier,
         public readonly ZoneInfo $info,
@@ -186,6 +189,11 @@ class Zone
             }
         };
 
-        return new Zone($legacy->getName(), $info);
+        // The legacy method `getName()` returns the timezone-DB identifier, offset or abbreviation.
+        // Here we checked for an abbreviation already so this is fine as identifier.
+        $identifier = $legacy->getName();
+        \assert(\strlen($identifier) > 0);
+
+        return new Zone($identifier, $info);
     }
 }
