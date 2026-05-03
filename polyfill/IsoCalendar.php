@@ -101,6 +101,11 @@ final class IsoCalendar implements Calendar
         return true;
     }
 
+    public function getDayBoundary(): DayBoundary
+    {
+        return DayBoundary::Midnight;
+    }
+
     /**
      * @return int<28,31>
      * @throws InvalidValueException

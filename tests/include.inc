@@ -116,5 +116,12 @@ function stringify(mixed $v) {
         $v instanceof Interval => stringifyInterval($v),
         $v instanceof RepeatingInterval => stringifyRepeatingInterval($v),
         is_array($v) && array_is_list($v) => '[' . implode(', ', array_map('stringify', $v)) . ']',
+        is_array($v) => '[' . (function () use ($v) {
+            $items = [];
+            foreach ($v as $k => $v) {
+                $items[] = stringify($k) . ' => ' . stringify($v);
+            }
+            return implode(', ', $items);
+        })() . ']',
     };
 }

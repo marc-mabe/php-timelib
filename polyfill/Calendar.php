@@ -24,6 +24,14 @@ interface Calendar
     public function hasYearZero(): bool;
 
     /**
+     * Returns whether the calendar’s civil day starts at midnight or at sunset.
+     *
+     * This marker is informational only; calendars with a sunset boundary still
+     * require location-aware conversion logic when mapping instants to civil dates.
+     */
+    public function getDayBoundary(): DayBoundary;
+
+    /**
      * Calculates the number of days in the given month.
      *
      * @param int<1,99> $month
@@ -267,10 +275,9 @@ interface Calendar
     /**
      * Adds the given period to the given calendar date field values.
      * 
-     * @param \time\Period $period
      * @param int $year
-     * @param int $month
-     * @param int $dayOfMonth
+     * @param int<1,99> $month
+     * @param int<1,31> $dayOfMonth
      * @return array{int, int<1,99>, int<1,31>}
      */
     public function addPeriodToYmd(

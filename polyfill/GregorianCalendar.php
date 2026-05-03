@@ -44,6 +44,11 @@ final class GregorianCalendar implements Calendar
         return false;
     }
 
+    public function getDayBoundary(): DayBoundary
+    {
+        return DayBoundary::Midnight;
+    }
+
     /**
      * @return int<28,31>
      * @throws InvalidValueException
