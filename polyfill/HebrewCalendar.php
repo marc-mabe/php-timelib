@@ -593,8 +593,6 @@ final class HebrewCalendar implements Calendar
             );
         }
 
-        $month = \min($month, $this->getMonthsInYear($year));
-
         $month += $period->months * $bias;
         $monthsInYear = $this->getMonthsInYear($year);
         while ($month > $monthsInYear) {
