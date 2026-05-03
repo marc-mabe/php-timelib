@@ -1,12 +1,12 @@
 --TEST--
-DayOfWeek->distance
+IsoDayOfWeek->distance
 --FILE--
 <?php
 
 include __DIR__ . '/include.inc';
 
-foreach (time\DayOfWeek::cases() as $dow) {
-    foreach (time\DayOfWeek::cases() as $other) {
+foreach (time\IsoDayOfWeek::cases() as $dow) {
+    foreach (time\IsoDayOfWeek::cases() as $other) {
         echo $dow->name . ' to ' . $other->name . ': ' . $dow->distance($other) . "\n";
     }
 }

@@ -1,11 +1,11 @@
 --TEST--
-DayOfWeek->getPrevious & DayOfWeek->getNext
+IsoDayOfWeek->getPrevious & IsoDayOfWeek->getNext
 --FILE--
 <?php
 
 include __DIR__ . '/include.inc';
 
-foreach (time\DayOfWeek::cases() as $dow) {
+foreach (time\IsoDayOfWeek::cases() as $dow) {
     echo $dow->name . ': ' . $dow->getPrevious()->name . ' - ' . $dow->getNext()->name . "\n";
 }
 

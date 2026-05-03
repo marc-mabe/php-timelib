@@ -2,45 +2,17 @@
 
 namespace time;
 
-enum DayOfWeek
+enum IsoDayOfWeek: int
 {
-    case Monday;
-    case Tuesday;
-    case Wednesday;
-    case Thursday;
-    case Friday;
-    case Saturday;
-    case Sunday;
+    case Monday = 1;
+    case Tuesday = 2;
+    case Wednesday = 3;
+    case Thursday = 4;
+    case Friday = 5;
+    case Saturday = 6;
+    case Sunday = 7;
 
-    /** @return int<1,7> */
-    public function getIsoNumber(): int
-    {
-        return match ($this) {
-            self::Monday    => 1,
-            self::Tuesday   => 2,
-            self::Wednesday => 3,
-            self::Thursday  => 4,
-            self::Friday    => 5,
-            self::Saturday  => 6,
-            self::Sunday    => 7,
-        };
-    }
-
-    /** @param int<1,7> $isoNumber */
-    public static function fromIsoNumber(int $isoNumber): self
-    {
-        return match ($isoNumber) {
-            1 => self::Monday,
-            2 => self::Tuesday,
-            3 => self::Wednesday,
-            4 => self::Thursday,
-            5 => self::Friday,
-            6 => self::Saturday,
-            7 => self::Sunday,
-        };
-    }
-
-    public function getPrevious(): DayOfWeek
+    public function getPrevious(): IsoDayOfWeek
     {
         return match ($this) {
             self::Monday    => self::Sunday,
@@ -53,7 +25,7 @@ enum DayOfWeek
         };
     }
 
-    public function getNext(): DayOfWeek
+    public function getNext(): IsoDayOfWeek
     {
         return match ($this) {
             self::Monday    => self::Tuesday,
@@ -71,9 +43,9 @@ enum DayOfWeek
      *
      * @return int<-3,3>
      */
-    public function distance(DayOfWeek $other): int
+    public function distance(IsoDayOfWeek $other): int
     {
-        $distance = $other->getIsoNumber() - $this->getIsoNumber();
+        $distance = $other->value - $this->value;
 
         if ($distance > 3) {
             $distance -= 7;

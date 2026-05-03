@@ -21,12 +21,10 @@ final class JulianCalendar implements Calendar
     private const int JDN_OFFSET = 32083;
 
     /**
-     * @param int<1,7> $firstDayOfWeekIso  Defines the first day of the week using ISO numbering system
-     *                                     (1: Mon, ... 7: Sun).
      * @param int<1,7> $minDaysInFirstWeek Defined the minimum number of days of the first week of the year.
      */
     public function __construct(
-        public readonly int $firstDayOfWeekIso = 1,
+        public readonly IsoDayOfWeek $firstDayOfWeek = IsoDayOfWeek::Monday,
         public readonly int $minDaysInFirstWeek = 4,
     ) {}
 
@@ -265,7 +263,7 @@ final class JulianCalendar implements Calendar
         $firstDow = $this->getDayOfWeekByYmd($year, $month, 1);
         $daysInWeek = $this->getDaysInWeekByYmd($year, $month, $dayOfMonth);
         $firstDowIso = $this->localDayOfWeekToIso($firstDow);
-        $firstWeekStartDay = (($this->firstDayOfWeekIso - $firstDowIso + $daysInWeek) % $daysInWeek) + 1;
+        $firstWeekStartDay = (($this->firstDayOfWeek->value - $firstDowIso + $daysInWeek) % $daysInWeek) + 1;
         $daysBeforeFirstWeek = $firstWeekStartDay - 1;
 
         $weekOfMonth = match (true) {
@@ -339,7 +337,7 @@ final class JulianCalendar implements Calendar
         $iso = $iso - 4;                    // -4 (Wed) - 2 (Tue)
         $iso = $iso <= 0 ? $iso + 7 : $iso; //  1 (Mon) - 7 (Sun)
 
-        $dow = $iso - $this->firstDayOfWeekIso;
+        $dow = $iso - $this->firstDayOfWeek->value;
         return $dow <= 0 ? $dow + 7 : $dow;
     }
 
@@ -373,7 +371,7 @@ final class JulianCalendar implements Calendar
      */
     private function localDayOfWeekToIso(int $dayOfWeek): int
     {
-        $iso = $dayOfWeek + $this->firstDayOfWeekIso;
+        $iso = $dayOfWeek + $this->firstDayOfWeek->value;
         $iso = $iso > 7 ? $iso - 7 : $iso;
         /** @var int<1,7> $iso */
 

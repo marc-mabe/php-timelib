@@ -14,7 +14,7 @@ $patterns = [
     "'W:'W 'YYYY:'Y",
 ];
 
-$gregorianGb = new time\GregorianCalendar(1, 4);
+$gregorianGb = new time\GregorianCalendar(time\IsoDayOfWeek::Monday, 4);
 
 $samples = [
     'instant' => time\Instant::fromYmd(2024, 3, 15, 14, 30, 45, 123456789),

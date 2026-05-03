@@ -7,7 +7,7 @@ include __DIR__ . '/include.inc';
 
 $calendars = [
     new time\GregorianCalendar(),     // ISO
-    new time\GregorianCalendar(7, 1), // US
+    new time\GregorianCalendar(time\IsoDayOfWeek::Sunday, 1), // US
 ];
 
 $dates = [
@@ -48,7 +48,7 @@ $dates = [
 ];
 
 foreach ($calendars as $cal) {
-    echo "firstDayOfIsoWeek: {$cal->firstDayOfIsoWeek}, minDaysInFirstWeek: {$cal->minDaysInFirstWeek}\n";
+    echo "firstDayOfWeek: " . stringify($cal->firstDayOfWeek) . ", minDaysInFirstWeek: {$cal->minDaysInFirstWeek}\n";
     foreach ($dates as $ymd) {
         echo stringify($ymd)
             . "\t{$cal->getDayOfWeekByYmd(...$ymd)} ({$cal->getDayOfWeekAbbreviation($cal->getDayOfWeekByYmd(...$ymd))})"
@@ -60,7 +60,7 @@ foreach ($calendars as $cal) {
 }
 
 --EXPECT--
-firstDayOfIsoWeek: 1, minDaysInFirstWeek: 4
+firstDayOfWeek: time\IsoDayOfWeek::Monday, minDaysInFirstWeek: 4
 [2005, 1, 1]	6 (Sat)	W53	2004
 [2005, 1, 2]	7 (Sun)	W53	2004
 [2005, 12, 31]	6 (Sat)	W52	2005
@@ -96,7 +96,7 @@ firstDayOfIsoWeek: 1, minDaysInFirstWeek: 4
 [2010, 1, 3]	7 (Sun)	W53	2009
 [2010, 1, 4]	1 (Mon)	W1	2010
 -----
-firstDayOfIsoWeek: 7, minDaysInFirstWeek: 1
+firstDayOfWeek: time\IsoDayOfWeek::Sunday, minDaysInFirstWeek: 1
 [2005, 1, 1]	7 (Sat)	W1	2005
 [2005, 1, 2]	1 (Sun)	W2	2005
 [2005, 12, 31]	7 (Sat)	W53	2005

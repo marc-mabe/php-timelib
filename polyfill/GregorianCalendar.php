@@ -7,12 +7,10 @@ final class GregorianCalendar implements Calendar
     private const int MODIFIED_JULIAN_DAY_OFFSET = 2400001;
 
     /**
-     * @param int<1,7> $firstDayOfIsoWeek  Defines the first day of the week using ISO numbering system
-     *                                     (1: Mon, ... 7: Sun).
      * @param int<1,7> $minDaysInFirstWeek Defined the minimum number of days of the first week of the year.
      */
     public function __construct(
-        public readonly int $firstDayOfIsoWeek  = 1,
+        public readonly IsoDayOfWeek $firstDayOfWeek = IsoDayOfWeek::Monday,
         public readonly int $minDaysInFirstWeek = 4,
     ) {}
 
@@ -248,7 +246,7 @@ final class GregorianCalendar implements Calendar
         $firstDow = $this->getDayOfWeekByYmd($year, $month, 1);
         $daysInWeek = $this->getDaysInWeekByYmd($year, $month, $dayOfMonth);
         $firstDowIso = $this->localDayOfWeekToIso($firstDow);
-        $firstWeekStartDay = (($this->firstDayOfIsoWeek - $firstDowIso + $daysInWeek) % $daysInWeek) + 1;
+        $firstWeekStartDay = (($this->firstDayOfWeek->value - $firstDowIso + $daysInWeek) % $daysInWeek) + 1;
         $daysBeforeFirstWeek = $firstWeekStartDay - 1;
 
         $weekOfMonth = match (true) {
@@ -314,7 +312,7 @@ final class GregorianCalendar implements Calendar
         $year = $year < 0 ? $year + 1 : $year;
 
         $iso = IsoCalendar::getInstance()->getDayOfWeekByYmd($year, $month, $dayOfMonth);
-        $dow = $iso - ($this->firstDayOfIsoWeek - 1);
+        $dow = $iso - ($this->firstDayOfWeek->value - 1);
 
         return $dow <= 0 ? $dow + 7 : $dow;
     }
@@ -323,7 +321,7 @@ final class GregorianCalendar implements Calendar
     public function getDayOfWeekByDaysSinceUnixEpoch(int $days): int
     {
         $iso = IsoCalendar::getInstance()->getDayOfWeekByDaysSinceUnixEpoch($days);
-        $dow = $iso - ($this->firstDayOfIsoWeek - 1);
+        $dow = $iso - ($this->firstDayOfWeek->value - 1);
 
         return $dow <= 0 ? $dow + 7 : $dow;
     }
@@ -370,7 +368,7 @@ final class GregorianCalendar implements Calendar
      */
     private function localDayOfWeekToIso(int $dayOfWeek): int
     {
-        $iso = $dayOfWeek + ($this->firstDayOfIsoWeek - 1);
+        $iso = $dayOfWeek + ($this->firstDayOfWeek->value - 1);
         $iso = $iso > 7 ? $iso - 7 : $iso;
         /** @var int<1,7> $iso */
 

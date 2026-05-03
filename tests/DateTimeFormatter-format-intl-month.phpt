@@ -21,7 +21,7 @@ $patterns = [
     'LLLLL',
 ];
 
-$gregorianUs = new time\GregorianCalendar(7, 1);
+$gregorianUs = new time\GregorianCalendar(time\IsoDayOfWeek::Sunday, 1);
 
 $samples = [
     'instant' => time\Instant::fromYmd(2024, 3, 15, 14, 30, 45, 123456789),

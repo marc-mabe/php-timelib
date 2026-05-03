@@ -22,11 +22,11 @@ echo "cycle: " . ($cycleOk ? 'ok' : 'fail') . "\n";
 echo "months-2: {$cal->getMonthsInYear(2)}\n";
 echo "months-8: {$cal->getMonthsInYear(8)}\n";
 echo "day-boundary: {$cal->getDayBoundary()->name}\n";
-echo "firstDayOfWeek: {$cal->firstDayOfIsoWeek}, minDaysInFirstWeek: {$cal->minDaysInFirstWeek}\n";
+echo "firstDayOfWeek: " . stringify($cal->firstDayOfWeek) . ", minDaysInFirstWeek: {$cal->minDaysInFirstWeek}\n";
 
 --EXPECT--
 cycle: ok
 months-2: 12
 months-8: 13
 day-boundary: Sunset
-firstDayOfWeek: 7, minDaysInFirstWeek: 1
+firstDayOfWeek: time\IsoDayOfWeek::Sunday, minDaysInFirstWeek: 1

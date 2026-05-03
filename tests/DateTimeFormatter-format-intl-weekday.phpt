@@ -26,7 +26,7 @@ $patterns = [
     'ccccc',
 ];
 
-$gregorianUs = new time\GregorianCalendar(7, 1);
+$gregorianUs = new time\GregorianCalendar(time\IsoDayOfWeek::Sunday, 1);
 
 $samples = [
     'zdtUtc' => time\ZonedDateTime::fromInstant(

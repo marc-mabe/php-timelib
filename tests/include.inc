@@ -14,6 +14,7 @@ use time\ZonedDateTime;
 use time\ZoneInfo;
 use time\ZoneTransition;
 use time\Interval;
+use time\IsoDayOfWeek;
 use time\RepeatingInterval;
 
 include __DIR__ . '/../vendor/autoload.php';
@@ -123,5 +124,6 @@ function stringify(mixed $v) {
             }
             return implode(', ', $items);
         })() . ']',
+        default => var_export($v, true),
     };
 }
