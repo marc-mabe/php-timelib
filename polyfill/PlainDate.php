@@ -33,16 +33,16 @@ final class PlainDate implements Date
 
     /** @var int<1,max> */
     public int $weekOfYear {
-        get => $this->calendar->getWeekOfYearByYmd($this->year, $this->month, $this->dayOfMonth);
+        get => $this->calendar->getWeekOfYearByYmd(...$this->ymd);
     }
 
     public int $yearOfWeek {
-        get => $this->calendar->getYearOfWeekByYmd($this->year, $this->month, $this->dayOfMonth);
+        get => $this->calendar->getYearOfWeekByYmd(...$this->ymd);
     }
 
     /** @var int<0,max> */
     public int $weekOfMonth {
-        get => $this->calendar->getWeekOfMonthByYmd($this->year, $this->month, $this->dayOfMonth);
+        get => $this->calendar->getWeekOfMonthByYmd(...$this->ymd);
     }
 
     private function __construct(

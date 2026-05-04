@@ -32,7 +32,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
     }
 
     public int $dayOfYear {
-        get => $this->calendar->getDayOfYearByYmd($this->ymd[0], $this->ymd[1], $this->ymd[2]);
+        get => $this->calendar->getDayOfYearByYmd(...$this->ymd);
     }
 
     public int $dayOfWeek {
@@ -129,12 +129,12 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
             );
         }
 
-        $ymdHms = $this->calendar->addPeriodToYmd($durationOrPeriod, ...$this->ymd);
+        $ymd = $this->calendar->addPeriodToYmd($durationOrPeriod, ...$this->ymd);
 
         return self::fromYmd(
-            year: $ymdHms[0],
-            month: $ymdHms[1],
-            dayOfMonth: $ymdHms[2],
+            year: $ymd[0],
+            month: $ymd[1],
+            dayOfMonth: $ymd[2],
             hour: $this->hour,
             minute: $this->minute,
             second: $this->second,
@@ -425,9 +425,9 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         if ($minStart <= $localTs && $minEnd > $localTs) {
             if ($maxStart <= $localTs) {
                 return match ($disambiguation) {
-                    Disambiguation::EARLIER    => $minTran->offset,
-                    Disambiguation::LATER      => $maxTran->offset,
+                    Disambiguation::EARLIER,
                     Disambiguation::COMPATIBLE => $minTran->offset,
+                    Disambiguation::LATER      => $maxTran->offset,
                     Disambiguation::REJECT     => throw new AmbiguousValueException(sprintf(
                         "Ambiguous date-time '%s' for zone '%s'",
                         new LagacyDateTimeFormatter('Y-m-d H:i:s')->format(Instant::fromUnixTimestampTuple([$localTs, 0])),
@@ -442,7 +442,7 @@ final class ZonedDateTime implements Instanted, Date, Time, Zoned
         if ($maxStart > $localTs) {
             return match ($disambiguation) {
                 Disambiguation::EARLIER    => $maxTran->offset,
-                Disambiguation::LATER      => $minTran->offset,
+                Disambiguation::LATER,
                 Disambiguation::COMPATIBLE => $minTran->offset,
                 Disambiguation::REJECT     => throw new InvalidValueException(sprintf(
                     "Invalid date-time '%s' for zone '%s'",
