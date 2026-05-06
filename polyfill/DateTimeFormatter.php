@@ -307,6 +307,19 @@ class DateTimeFormatter
     // === Quarter ===
 
     /**
+     * Formats a quarter value for CLDR quarter symbols.
+     *
+     * Used by:
+     * - {@see FormatPatternSymbol::QUARTER} (`Q`)
+     * - {@see FormatPatternSymbol::QUARTER_STANDALONE} (`q`)
+     *
+     * Behavior:
+     * - `1` / `q`: numeric quarter (`1`..`4`)
+     * - `2` / `qq`: zero-padded numeric quarter (`01`..`04`)
+     * - `3` / `qqq`: abbreviated text (`Q1`..`Q4`)
+     * - `4` / `qqqq`: long text (`1st quarter`..`4th quarter`)
+     * - fallback: narrow text (`1`..`4`)
+     *
      * @throws InvalidValueException
      */
     private function formatQuarter(int $count, Instanted|Date|Time|Zone|Zoned $dateTimeZone): string
