@@ -14,7 +14,6 @@ use time\ZonedDateTime;
 use time\ZoneInfo;
 use time\ZoneTransition;
 use time\Interval;
-use time\IsoDayOfWeek;
 use time\RepeatingInterval;
 
 include __DIR__ . '/../vendor/autoload.php';
@@ -126,4 +125,36 @@ function stringify(mixed $v) {
         })() . ']',
         default => var_export($v, true),
     };
+}
+
+final class SequenceClock implements time\Clock
+{
+    private int $index = 0;
+
+    public function __construct(
+        private readonly array $readings,
+        public readonly time\Duration $resolution = new time\Duration(microseconds: 1),
+    ) {}
+
+    public function takeInstant(): time\Instant
+    {
+        return time\Instant::fromUnixTimestampTuple($this->takeUnixTimestampTuple());
+    }
+
+    public function takeZonedDateTime(
+        time\Zone $zone = new time\ZoneOffset(0),
+        ?time\Calendar $calendar = null
+    ): time\ZonedDateTime {
+        return $this->takeInstant()->toZonedDateTime($zone, $calendar);
+    }
+
+    public function takeUnixTimestamp(time\TimeUnit $unit = time\TimeUnit::Second, bool $fractions = false): int|float
+    {
+        return $this->takeInstant()->toUnixTimestamp($unit, $fractions);
+    }
+
+    public function takeUnixTimestampTuple(): array
+    {
+        return $this->readings[$this->index++];
+    }
 }

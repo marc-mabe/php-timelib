@@ -47,10 +47,8 @@ class StopWatch
 
             if ($ns < 0) {
                 $s -= 1;
-                $ns = 1_000_000_000 - $ns;
+                $ns = 1_000_000_000 + $ns;
             }
-
-            \assert($ns <= 1_000_000_000);
 
             $this->elapsedPrev = [$s, $ns];
             $this->startedAt   = null;
@@ -91,10 +89,8 @@ class StopWatch
 
             if ($ns < 0) {
                 $s -= 1;
-                $ns = 1_000_000_000 - $ns;
+                $ns = 1_000_000_000 + $ns;
             }
-
-            \assert($ns <= 1_000_000_000);
         } else {
             $s  = $this->elapsedPrev[0];
             $ns = $this->elapsedPrev[1];

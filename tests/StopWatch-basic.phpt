@@ -56,6 +56,24 @@ echo "Elapsed Millis: {$watch->getElapsedTime(time\TimeUnit::Millisecond, fracti
 echo "Elapsed Seconds: {$watch->getElapsedTime(time\TimeUnit::Second, fractions: false)}\n";
 echo "Elapsed Duration: " . stringify($watch->getElapsedDuration()) . "\n";
 
+echo "\nNegative-nanosecond normalization:\n";
+$clock = new SequenceClock([
+    [1_000, 900_000_000],
+    [1_001, 100_000_000],
+]);
+$watch = new time\StopWatch($clock);
+$watch->start();
+$watch->stop();
+
+echo "Elapsed Seconds: {$watch->getElapsedTime(time\TimeUnit::Second, fractions: false)}\n";
+echo "Elapsed Millis: {$watch->getElapsedTime(time\TimeUnit::Millisecond, fractions: false)}\n";
+echo "Elapsed Duration: " . stringify($watch->getElapsedDuration()) . "\n";
+echo ($watch->getElapsedTime(time\TimeUnit::Second, fractions: false) === 0
+    && $watch->getElapsedTime(time\TimeUnit::Millisecond, fractions: false) === 200
+    ? "OK\n"
+    : "FAIL\n"
+);
+
 --EXPECTF--
 Measure 1s in MonotonicClock: time\StopWatch(elapsed: %dns, isRunning: false) (OK)
 Elapsed Hours: 0
@@ -83,3 +101,9 @@ Elapsed Micros: 0
 Elapsed Millis: 0
 Elapsed Seconds: 0
 Elapsed Duration: Duration('PT0S')
+
+Negative-nanosecond normalization:
+Elapsed Seconds: 0
+Elapsed Millis: 200
+Elapsed Duration: Duration('PT0.2S')
+OK
